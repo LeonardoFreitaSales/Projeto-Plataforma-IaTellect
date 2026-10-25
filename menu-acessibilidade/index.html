@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="escuro" data-font="normal" data-contrast="normal">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<script>(()=>{const r=document.documentElement;let p={};try{p=JSON.parse(localStorage.getItem('painel-acessibilidade')||'{}')||{}}catch{};let s='escuro';try{s=matchMedia('(prefers-color-scheme: dark)').matches?'escuro':'claro'}catch{};let m=false;try{m=matchMedia('(prefers-reduced-motion: reduce)').matches}catch{};const o=(v,l,d)=>l.includes(v)?v:d,M=['normal','medio','grande'];r.dataset.theme=o(p.theme,['claro','escuro'],s);r.dataset.font=o(p.font,['normal','grande','maior'],'normal');r.dataset.contrast=p.contrast===true?'alto':'normal';r.dataset.lines=o(p.lines,M,'normal');r.dataset.letters=o(p.letters,M,'normal');r.dataset.underline=p.underline===true?'sim':'nao';r.dataset.motion=(typeof p.motion==='boolean'?p.motion:m)?'reduzido':'normal'})();</script>
+<title>Menu de acessibilidade</title>
+<link rel="stylesheet" href="acessibilidade.css">
+</head>
+<body>
+<section class="accessibility-menu" id="accessibility-menu" aria-labelledby="accessibility-title">
+<h2 id="accessibility-title">Acessibilidade</h2>
+<fieldset><legend>Tema</legend><div class="a11y-options" role="group" aria-label="Tema"><button class="a11y-option" type="button" data-theme-choice="claro" aria-pressed="false">Claro</button><button class="a11y-option" type="button" data-theme-choice="escuro" aria-pressed="false">Escuro</button></div></fieldset>
+<fieldset><legend>Tamanho da fonte</legend><div class="a11y-options font-options" role="group" aria-label="Tamanho da fonte"><button class="a11y-option" type="button" data-font-choice="normal" aria-pressed="true">Normal<br>100%</button><button class="a11y-option" type="button" data-font-choice="grande" aria-pressed="false">Grande<br>115%</button><button class="a11y-option" type="button" data-font-choice="maior" aria-pressed="false">Maior<br>130%</button></div></fieldset>
+<fieldset><legend>Espaço entre linhas</legend><div class="a11y-options font-options" role="group" aria-label="Espaço entre linhas"><button class="a11y-option" type="button" data-lines-choice="normal" aria-pressed="true">Normal</button><button class="a11y-option" type="button" data-lines-choice="medio" aria-pressed="false">Médio</button><button class="a11y-option" type="button" data-lines-choice="grande" aria-pressed="false">Grande</button></div></fieldset>
+<fieldset><legend>Espaço entre letras e palavras</legend><div class="a11y-options font-options" role="group" aria-label="Espaço entre letras e palavras"><button class="a11y-option" type="button" data-letters-choice="normal" aria-pressed="true">Normal</button><button class="a11y-option" type="button" data-letters-choice="medio" aria-pressed="false">Médio</button><button class="a11y-option" type="button" data-letters-choice="grande" aria-pressed="false">Grande</button></div></fieldset>
+<div class="a11y-switch-row"><span class="a11y-switch-label">Sublinhar links</span><span class="a11y-sw"><span class="a11y-state" aria-hidden="true"></span><button class="a11y-switch" type="button" role="switch" aria-label="Sublinhar links" aria-checked="false" data-switch="underline"></button></span></div>
+<div class="a11y-switch-row"><span class="a11y-switch-label">Reduzir animações</span><span class="a11y-sw"><span class="a11y-state" aria-hidden="true"></span><button class="a11y-switch" type="button" role="switch" aria-label="Reduzir animações" aria-checked="false" data-switch="motion"></button></span></div>
+<div class="a11y-switch-row"><span class="a11y-switch-label">Alto contraste</span><span class="a11y-sw"><span class="a11y-state" aria-hidden="true"></span><button class="a11y-switch" type="button" role="switch" aria-label="Alto contraste" aria-checked="false" data-switch="contrast"></button></span></div>
+<button class="a11y-reset" type="button" data-accessibility-reset>Restaurar padrão</button>
+<p class="a11y-status" id="accessibility-status" role="status" aria-atomic="true"></p>
+</section>
+<script src="acessibilidade.js" defer></script>
+</body>
+</html>

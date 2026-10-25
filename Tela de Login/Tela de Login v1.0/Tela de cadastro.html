@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>Acesso ao painel — Políticas acadêmicas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+<style>
+/* ===== Tokens: mesmos do painel (escuro é o padrão; claro segue o sistema) ===== */
+:root{
+  box-sizing:border-box;color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#10120f;--surface:#191c18;--surface2:#20241e;--line:#30352d;--text:#f2f1e8;--muted:#a5ab9d;
+  --lime:#c7d86b;--lime-fill:#c7d86b;--lime-ink:#202512;--lime-dark:#323c1d;
+  --red:#e78372;--red-soft:#321f1d;--yellow:#e7c85e;--yellow-soft:#332d18;--green:#9bc777;--green-soft:#26301d;
+  --teal:#8cc7b8;--teal-soft:#8cc7b81f;--teal-line:#8cc7b84d;--teal-wash:#8cc7b814;
+  --field-bg:#10120f;--field-border:#626b57;--hover-line:#69764a;--focus-ring:#c7d86b;
+  --glow:#303b2344;--shadow:#0009
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    color-scheme:light;
+    --bg:#F6F5EF;--surface:#FFFFFF;--surface2:#F3F3EC;--line:#D0D1C9;--text:#1C1D1A;--muted:#5B5D52;
+    --lime:#4A5A14;--lime-fill:#C7D86B;--lime-ink:#202512;--lime-dark:#E5E9D2;
+    --red:#9B3429;--red-soft:#FCEAE7;--yellow:#755A00;--yellow-soft:#FFF5D4;--green:#38631C;--green-soft:#EDF7E5;
+    --teal:#245C4E;--teal-soft:#E1EFEA;--teal-line:#8FB8AB;--teal-wash:#EEF6F3;
+    --field-bg:#FFFFFF;--field-border:#73756C;--hover-line:#4A5A14;--focus-ring:#4A5A14;
+    --glow:transparent;--shadow:#1c1d1a22
+  }
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#F6F5EF;--surface:#FFFFFF;--surface2:#F3F3EC;--line:#D0D1C9;--text:#1C1D1A;--muted:#5B5D52;
+  --lime:#4A5A14;--lime-fill:#C7D86B;--lime-ink:#202512;--lime-dark:#E5E9D2;
+  --red:#9B3429;--red-soft:#FCEAE7;--yellow:#755A00;--yellow-soft:#FFF5D4;--green:#38631C;--green-soft:#EDF7E5;
+  --teal:#245C4E;--teal-soft:#E1EFEA;--teal-line:#8FB8AB;--teal-wash:#EEF6F3;
+  --field-bg:#FFFFFF;--field-border:#73756C;--hover-line:#4A5A14;--focus-ring:#4A5A14;
+  --glow:transparent;--shadow:#1c1d1a22
+}
+
+/* ===== Base ===== */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+[hidden]{display:none!important}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 68% -18%,var(--glow),transparent 46%),var(--bg);color:var(--text);font:400 1rem/1.5 'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+svg{display:block}
+a:focus-visible,button:focus-visible{outline:3px solid var(--focus-ring);outline-offset:3px}
+
+/* ===== Estrutura ===== */
+.shell{max-width:1120px;margin:0 auto;min-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding:clamp(20px,4vw,56px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,29rem);gap:clamp(32px,6vw,88px);align-items:center}
+.intro{display:grid;gap:clamp(28px,5vw,56px);align-content:center}
+.stage{min-width:0}
+
+/* Apresentação (lado esquerdo) */
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:var(--lime-fill);color:var(--lime-ink);display:grid;place-items:center;font-weight:700;font-size:1.125rem}
+.brand-title{font-weight:700;letter-spacing:.01em;line-height:1.2}
+.brand-sub{font-size:.75rem;color:var(--muted);margin-top:2px}
+.eyebrow{margin:0;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--lime)}
+.eyebrow::before{content:"";display:inline-block;width:18px;height:2px;margin-right:10px;vertical-align:middle;background:currentColor;opacity:.8}
+h1{margin:12px 0 12px;font:700 clamp(2rem,4.2vw,3rem)/1.1 'Playfair Display',Georgia,serif;letter-spacing:-.025em}
+.lead{margin:0;max-width:34rem;color:var(--muted);line-height:1.65}
+.legend{list-style:none;margin:26px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;font-size:.8125rem;font-weight:600;border:1px solid transparent}
+.pill svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.pill.red{color:var(--red);background:var(--red-soft);border-color:var(--red)}
+.pill.yellow{color:var(--yellow);background:var(--yellow-soft);border-color:var(--yellow)}
+.pill.green{color:var(--green);background:var(--green-soft);border-color:var(--green)}
+
+/* Cartão de acesso */
+.card{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:clamp(22px,4vw,36px);box-shadow:0 24px 70px var(--shadow);animation:enter .45s cubic-bezier(.2,.7,.2,1) both}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--lime-fill),var(--teal) 70%,transparent)}
+.view-title{margin:0 0 6px;font:600 clamp(1.4rem,3vw,1.65rem)/1.2 'Playfair Display',Georgia,serif;letter-spacing:-.01em}
+.view-title:focus{outline:none}
+.view-sub{margin:0 0 24px;color:var(--muted);font-size:.9375rem}
+.view:not([hidden]),.tabpanel:not([hidden]){animation:enter .28s cubic-bezier(.2,.7,.2,1)}
+
+/* Seleção de perfil */
+.profiles{border:0;margin:0 0 6px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:14px}
+.profile{display:block;cursor:pointer}
+.profile-box{display:grid;gap:10px;height:100%;padding:16px;border:2px solid var(--line);border-radius:16px;background:var(--surface2);transition:border-color .18s ease,background-color .18s ease,transform .18s ease}
+.profile:hover .profile-box{border-color:var(--hover-line);transform:translateY(-1px)}
+.profile:active .profile-box{transform:scale(.985)}
+.profile-top{display:flex;align-items:flex-start;justify-content:space-between}
+.profile-icon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:var(--lime);background:var(--lime-dark)}
+.profile-icon svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.profile-check{width:26px;height:26px;border-radius:50%;border:2px solid var(--field-border);display:grid;place-items:center;color:var(--lime-ink);transition:background-color .18s ease,border-color .18s ease}
+.profile-check svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.profile-name{font-weight:700;font-size:1.0625rem}
+.profile-state{font-size:.8125rem;font-weight:600;color:var(--lime);visibility:hidden}
+.profile input:checked + .profile-box{border-color:var(--lime);background:var(--lime-dark)}
+.profile input:checked + .profile-box .profile-icon{background:var(--lime-fill);color:var(--lime-ink)}
+.profile input:checked + .profile-box .profile-check{background:var(--lime-fill);border-color:var(--lime-fill)}
+.profile input:checked + .profile-box .profile-check svg{opacity:1}
+.profile input:checked + .profile-box .profile-state{visibility:visible}
+.profile input:focus-visible + .profile-box{outline:3px solid var(--focus-ring);outline-offset:3px}
+
+/* Perfil escolhido (login e cadastro) */
+.chip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;padding:8px 8px 8px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface2)}
+.chip-icon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:var(--lime);background:var(--lime-dark)}
+.chip-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.chip-text{font-size:.9375rem}
+.chip .link-btn{margin-left:auto}
+
+/* Alternar entre Entrar e Criar conta */
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:24px;border:1px solid var(--line);border-radius:14px;background:var(--surface2)}
+.tab{min-height:44px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:600 .9375rem 'DM Sans',sans-serif;cursor:pointer;transition:background-color .18s ease,color .18s ease}
+.tab:hover{color:var(--text)}
+.tab[aria-selected="true"]{background:var(--lime-dark);color:var(--text);font-weight:700;box-shadow:inset 0 -3px 0 var(--lime)}
+
+/* Formulários */
+.form{display:grid;gap:18px}
+.field{display:grid;gap:8px}
+.field label{font-size:.875rem;font-weight:600}
+.input-wrap{position:relative}
+.field input{width:100%;min-height:48px;padding:12px 14px;font:inherit;font-size:1rem;color:var(--text);background:var(--field-bg);border:1px solid var(--field-border);border-radius:12px;outline:none;transition:border-color .18s ease,box-shadow .18s ease}
+.input-wrap input{padding-right:5.5rem}
+.field input:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px;border-color:var(--lime)}
+.field input[aria-invalid="true"]{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
+.reveal{position:absolute;top:50%;right:6px;transform:translateY(-50%);min-height:36px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--lime);font:600 .875rem 'DM Sans',sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.field-error{display:flex;align-items:flex-start;gap:6px;margin:0;color:var(--red);font-size:.875rem;font-weight:600;line-height:1.4}
+.field-error svg{flex:none;width:16px;height:16px;margin-top:2px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.profiles-error{margin:12px 0 0}
+.notice-slot:empty{display:none}
+.notice{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--teal-line);border-radius:12px;background:var(--teal-wash);font-size:.875rem;line-height:1.5;animation:fade .2s ease-out}
+.notice svg{flex:none;width:18px;height:18px;margin-top:1px;color:var(--teal);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.row-end{display:flex;justify-content:flex-end;margin-top:-6px}
+.actions{display:grid;gap:10px}
+.switch-line{margin:4px 0 0;text-align:center;font-size:.9375rem;color:var(--muted)}
+
+/* Botões e links */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;padding:12px 18px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--text);font:700 .9375rem 'DM Sans',sans-serif;cursor:pointer;transition:background-color .18s ease,border-color .18s ease,transform .18s ease,filter .18s ease}
+.btn:hover{border-color:var(--hover-line);background:var(--surface2)}
+.btn.primary{background:var(--lime-fill);border-color:var(--lime-fill);color:var(--lime-ink)}
+.btn.primary:hover{filter:brightness(1.07);background:var(--lime-fill)}
+.btn:active,.tab:active,.reveal:active{transform:scale(.98)}
+.reveal:active{transform:translateY(-50%) scale(.98)}
+.link-btn,.link{display:inline-block;padding:2px 0;border:0;background:none;color:var(--lime);font:inherit;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;border-radius:6px}
+.link-btn.tap,.link.tap{padding:10px 8px}
+.link:hover,.link-btn:hover{color:var(--text)}
+
+/* Movimento */
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* Telas pequenas */
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr;align-items:start;gap:26px;padding:20px 16px 32px}
+  .intro{gap:22px;align-content:start}
+  .legend{display:none}
+  h1{margin-top:10px}
+}
+@media (max-width:420px){
+  .profiles{grid-template-columns:1fr}
+  .profile-box{grid-template-columns:auto 1fr;align-items:center;column-gap:12px;row-gap:2px}
+  .profile-top{grid-row:1 / span 2}
+  .profile-state{grid-column:2}
+  .chip .link-btn{margin-left:0}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .profile:hover .profile-box,.profile:active .profile-box,.btn:active,.tab:active{transform:none}
+  .reveal:active{transform:translateY(-50%)}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="ic-aluno" viewBox="0 0 24 24"><path d="M2 9.5 12 5l10 4.5-10 4.5z"/><path d="M6 12v4.5c0 1.2 2.7 2.5 6 2.5s6-1.3 6-2.5V12"/><path d="M22 9.5V15"/></symbol>
+  <symbol id="ic-professor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 8.5h6M7 11.5h4"/><path d="M12 16v4M8 20h8"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="ic-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="ic-warn" viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.5h.01"/></symbol>
+  <symbol id="ic-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/></symbol>
+  <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5h.01"/></symbol>
+</svg>
+
+<div class="shell">
+  <header class="intro">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">P</div>
+      <div><div class="brand-title">Políticas acadêmicas</div><div class="brand-sub">Registro e consulta</div></div>
+    </div>
+    <div>
+      <p class="eyebrow">Registro de políticas · Uso de IA em atividades acadêmicas</p>
+      <h1>Acesso ao painel</h1>
+      <p class="lead">Consulte o que é permitido, proibido ou permitido com restrição em cada disciplina e tipo de atividade.</p>
+      <ul class="legend" aria-label="Níveis de uso de IA">
+        <li class="pill red"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ic-x"/></svg>Proibido</li>
+        <li class="pill yellow"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ic-warn"/></svg>Permitido com restrição</li>
+        <li class="pill green"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ic-check"/></svg>Permitido</li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="card">
+
+      <!-- 1. Seleção de perfil -->
+      <section class="view" id="view-perfil" aria-labelledby="perfil-titulo">
+        <h2 class="view-title" id="perfil-titulo" tabindex="-1">Escolha seu perfil</h2>
+        <p class="view-sub">Selecione como você vai acessar o painel.</p>
+        <form id="form-perfil" novalidate>
+          <fieldset class="profiles" id="perfil-grupo">
+            <legend class="sr-only">Perfil de acesso</legend>
+            <label class="profile">
+              <input class="sr-only" type="radio" name="perfil" value="aluno">
+              <span class="profile-box">
+                <span class="profile-top">
+                  <span class="profile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#ic-aluno"/></svg></span>
+                  <span class="profile-check" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#ic-check"/></svg></span>
+                </span>
+                <span class="profile-name">Sou aluno</span>
+                <span class="profile-state" aria-hidden="true">Selecionado</span>
+              </span>
+            </label>
+            <label class="profile">
+              <input class="sr-only" type="radio" name="perfil" value="professor">
+              <span class="profile-box">
+                <span class="profile-top">
+                  <span class="profile-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#ic-professor"/></svg></span>
+                  <span class="profile-check" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use href="#ic-check"/></svg></span>
+                </span>
+                <span class="profile-name">Sou professor</span>
+                <span class="profile-state" aria-hidden="true">Selecionado</span>
+              </span>
+            </label>
+          </fieldset>
+          <p class="field-error profiles-error" id="perfil-erro" hidden></p>
+          <div class="actions" style="margin-top:22px">
+            <button class="btn primary" type="submit">Entrar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 2. Entrar / Criar conta -->
+      <section class="view" id="view-acesso" hidden aria-label="Entrar ou criar conta">
+        <div class="chip">
+          <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><use id="chip-icone" href="#ic-aluno"/></svg></span>
+          <span class="chip-text">Perfil: <strong id="chip-perfil">Aluno</strong></span>
+          <button class="link-btn tap" type="button" id="alterar-perfil">Alterar perfil</button>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Forma de acesso">
+          <button class="tab" role="tab" type="button" id="tab-entrar" data-tab="entrar" aria-controls="painel-entrar" aria-selected="true" tabindex="0">Entrar</button>
+          <button class="tab" role="tab" type="button" id="tab-criar" data-tab="criar" aria-controls="painel-criar" aria-selected="false" tabindex="-1">Criar conta</button>
+        </div>
+
+        <!-- Entrar -->
+        <div class="tabpanel" role="tabpanel" id="painel-entrar" aria-labelledby="tab-entrar">
+          <h2 class="view-title" id="titulo-entrar" tabindex="-1">Entrar como aluno</h2>
+          <p class="view-sub">Use seu e-mail institucional e sua senha.</p>
+          <form class="form" id="form-entrar" novalidate>
+            <div class="field">
+              <label for="entrar-email">E-mail institucional</label>
+              <input id="entrar-email" name="email" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required data-rule="email">
+              <p class="field-error" id="entrar-email-erro" hidden></p>
+            </div>
+            <div class="field">
+              <label for="entrar-senha">Senha</label>
+              <div class="input-wrap">
+                <input id="entrar-senha" name="senha" type="password" autocomplete="current-password" required data-rule="senha">
+                <button class="reveal" type="button" data-reveal="entrar-senha" data-nome="senha" aria-label="Mostrar senha">Mostrar</button>
+              </div>
+              <p class="field-error" id="entrar-senha-erro" hidden></p>
+            </div>
+            <div class="row-end"><a class="link tap" href="#esqueci-senha" id="esqueci">Esqueci minha senha</a></div>
+            <div class="notice-slot" id="entrar-aviso" role="status" aria-live="polite"></div>
+            <div class="actions">
+              <button class="btn primary" type="submit">Entrar</button>
+            </div>
+            <p class="switch-line">Ainda não tem conta? <button class="link-btn" type="button" data-go="criar">Criar conta</button></p>
+          </form>
+        </div>
+
+        <!-- Criar conta -->
+        <div class="tabpanel" role="tabpanel" id="painel-criar" aria-labelledby="tab-criar" hidden>
+          <h2 class="view-title" id="titulo-criar" tabindex="-1">Criar conta de aluno</h2>
+          <p class="view-sub">Preencha os dados abaixo para criar sua conta.</p>
+          <form class="form" id="form-criar" novalidate>
+            <div class="field">
+              <label for="criar-nome">Nome completo</label>
+              <input id="criar-nome" name="nome" type="text" autocomplete="name" required data-rule="nome">
+              <p class="field-error" id="criar-nome-erro" hidden></p>
+            </div>
+            <div class="field">
+              <label for="criar-email">E-mail institucional</label>
+              <input id="criar-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" required data-rule="email">
+              <p class="field-error" id="criar-email-erro" hidden></p>
+            </div>
+            <div class="field">
+              <label for="criar-senha">Senha</label>
+              <div class="input-wrap">
+                <input id="criar-senha" name="senha" type="password" autocomplete="new-password" required data-rule="senha-nova" data-controls="criar-confirmar">
+                <button class="reveal" type="button" data-reveal="criar-senha" data-nome="senha" aria-label="Mostrar senha">Mostrar</button>
+              </div>
+              <p class="field-error" id="criar-senha-erro" hidden></p>
+            </div>
+            <div class="field">
+              <label for="criar-confirmar">Confirmar senha</label>
+              <div class="input-wrap">
+                <input id="criar-confirmar" name="confirmar" type="password" autocomplete="new-password" required data-rule="confirmar" data-match="criar-senha">
+                <button class="reveal" type="button" data-reveal="criar-confirmar" data-nome="confirmação de senha" aria-label="Mostrar confirmação de senha">Mostrar</button>
+              </div>
+              <p class="field-error" id="criar-confirmar-erro" hidden></p>
+            </div>
+            <div class="notice-slot" id="criar-aviso" role="status" aria-live="polite"></div>
+            <div class="actions">
+              <button class="btn primary" type="submit">Criar conta</button>
+              <button class="btn" type="button" data-go="entrar">Voltar ao login</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const icone = id => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#${id}"/></svg>`;
+
+  const PERFIS = {
+    aluno:     { rotulo: 'Aluno',     entrar: 'Entrar como aluno',     criar: 'Criar conta de aluno',     icone: '#ic-aluno' },
+    professor: { rotulo: 'Professor', entrar: 'Entrar como professor', criar: 'Criar conta de professor', icone: '#ic-professor' }
+  };
+  const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const state = { perfil: null };
+
+  const viewPerfil = $('#view-perfil'), viewAcesso = $('#view-acesso');
+  const tabs = $$('[role="tab"]');
+  const panels = { entrar: $('#painel-entrar'), criar: $('#painel-criar') };
+
+  /* ---------- Mensagens junto aos campos ---------- */
+  function setError(input, msg) {
+    const err = $('#' + input.id + '-erro');
+    err.innerHTML = icone('ic-alert') + '<span></span>';
+    err.lastChild.textContent = msg;
+    err.hidden = false;
+    input.setAttribute('aria-invalid', 'true');
+    input.setAttribute('aria-describedby', err.id);
+  }
+  function clearError(input) {
+    const err = $('#' + input.id + '-erro');
+    err.hidden = true; err.innerHTML = '';
+    input.removeAttribute('aria-invalid');
+    input.removeAttribute('aria-describedby');
+  }
+  function setNotice(slot, text) {
+    slot.innerHTML = '<div class="notice">' + icone('ic-info') + '<span></span></div>';
+    slot.querySelector('span').textContent = text;
+  }
+  const clearNotices = () => $$('.notice-slot').forEach(s => { s.innerHTML = ''; });
+
+  /* ---------- Validação (apenas preenchimento e formato) ---------- */
+  const RULES = {
+    nome:         v => v.trim() ? '' : 'Informe seu nome completo.',
+    email:        v => !v.trim() ? 'Informe seu e-mail institucional.' : (EMAIL.test(v.trim()) ? '' : 'Informe um e-mail válido.'),
+    senha:        v => v ? '' : 'Informe sua senha.',
+    'senha-nova': v => v ? '' : 'Crie uma senha.',
+    confirmar:    (v, input) => !v ? 'Confirme sua senha.' : (v === $('#' + input.dataset.match).value ? '' : 'As senhas não coincidem.')
+  };
+  function validate(input) {
+    const msg = RULES[input.dataset.rule](input.value, input);
+    msg ? setError(input, msg) : clearError(input);
+    return !msg;
+  }
+  function validateForm(form) {
+    let first = null;
+    $$('[data-rule]', form).forEach(i => { if (!validate(i) && !first) first = i; });
+    if (first) first.focus();
+    return !first;
+  }
+  document.addEventListener('input', e => {
+    const i = e.target;
+    if (!i.dataset || !i.dataset.rule) return;
+    if (i.hasAttribute('aria-invalid')) validate(i);
+    if (i.dataset.controls) {
+      const c = $('#' + i.dataset.controls);
+      if (c.value || c.hasAttribute('aria-invalid')) validate(c);
+    }
+    const slot = $('.notice-slot', i.closest('form'));
+    if (slot) slot.innerHTML = '';
+  });
+
+  /* ---------- Perfil ---------- */
+  function setPerfil(valor) {
+    const p = PERFIS[valor];
+    state.perfil = valor;
+    $('#chip-perfil').textContent = p.rotulo;
+    $('#chip-icone').setAttribute('href', p.icone);
+    $('#titulo-entrar').textContent = p.entrar;
+    $('#titulo-criar').textContent = p.criar;
+  }
+  const radios = $$('input[name="perfil"]');
+  radios.forEach(r => r.addEventListener('change', () => {
+    setPerfil(r.value);
+    const err = $('#perfil-erro');
+    err.hidden = true; err.innerHTML = '';
+    $('#perfil-grupo').removeAttribute('aria-describedby');
+  }));
+  $('#form-perfil').addEventListener('submit', e => {
+    e.preventDefault();
+    const sel = $('input[name="perfil"]:checked');
+    if (!sel) {
+      const err = $('#perfil-erro');
+      err.innerHTML = icone('ic-alert') + '<span>Selecione um perfil para continuar.</span>';
+      err.hidden = false;
+      $('#perfil-grupo').setAttribute('aria-describedby', 'perfil-erro');
+      radios[0].focus();
+      return;
+    }
+    setPerfil(sel.value);
+    viewPerfil.hidden = true;
+    viewAcesso.hidden = false;
+    selectTab('entrar', 'heading');
+  });
+  $('#alterar-perfil').addEventListener('click', () => {
+    viewAcesso.hidden = true;
+    viewPerfil.hidden = false;
+    $('#perfil-titulo').focus();
+  });
+
+  /* ---------- Entrar / Criar conta ---------- */
+  function selectTab(nome, foco) {
+    tabs.forEach(t => {
+      const on = t.dataset.tab === nome;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      panels[t.dataset.tab].hidden = !on;
+    });
+    clearNotices();
+    if (foco === 'tab') $('#tab-' + nome).focus();
+    if (foco === 'heading') $(nome === 'entrar' ? '#titulo-entrar' : '#titulo-criar').focus();
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => selectTab(t.dataset.tab, 'tab'));
+    t.addEventListener('keydown', e => {
+      const k = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+      let alvo = null;
+      if (k) alvo = (i + k + tabs.length) % tabs.length;
+      else if (e.key === 'Home') alvo = 0;
+      else if (e.key === 'End') alvo = tabs.length - 1;
+      if (alvo === null) return;
+      e.preventDefault();
+      selectTab(tabs[alvo].dataset.tab, 'tab');
+    });
+  });
+  $$('[data-go]').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.go, 'heading')));
+
+  /* ---------- Senha: mostrar / ocultar ---------- */
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-reveal]');
+    if (!b) return;
+    const campo = $('#' + b.dataset.reveal);
+    const mostrar = campo.type === 'password';
+    campo.type = mostrar ? 'text' : 'password';
+    b.textContent = mostrar ? 'Ocultar' : 'Mostrar';
+    b.setAttribute('aria-label', (mostrar ? 'Ocultar ' : 'Mostrar ') + b.dataset.nome);
+  });
+
+  /* ---------- Envio: somente interface (sem autenticação) ---------- */
+  $('#esqueci').addEventListener('click', e => {
+    e.preventDefault();
+    setNotice($('#entrar-aviso'), 'Esta tela ainda não está conectada a um serviço de recuperação de senha.');
+  });
+  $('#form-entrar').addEventListener('submit', e => {
+    e.preventDefault();
+    const slot = $('#entrar-aviso'); slot.innerHTML = '';
+    if (!validateForm(e.currentTarget)) return;
+    // Ponto de integração: conectar aqui a API de autenticação, quando existir.
+    setNotice(slot, 'Dados preenchidos corretamente. Esta tela ainda não está conectada a um serviço de autenticação, por isso nenhum acesso foi realizado.');
+  });
+  $('#form-criar').addEventListener('submit', e => {
+    e.preventDefault();
+    const slot = $('#criar-aviso'); slot.innerHTML = '';
+    if (!validateForm(e.currentTarget)) return;
+    // Ponto de integração: conectar aqui a API de cadastro, quando existir.
+    setNotice(slot, 'Dados preenchidos corretamente. Esta tela ainda não está conectada a um serviço de cadastro, por isso nenhuma conta foi criada.');
+  });
+})();
+</script>
+</body>
+</html>

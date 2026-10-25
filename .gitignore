@@ -1,0 +1,4 @@
+**/data/database.json
+**/data/database.json.tmp
+**/__pycache__/
+*.py[cod]
