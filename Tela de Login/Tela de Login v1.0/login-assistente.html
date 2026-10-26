@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistente de Uso Consciente de IA — Acessar o registro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:wght@400;500&family=Source+Serif+4:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #1c1c1c;
+    --tile: #0c0c0c;
+    --line: #2b2b2b;
+    --line-strong: #4a4a4a;
+    --text: #f4f1e8;
+    --muted: #8d9189;
+    --olive: #8a9a3f;
+    --olive-hover: #9aab49;
+    --olive-ink: #14160a;
+    --disabled: #5c6335;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  main { width: 100%; max-width: 410px; }
+  .eyebrow {
+    font-family: "DM Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 1.15;
+    margin: 0 0 18px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 36px 36px 36px;
+  }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  legend { font-size: 14px; color: var(--muted); padding: 0; margin-bottom: 10px; }
+  .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .profile { position: relative; display: block; }
+  .profile input {
+    position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer;
+  }
+  .tile {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px;
+    height: 98px;
+    background: var(--tile);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border-color .15s, background-color .15s;
+  }
+  .tile .icon { font-size: 24px; line-height: 1; }
+  .profile:hover .tile { border-color: var(--line-strong); }
+  .profile input:checked + .tile {
+    border-color: var(--olive);
+    background: #12140b;
+    box-shadow: inset 0 0 0 1px var(--olive);
+  }
+  .profile input:focus-visible + .tile { outline: 2px solid var(--text); outline-offset: 2px; }
+  .enter {
+    display: block; width: 100%;
+    margin-top: 36px;
+    height: 44px;
+    border: 0; border-radius: 6px;
+    background: var(--olive);
+    color: var(--olive-ink);
+    font: 500 15px "DM Sans", system-ui, sans-serif;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+  .enter:hover:not(:disabled) { background: var(--olive-hover); }
+  .enter:disabled { background: var(--disabled); color: #1d200f; cursor: not-allowed; opacity: .75; }
+  .enter:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .hint { min-height: 20px; margin: 12px 0 0; font-size: 13px; color: #d9a35b; }
+
+  .welcome { display: none; }
+  .welcome p { color: var(--muted); font-size: 15px; line-height: 1.5; margin: 0 0 6px; }
+  .welcome .who {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--tile); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px; margin: 18px 0 0; font-size: 16px;
+  }
+  .welcome .who .icon { font-size: 26px; }
+  .secondary {
+    display: block; width: 100%; margin-top: 24px; height: 44px;
+    background: transparent; color: var(--text);
+    border: 1px solid var(--line-strong); border-radius: 6px;
+    font: 500 15px "DM Sans", system-ui, sans-serif; cursor: pointer;
+  }
+  .secondary:hover { border-color: var(--text); }
+  .secondary:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  body.logged .login { display: none; }
+  body.logged .welcome { display: block; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Assistente de uso consciente de IA</p>
+
+  <!-- Tela de login -->
+  <section class="login">
+    <h1>Acessar o registro</h1>
+    <form class="card" id="form" novalidate>
+      <fieldset>
+        <legend>Perfil</legend>
+        <div class="profiles">
+          <label class="profile">
+            <input type="radio" name="perfil" value="aluno">
+            <span class="tile"><span class="icon" aria-hidden="true">🎓</span>Sou aluno</span>
+          </label>
+          <label class="profile">
+            <input type="radio" name="perfil" value="professor">
+            <span class="tile"><span class="icon" aria-hidden="true">🗂️</span>Sou professor</span>
+          </label>
+        </div>
+      </fieldset>
+      <button class="enter" id="enter" type="submit" disabled>Entrar</button>
+      <p class="hint" id="hint" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <!-- Tela após entrar -->
+  <section class="welcome" aria-live="polite">
+    <h1>Você entrou</h1>
+    <div class="card">
+      <p>Perfil ativo nesta sessão:</p>
+      <div class="who"><span class="icon" id="whoIcon" aria-hidden="true"></span><span id="whoText"></span></div>
+      <button class="secondary" id="exit" type="button">Trocar de perfil</button>
+    </div>
+  </section>
+</main>
+
+<script>
+  var KEY = "perfil-assistente";
+  var form = document.getElementById("form");
+  var enter = document.getElementById("enter");
+  var hint = document.getElementById("hint");
+  var radios = form.querySelectorAll('input[name="perfil"]');
+  var DADOS = {
+    aluno:     { icone: "🎓", texto: "Aluno" },
+    professor: { icone: "🗂️", texto: "Professor" }
+  };
+
+  function salvar(v) { try { sessionStorage.setItem(KEY, v); } catch (e) {} }
+  function ler() { try { return sessionStorage.getItem(KEY); } catch (e) { return null; } }
+  function limpar() { try { sessionStorage.removeItem(KEY); } catch (e) {} }
+
+  function mostrarEntrada(perfil) {
+    document.getElementById("whoIcon").textContent = DADOS[perfil].icone;
+    document.getElementById("whoText").textContent = DADOS[perfil].texto;
+    document.body.classList.add("logged");
+    document.getElementById("exit").focus();
+  }
+
+  radios.forEach(function (r) {
+    r.addEventListener("change", function () {
+      enter.disabled = false;
+      hint.textContent = "";
+    });
+  });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var escolhido = form.querySelector('input[name="perfil"]:checked');
+    if (!escolhido) {
+      hint.textContent = "Escolha um perfil para continuar.";
+      return;
+    }
+    salvar(escolhido.value);
+    mostrarEntrada(escolhido.value);
+  });
+
+  document.getElementById("exit").addEventListener("click", function () {
+    limpar();
+    form.reset();
+    enter.disabled = true;
+    document.body.classList.remove("logged");
+    radios[0].focus();
+  });
+
+  var atual = ler();
+  if (atual && DADOS[atual]) mostrarEntrada(atual);
+</script>
+</body>
+</html>
