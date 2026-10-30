@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Plataforma v0.5</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<button class="hamb" id="hamb" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">☰</button>
+<div class="app">
+<aside class="menu" id="menu" aria-label="Menu principal">
+  <div class="marca"><span class="logo">P</span><div><b>Plataforma</b><small>v0.5 · protótipo de menu</small></div></div>
+  <p class="grupo">Visão geral</p>
+  <nav>
+    <a href="#inicio" data-alvo="inicio">Início</a>
+    <a href="#comunicados" data-alvo="comunicados">Comunicados</a>
+    <a href="#verificar" data-alvo="verificar">Posso usar IA?</a>
+  </nav>
+  <p class="grupo">Gerenciar</p>
+  <nav>
+    <a href="#disciplinas" data-alvo="disciplinas">Disciplinas</a>
+    <a href="#nova-politica" data-alvo="nova-politica">Nova política</a>
+    <a href="#politicas" data-alvo="politicas">Todas as políticas</a>
+  </nav>
+</aside>
+<main>
+  <h1>Políticas de IA por disciplina</h1>
+  <p class="sub"><b>v0.5</b> · Registre as regras de uso de IA e publique comunicados.</p>
+
+  <section id="inicio" data-menu aria-label="Resumo">
+    <div class="stats">
+      <div><b id="n-disc">0</b><span>disciplinas</span></div>
+      <div><b id="n-pol">0</b><span>políticas</span></div>
+      <div><b id="n-com">0</b><span>comunicados</span></div>
+      <div><b class="proibido" id="n-proibido">0</b><span>proibido</span></div>
+      <div><b class="restricao" id="n-restricao">0</b><span>com restrição</span></div>
+      <div><b class="permitido" id="n-permitido">0</b><span>permitido</span></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="b-proibido"></i><i id="b-restricao"></i><i id="b-permitido"></i></div>
+  </section>
+
+  <section id="comunicados" data-menu>
+    <h2>Comunicados</h2>
+    <form id="f-com">
+      <label>Título<input id="m-titulo" required maxlength="80"></label>
+      <label>Mensagem<textarea id="m-msg" required maxlength="500"></textarea></label>
+      <div class="row">
+        <label>Prioridade
+          <select id="m-prio"><option value="info">Informação</option><option value="aviso">Aviso</option><option value="urgente">Urgente</option></select>
+        </label>
+        <label class="chk"><input type="checkbox" id="m-fixar">Fixar no topo</label>
+      </div>
+      <button class="main" type="submit">Publicar comunicado</button>
+    </form>
+    <div id="lista-comunicados"></div>
+  </section>
+
+  <section id="verificar" data-menu>
+    <h2>Posso usar IA?</h2>
+    <form id="f-check">
+      <div class="row">
+        <label>Disciplina<select id="c-disc"></select></label>
+        <label>Tipo de atividade<select id="c-tipo"></select></label>
+      </div>
+      <button class="main" type="submit">Verificar</button>
+    </form>
+    <div id="resultado" hidden></div>
+  </section>
+
+  <section id="disciplinas" data-menu>
+    <h2>Disciplinas</h2>
+    <form id="f-disc">
+      <div class="row">
+        <label>Nome<input id="d-nome" required maxlength="80"></label>
+        <label>Docente (opcional)<input id="d-doc" maxlength="80"></label>
+      </div>
+      <button class="main" type="submit">Adicionar disciplina</button>
+    </form>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section id="nova-politica" data-menu>
+    <h2>Nova política</h2>
+    <form id="f-pol">
+      <div class="row">
+        <label>Disciplina<select id="p-disc" required></select></label>
+        <label>Tipo de atividade<select id="p-tipo"></select></label>
+      </div>
+      <div class="row">
+        <label>Atividade<input id="p-nome" required maxlength="80"></label>
+        <label>Uso de IA
+          <select id="p-status"><option value="proibido">Proibido</option><option value="restricao">Permitido com restrição</option><option value="permitido">Permitido</option></select>
+        </label>
+      </div>
+      <label>Condições (opcional)<input id="p-cond" maxlength="200"></label>
+      <button class="main" type="submit">Salvar política</button>
+    </form>
+  </section>
+
+  <section id="politicas" data-menu>
+    <h2>Todas as políticas</h2>
+    <div class="row">
+      <label>Buscar<input id="busca" placeholder="Disciplina ou atividade"></label>
+      <label>Nível
+        <select id="filtro"><option value="">Todos</option><option value="proibido">Proibido</option><option value="restricao">Com restrição</option><option value="permitido">Permitido</option></select>
+      </label>
+    </div>
+    <div id="lista"></div>
+  </section>
+  <p class="rodape" id="modo"></p>
+</main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

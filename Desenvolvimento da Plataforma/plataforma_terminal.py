@@ -1,3 +1,14 @@
+"""
+Painel de políticas de uso de IA — versão para terminal (Python puro).
+
+Simula no terminal tudo o que a plataforma web faz (index.html + app.js + server.py):
+disciplinas, políticas, "Posso usar IA?", comunicados, histórico e ferramentas.
+
+Usa o mesmo arquivo data/database.json do server.py, então os dados são
+compartilhados entre a versão web e a versão de terminal.
+
+Executar:  python plataforma_terminal.py
+"""
 import json
 import os
 import uuid

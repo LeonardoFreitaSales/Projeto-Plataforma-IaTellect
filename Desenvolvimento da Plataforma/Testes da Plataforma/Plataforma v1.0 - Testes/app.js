@@ -1,4 +1,6 @@
-(() => {
+// Plataforma v1.0 — interface (painel, formulários, acessibilidade).
+// Fala com o server.py pelas rotas /api/*.
+window.addEventListener("DOMContentLoaded",()=>{(() => {
   const modal=document.querySelector('#app-modal'), title=document.querySelector('#modal-title'), body=document.querySelector('#modal-body');
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const api=async(url,opts={})=>{const r=await fetch(url,{headers:{'Content-Type':'application/json'},...opts});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||`Erro ${r.status}`);return d;};
@@ -47,3 +49,5 @@
 })();
 
 
+
+});

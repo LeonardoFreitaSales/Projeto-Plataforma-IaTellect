@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Políticas de IA por disciplina</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>Políticas de IA por disciplina</h1>
+  <p class="sub">Registre o que é permitido, proibido ou permitido com restrição em cada atividade.</p>
+
+  <section aria-label="Resumo">
+    <div class="stats">
+      <div><b id="n-disc">0</b><span>disciplinas</span></div>
+      <div><b id="n-pol">0</b><span>políticas</span></div>
+      <div><b class="proibido" id="n-proibido">0</b><span>proibido</span></div>
+      <div><b class="restricao" id="n-restricao">0</b><span>com restrição</span></div>
+      <div><b class="permitido" id="n-permitido">0</b><span>permitido</span></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="b-proibido"></i><i id="b-restricao"></i><i id="b-permitido"></i></div>
+  </section>
+
+  <section>
+    <h2>Posso usar IA?</h2>
+    <form id="f-check">
+      <div class="row">
+        <label>Disciplina<select id="c-disc"></select></label>
+        <label>Tipo de atividade<select id="c-tipo"></select></label>
+      </div>
+      <button class="main" type="submit">Verificar</button>
+    </form>
+    <div id="resultado" hidden></div>
+  </section>
+
+  <section>
+    <h2>Disciplinas</h2>
+    <form id="f-disc">
+      <div class="row">
+        <label>Nome<input id="d-nome" required maxlength="80" placeholder="Ex.: Cálculo"></label>
+        <label>Docente (opcional)<input id="d-doc" maxlength="80"></label>
+      </div>
+      <button class="main" type="submit">Adicionar disciplina</button>
+    </form>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section>
+    <h2>Nova política</h2>
+    <form id="f-pol">
+      <div class="row">
+        <label>Disciplina<select id="p-disc" required></select></label>
+        <label>Tipo de atividade<select id="p-tipo"></select></label>
+      </div>
+      <div class="row">
+        <label>Atividade<input id="p-nome" required maxlength="80" placeholder="Ex.: Relatório final"></label>
+        <label>Uso de IA
+          <select id="p-status">
+            <option value="proibido">Proibido</option>
+            <option value="restricao">Permitido com restrição</option>
+            <option value="permitido">Permitido</option>
+          </select>
+        </label>
+      </div>
+      <label>Condições (opcional)<input id="p-cond" maxlength="200" placeholder="Ex.: citar a ferramenta usada"></label>
+      <button class="main" type="submit">Salvar política</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Todas as políticas</h2>
+    <label>Filtrar
+      <select id="filtro">
+        <option value="">Todos os níveis</option>
+        <option value="proibido">Proibido</option>
+        <option value="restricao">Com restrição</option>
+        <option value="permitido">Permitido</option>
+      </select>
+    </label>
+    <div id="lista"></div>
+  </section>
+  <p class="rodape" id="modo"></p>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

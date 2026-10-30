@@ -1,0 +1,13 @@
+PLATAFORMA V3.0 - TESTES (SQLITE)
+
+Esta versão armazena os dados exclusivamente no SQLite:
+  data\Banco de Dados SQLite.db
+
+O servidor server.py cria as tabelas pelo modelo schema_Banco_de_Dados_SQLite.sql
+na primeira inicialização e lê/grava os dados no banco SQLite.
+
+Como iniciar: execute iniciar.bat e acesse http://localhost:3002.
+Requer Python 3. A biblioteca SQLite já faz parte do Python.
+
+O banco atual mantém os dados importados anteriormente. O arquivo JSON não é
+necessário para executar a plataforma.

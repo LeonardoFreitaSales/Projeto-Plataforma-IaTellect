@@ -1,4 +1,12 @@
 **/data/database.json
 **/data/database.json.tmp
+**/data/*.db
+**/data/*.db-*
+**/data/*.sqlite
+**/data/*.sqlite-*
+**/data/*.sqlite3
+**/data/*.sqlite3-*
 **/__pycache__/
 *.py[cod]
+.env
+.DS_Store
