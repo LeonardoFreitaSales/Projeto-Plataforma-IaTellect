@@ -1,12 +1,43 @@
-**/data/database.json
-**/data/database.json.tmp
-**/data/*.db
-**/data/*.db-*
-**/data/*.sqlite
-**/data/*.sqlite-*
-**/data/*.sqlite3
-**/data/*.sqlite3-*
-**/__pycache__/
+# Python: bytecode, caches e ambientes locais
+__pycache__/
 *.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+
+# Configuração e segredos locais
 .env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+**/senha_admin_inicial.txt
+**/secrets/
+**/secret/
+
+# Bancos SQLite locais e arquivos auxiliares
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite
+*.sqlite3
+# Exceção: modelo de banco confirmado vazio, usado como referência na v3.0
+!**/data/modelo_vazio_v3.db
+
+# Temporários e logs
+*.tmp
+*.log
+*.bak
+*.swp
+
+# Dependências geradas
+node_modules/
+
+# Arquivos do sistema operacional
 .DS_Store
+Thumbs.db
+desktop.ini
