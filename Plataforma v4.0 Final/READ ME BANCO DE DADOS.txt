@@ -1,0 +1,85 @@
+PLATAFORMA V4.0 FINAL (SQLITE)
+
+Esta versao armazena todos os dados exclusivamente no SQLite:
+  data\Banco de Dados SQLite.db
+
+O servidor (server.py) cria e atualiza as tabelas pelo modelo
+schema_Banco_de_Dados_SQLite.sql a cada inicializacao e le/grava tudo no banco.
+
+COMO INICIAR
+  1. Configure ADMIN_PASSWORD com uma senha propria de pelo menos 8 caracteres,
+     ou deixe-a vazia para gerar uma senha inicial aleatoria.
+  2. Execute python server.py
+  3. Acesse o endereco local mostrado pelo servidor.
+  Requer Python 3. A biblioteca SQLite ja faz parte do Python (nada a instalar).
+
+PRIMEIRO ACESSO
+  Na primeira execucao o servidor cria o administrador.
+  - Use a variavel ADMIN_PASSWORD (minimo 8 caracteres) antes da primeira execucao.
+    Se nao for definida, uma senha aleatoria e
+    gravada em data\senha_admin_inicial.txt (apague o arquivo depois de anotar a senha).
+  Esqueceu a senha do admin?  python server.py --reset-admin
+
+PERFIS
+  admin      Tudo: comunicados, cadastro de professores, dono de cada materia,
+             todas as turmas, historico.
+  professor  Altera so as materias de que e dono (outras: erro 403). Cria
+             turmas, aprova/recusa matriculas, ve o historico e faz anotacoes
+             privadas sobre alunos (so ele ve as proprias).
+  aluno      Cadastro com nome completo + turma + senha (minimo 8 caracteres).
+             Contas antigas sem senha ficam bloqueadas ate que o admin ou um
+             professor da turma defina uma senha ("Definir senha" na lista de alunos).
+             Ve apenas as materias das turmas com matricula APROVADA.
+
+LOGIN E CADASTRO COM SENHA
+  Todos entram com nome completo e senha. Contas antigas de aluno que ainda nao
+  receberam senha ficam bloqueadas ate que um professor da turma ou o
+  administrador use "Definir senha". O usuario pode trocar a propria senha em
+  "Alterar senha"; senha esquecida precisa ser redefinida por um responsavel.
+  Alunos novos escolhem turma e senha no cadastro e aguardam aprovacao do professor.
+  O retorno do cadastro e igual quando a solicitacao e registrada ou quando existe
+  conflito, para nao confirmar se um nome esta cadastrado. Depois da aprovacao, entre
+  pela tela de acesso. Se nao conseguir entrar, confira nome e turma ou fale com o
+  professor. Use senha com pelo menos 8 caracteres;
+  evite nomes, datas ou sequencias faceis de adivinhar. O sistema verifica o tamanho,
+  mas nao mede nem bloqueia senhas fracas.
+
+TABELAS
+  users, sessions            usuarios (senha com hash PBKDF2) e sessoes de login
+  disciplines, policies      materias (com dono) e politicas de uso de IA
+  announcements              comunicados
+  turmas, turma_disciplines  turmas e as materias de cada uma
+  matriculas                 pendente / aprovada / recusada
+  notas_privadas             anotacoes de cada professor sobre alunos
+  history                    trilha de auditoria (autor, perfil e o que mudou)
+
+BANCO EXISTENTE (V2)
+  Nao precisa converter nada: ao iniciar, o servidor mantem os dados ja
+  importados e acrescenta as tabelas e colunas novas. As materias antigas ficam
+  sem dono (so o admin altera) ate que o admin escolha o dono de cada uma em
+  "Usuarios e donos das materias". Registros antigos do historico aparecem como
+  "Nao registrado" no autor.
+  FACA UMA COPIA do arquivo .db antes de iniciar a V4 pela primeira vez.
+
+ARQUIVOS
+  index.html                         interface
+  server.py                          servidor (API + login + permissoes)
+  schema_Banco_de_Dados_SQLite.sql   modelo das tabelas
+  iniciar.bat                        inicia o servidor para testes locais
+    test_permissoes.py                 testes de permissao (python test_permissoes.py)
+  READ_ME_HOSPEDAGEM.txt             passos para publicar o site
+
+BACKUP
+  Copie o arquivo data\Banco de Dados SQLite.db com o servidor parado (ou copie
+  tambem os arquivos .db-wal e .db-shm se existirem).
+
+OBSERVACOES DE SEGURANCA
+  - Contas antigas sem senha e suas sessoes ficam bloqueadas. Os cadastros e
+    matriculas sao preservados. Um responsavel autorizado deve definir a senha.
+  - O banco e o server.py nao sao servidos pelo site; so index.html e a pasta
+    assets (se existir).
+ISOLAMENTO DESTA VERSÃO
+O servidor desta pasta usa somente: data\Banco de Dados SQLite.db.
+Ele ignora uma variável externa DATA_DIR e recusa atalhos para outro banco.
+O cookie de login desta versão também é exclusivo, para evitar conflito com outros sites locais.
+
