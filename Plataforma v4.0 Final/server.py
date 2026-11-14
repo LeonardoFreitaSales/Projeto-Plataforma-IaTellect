@@ -222,6 +222,11 @@ def session_cookie(token, max_age):
 # Banco de dados
 # ----------------------------------------------------------------------
 def connect():
+    if os.environ.get("TURSO_DATABASE_URL"):
+        from turso_db import Connection
+        return Connection(os.environ["TURSO_DATABASE_URL"], os.environ.get("TURSO_AUTH_TOKEN", ""))
+    if os.environ.get("VERCEL"):
+        raise RuntimeError("Banco remoto não configurado.")
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     if DATA_DIR.is_symlink() or (hasattr(DATA_DIR, "is_junction") and DATA_DIR.is_junction()):
         raise RuntimeError("A pasta data desta versão não pode ser um atalho para outro local.")
@@ -246,7 +251,8 @@ def init_database(create_admin=True):
     """Cria/atualiza as tabelas (inclusive bancos v2) e garante o admin inicial."""
     conn = connect()
     try:
-        conn.execute("PRAGMA journal_mode = WAL")
+        if not os.environ.get("TURSO_DATABASE_URL"):
+            conn.execute("PRAGMA journal_mode = WAL")
         conn.executescript(SCHEMA_FILE.read_text(encoding="utf-8"))
         # Migracao de bancos criados pela v2
         _add_column(conn, "disciplines", "ownerId", "TEXT REFERENCES users(id) ON DELETE SET NULL")
@@ -261,7 +267,8 @@ def init_database(create_admin=True):
         conn.execute("DELETE FROM sessions WHERE userId IN (SELECT id FROM users WHERE passwordHash IS NULL OR passwordHash = '')")
         conn.execute("DELETE FROM sessions WHERE expiresAt < ?", (now_iso(),))
         conn.commit()
-        conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        if not os.environ.get("TURSO_DATABASE_URL"):
+            conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     finally:
         conn.close()
 
@@ -273,6 +280,8 @@ def ensure_admin(conn):
     password = os.environ.get("ADMIN_PASSWORD") or ""
     generated = False
     if not password:
+        if os.environ.get("TURSO_DATABASE_URL") or os.environ.get("VERCEL"):
+            raise RuntimeError("Defina ADMIN_PASSWORD para criar o administrador inicial.")
         password, generated = secrets.token_urlsafe(9), True
     if len(password) < 8:
         raise ValueError("ADMIN_PASSWORD deve ter pelo menos 8 caracteres.")
