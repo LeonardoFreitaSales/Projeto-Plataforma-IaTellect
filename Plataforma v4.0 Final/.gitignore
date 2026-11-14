@@ -1,0 +1,56 @@
+# Python: bytecode, caches e ambientes locais
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+
+# Configuração e segredos locais
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+**/senha_admin_inicial.txt
+**/secrets/
+**/secret/
+
+# Bancos SQLite locais e arquivos auxiliares
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Temporários e logs
+*.tmp
+*.log
+*.bak
+*.swp
+
+# Dependências geradas
+node_modules/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dados locais e pacotes exportados que incluem bancos importados
+**/data/database.json
+**/data/database_origem.json
+/Pacote_Banco_de_Dados_SQLite.zip
+/Plataforma v3.0 - Testes.zip
+/Documentacao_Projeto_Plataforma.pdf
+
+# Cópias locais antigas; a versão de referência está em Desenvolvimento da Plataforma/
+/Banco de Dados SQLite/
+/Plataforma v3.0 - Testes/
+
+# Saídas temporárias desta cópia local
+/tmp/
+/output/
