@@ -622,6 +622,12 @@
     .announcement + .announcement { margin-top: 12px; }
     .announce-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 13px; background: var(--brand-soft); }
     .announcement p { margin: 5px 0 0; color: var(--muted); }
+    .announcement.high { border-left: 4px solid var(--danger); }
+    .announcement.normal { border-left: 4px solid var(--brand); }
+    .announcement-meta { display: flex; flex-wrap: wrap; gap: 7px 12px; margin-top: 10px; color: var(--muted); font-size: .78rem; }
+    .announcement-side { display: grid; justify-items: end; gap: 10px; min-width: 145px; }
+    .announcement-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+    .communication-summary { margin-bottom: 18px; }
     .timeline { position: relative; display: grid; gap: 0; }
     .timeline::before { content: ""; position: absolute; left: 19px; top: 15px; bottom: 15px; width: 2px; background: #dfe7f1; }
     .timeline-item { position: relative; display: grid; grid-template-columns: 40px 1fr; gap: 13px; padding: 8px 0 18px; }
@@ -837,7 +843,8 @@
       .page-actions, .page-actions .btn { width: 100%; }
       .bar-row { grid-template-columns: 105px 1fr 34px; }
       .announcement { grid-template-columns: 40px 1fr; }
-      .announcement .time { grid-column: 2; }
+      .announcement-side { grid-column: 2; justify-items: start; min-width: 0; }
+      .announcement-actions { justify-content: flex-start; }
       .state-toolbar { display: none; }
       .assistant-toggle span:last-child { display: none; }
       .assistant-toggle { width: 56px; padding: 8px; }
@@ -1100,6 +1107,8 @@
         disciplineLayout: "cards",
         enrollmentFilter: "all",
         selectedEnrollments: [],
+        announcementFilter: "active",
+        announcementSearch: "",
         responsibleChecks: [false, false, false, false],
         reflectionPurpose: "",
         reflectionReview: "",
@@ -1141,9 +1150,10 @@
       ];
 
       var announcements = [
-        { title: "Semana de avaliações", body: "Confira as políticas específicas de cada disciplina antes de iniciar as atividades avaliativas.", author: "Secretaria acadêmica", date: "18 nov. 2026", active: true },
-        { title: "Oficina: uso responsável de IA", body: "Inscrições abertas para a oficina de sexta-feira, às 14h, no laboratório 3.", author: "Coordenação", date: "16 nov. 2026", active: true },
-        { title: "Atualização de políticas", body: "As regras de Programação Web foram revisadas. Consulte os detalhes antes da próxima entrega.", author: "Profa. Lívia Rocha", date: "13 nov. 2026", active: false }
+        { id: "a1", title: "Semana de avaliações", body: "Confira as políticas específicas de cada disciplina antes de iniciar as atividades avaliativas.", author: "Secretaria acadêmica", date: "18 nov. 2026", audience: "Todos", priority: "high", active: true },
+        { id: "a2", title: "Oficina: uso responsável de IA", body: "Inscrições abertas para a oficina de sexta-feira, às 14h, no laboratório 3.", author: "Coordenação", date: "16 nov. 2026", audience: "Alunos", priority: "normal", active: true },
+        { id: "a3", title: "Atualização de políticas", body: "As regras de Programação Web foram revisadas. Consulte os detalhes antes da próxima entrega.", author: "Profa. Lívia Rocha", date: "13 nov. 2026", audience: "Todos", priority: "normal", active: false },
+        { id: "a4", title: "Revisão semestral das orientações", body: "Docentes responsáveis devem revisar fontes, condições e validade das políticas até 27 de novembro.", author: "Coordenação", date: "12 nov. 2026", audience: "Professores", priority: "high", active: true }
       ];
 
       var historyItems = [
@@ -1564,12 +1574,76 @@
         });
       }
 
+      function announcementScope() {
+        if (app.role === "aluno") return announcements.filter(function (item) { return item.audience === "Todos" || item.audience === "Alunos"; });
+        if (app.role === "professor") return announcements.filter(function (item) { return item.audience === "Todos" || item.audience === "Professores"; });
+        return announcements;
+      }
+
       function announcementsView() {
-        return pageHead("Comunicação", "Comunicados", "Publique avisos importantes e acompanhe o que está visível para a comunidade.", button("Novo comunicado", "new-announcement", "primary")) +
-          '<section aria-label="Lista de comunicados">' +
-          announcements.map(function (item) {
-            return '<article class="card announcement"><span class="announce-icon" aria-hidden="true">◉</span><div><div class="section-head" style="margin:0"><h2>' + esc(item.title) + '</h2><span class="tag ' + (item.active ? "approved" : "refused") + '">' + (item.active ? "Ativo" : "Arquivado") + '</span></div><p>' + esc(item.body) + '</p><small>' + esc(item.author) + '</small></div><span class="time">' + esc(item.date) + '</span></article>';
-          }).join("") + '</section>';
+        var scoped = announcementScope();
+        var query = normalize(app.announcementSearch);
+        var filtered = scoped.filter(function (item) {
+          var matchesStatus = app.announcementFilter === "all" || (app.announcementFilter === "active" ? item.active : !item.active);
+          var searchable = normalize(item.title + " " + item.body + " " + item.author + " " + item.audience);
+          return matchesStatus && searchable.indexOf(query) >= 0;
+        });
+        var activeCount = scoped.filter(function (item) { return item.active; }).length;
+        var archivedCount = scoped.length - activeCount;
+        var urgentCount = scoped.filter(function (item) { return item.active && item.priority === "high"; }).length;
+        var actions = app.role === "admin" ? button("Novo comunicado", "new-announcement", "primary") : "";
+        var cards = filtered.map(function (item) {
+          var manage = app.role === "admin" ? '<button class="btn small" type="button" data-announcement-toggle="' + esc(item.id) + '">' + (item.active ? "Arquivar" : "Reativar") + '</button>' : "";
+          return '<article class="card announcement ' + esc(item.priority) + '"><span class="announce-icon" aria-hidden="true">' + svgIcon("bell") + '</span><div><div class="section-head" style="margin:0"><h2>' + esc(item.title) + '</h2><div class="row-actions"><span class="tag ' + (item.active ? "approved" : "refused") + '">' + (item.active ? "Ativo" : "Arquivado") + '</span>' + (item.priority === "high" ? '<span class="tag prohibited">Prioritário</span>' : "") + '</div></div><p>' + esc(item.body) + '</p><div class="announcement-meta"><span>' + esc(item.author) + '</span><span>Público: ' + esc(item.audience) + '</span></div></div><div class="announcement-side"><span class="time">' + esc(item.date) + '</span><div class="announcement-actions"><button class="btn small" type="button" data-announcement-details="' + esc(item.id) + '">Ver detalhes</button>' + manage + '</div></div></article>';
+        }).join("");
+        if (!cards) cards = '<div class="empty-state card"><strong>Nenhum comunicado encontrado</strong><p>Ajuste a busca ou o filtro de situação para consultar outros avisos.</p><button class="btn" type="button" data-action="clear-announcement-filters">Limpar filtros</button></div>';
+        return pageHead("Comunicação", "Comunicados", app.role === "admin" ? "Publique avisos segmentados e acompanhe o que está visível para a comunidade." : "Consulte os avisos destinados ao seu perfil e mantenha-se atualizado.", actions) +
+          '<section class="quality-kpis communication-summary" aria-label="Resumo dos comunicados"><div class="quality-kpi"><strong>' + activeCount + '</strong><span>Ativos no seu escopo</span></div><div class="quality-kpi"><strong>' + urgentCount + '</strong><span>Prioritários</span></div><div class="quality-kpi"><strong>' + archivedCount + '</strong><span>Arquivados</span></div></section>' +
+          '<div class="toolbar"><div class="field search-field"><label for="announcement-search">Buscar comunicado</label><input id="announcement-search" type="search" value="' + esc(app.announcementSearch) + '" placeholder="Título, mensagem ou autor"></div><div class="field"><label for="announcement-status">Situação</label><select id="announcement-status"><option value="active">Ativos</option><option value="archived">Arquivados</option><option value="all">Todos</option></select></div></div>' +
+          '<div class="results-summary"><span><strong>' + filtered.length + '</strong> de ' + scoped.length + ' comunicado(s) visível(is) para ' + esc(roleName()) + '</span></div>' +
+          '<section aria-label="Lista de comunicados">' + cards + '</section>';
+      }
+
+      function openAnnouncementDetails(id) {
+        var item = announcementScope().find(function (announcement) { return announcement.id === id; });
+        if (!item) { toast("Comunicado não disponível para este perfil."); return; }
+        var manage = app.role === "admin" ? '<button class="btn" type="button" data-detail-toggle>' + (item.active ? "Arquivar" : "Reativar") + '</button>' : "";
+        openSimpleModal(item.title, '<div class="policy-preview"><div class="policy-preview-head"><div><span class="tag ' + (item.priority === "high" ? "prohibited" : "approved") + '">' + (item.priority === "high" ? "Prioritário" : "Informativo") + '</span><p>' + esc(item.author) + ' · ' + esc(item.date) + '</p></div><span class="tag ' + (item.active ? "approved" : "refused") + '">' + (item.active ? "Ativo" : "Arquivado") + '</span></div><p>' + esc(item.body) + '</p><dl><dt>Público</dt><dd>' + esc(item.audience) + '</dd><dt>Prioridade</dt><dd>' + (item.priority === "high" ? "Alta" : "Normal") + '</dd><dt>Situação</dt><dd>' + (item.active ? "Publicado" : "Arquivado") + '</dd></dl></div><div class="modal-actions">' + manage + '<button class="btn primary" type="button" data-modal-cancel>Fechar</button></div>');
+        var toggle = modalBody.querySelector("[data-detail-toggle]");
+        if (toggle) toggle.addEventListener("click", function () { closeModal(); toggleAnnouncement(id); });
+      }
+
+      function openAnnouncementForm() {
+        if (app.role !== "admin") { toast("Somente administradores podem publicar comunicados."); return; }
+        openSimpleModal("Novo comunicado", '<div class="field"><label for="announce-title">Título</label><input id="announce-title" maxlength="80" placeholder="Ex.: alteração de prazo"></div><div class="field"><label for="announce-body">Mensagem</label><textarea id="announce-body" maxlength="500" placeholder="Escreva uma orientação objetiva para o público selecionado."></textarea></div><div class="form-grid"><div class="field"><label for="announce-audience">Público</label><select id="announce-audience"><option>Todos</option><option>Alunos</option><option>Professores</option></select></div><div class="field"><label for="announce-priority">Prioridade</label><select id="announce-priority"><option value="normal">Normal</option><option value="high">Alta</option></select></div></div><div id="announcement-message" aria-live="polite"></div><div class="modal-actions"><button class="btn" type="button" data-modal-cancel>Cancelar</button><button class="btn primary" type="button" data-announcement-save>Publicar</button></div>');
+        modalBody.querySelector("[data-announcement-save]").addEventListener("click", function () {
+          var title = document.getElementById("announce-title").value.trim();
+          var body = document.getElementById("announce-body").value.trim();
+          var message = document.getElementById("announcement-message");
+          if (title.length < 5 || body.length < 15) {
+            message.innerHTML = '<div class="auth-message" role="alert">Informe um título com pelo menos cinco caracteres e uma mensagem com pelo menos quinze.</div>';
+            return;
+          }
+          var audience = document.getElementById("announce-audience").value;
+          var priority = document.getElementById("announce-priority").value;
+          announcements.unshift({ id: "a" + Date.now(), title: title, body: body, author: "Ana Martins", date: "18 nov. 2026", audience: audience, priority: priority, active: true });
+          historyItems.unshift({ action: "Comunicado publicado", detail: title + " · " + audience, author: "Ana Martins", role: "Administrador", date: "18 nov., agora" });
+          app.announcementFilter = "active";
+          app.announcementSearch = "";
+          closeModal();
+          render();
+          toast("Comunicado publicado na demonstração.");
+        });
+      }
+
+      function toggleAnnouncement(id) {
+        if (app.role !== "admin") { toast("Somente administradores podem alterar comunicados."); return; }
+        var item = announcements.find(function (announcement) { return announcement.id === id; });
+        if (!item) return;
+        item.active = !item.active;
+        historyItems.unshift({ action: item.active ? "Comunicado reativado" : "Comunicado arquivado", detail: item.title, author: "Ana Martins", role: "Administrador", date: "18 nov., agora" });
+        render();
+        toast(item.active ? "Comunicado reativado." : "Comunicado arquivado.");
       }
 
       function usersView() {
@@ -1734,6 +1808,21 @@
         if (search) {
           search.addEventListener("input", function () { app.search = search.value; render(); var next = document.getElementById("policy-search"); if (next) { next.focus(); next.setSelectionRange(next.value.length, next.value.length); } });
         }
+        var announcementStatus = document.getElementById("announcement-status");
+        if (announcementStatus) {
+          announcementStatus.value = app.announcementFilter;
+          announcementStatus.addEventListener("change", function () { app.announcementFilter = announcementStatus.value; render(); });
+        }
+        var announcementSearch = document.getElementById("announcement-search");
+        if (announcementSearch) {
+          announcementSearch.addEventListener("input", function () { app.announcementSearch = announcementSearch.value; render(); var next = document.getElementById("announcement-search"); if (next) { next.focus(); next.setSelectionRange(next.value.length, next.value.length); } });
+        }
+        root.querySelectorAll("[data-announcement-details]").forEach(function (node) {
+          node.addEventListener("click", function () { openAnnouncementDetails(node.getAttribute("data-announcement-details")); });
+        });
+        root.querySelectorAll("[data-announcement-toggle]").forEach(function (node) {
+          node.addEventListener("click", function () { toggleAnnouncement(node.getAttribute("data-announcement-toggle")); });
+        });
         root.querySelectorAll("[data-layout]").forEach(function (node) {
           node.addEventListener("click", function () {
             app.disciplineLayout = node.getAttribute("data-layout");
@@ -1851,7 +1940,8 @@
         else if (action === "clear-filters") { app.search = ""; app.statusFilter = "all"; render(); }
         else if (action === "open-reports") navigate("reports");
         else if (action === "consult-ai") { navigate("disciplines"); openAssistant("Quero consultar uma regra de uso de IA."); }
-        else if (action === "new-announcement") openSimpleModal("Novo comunicado", '<div class="field"><label for="announce-title">Título</label><input id="announce-title" placeholder="Ex.: alteração de prazo"></div><div class="field"><label for="announce-body">Mensagem</label><textarea id="announce-body"></textarea></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Comunicado publicado.">Publicar</button></div>');
+        else if (action === "new-announcement") openAnnouncementForm();
+        else if (action === "clear-announcement-filters") { app.announcementFilter = "active"; app.announcementSearch = ""; render(); }
         else if (action === "new-discipline") openSimpleModal("Nova disciplina", '<div class="field"><label for="discipline-name">Nome</label><input id="discipline-name" placeholder="Ex.: Banco de Dados"></div><div class="form-grid"><div class="field"><label for="discipline-code">Código</label><input id="discipline-code" placeholder="BD-210"></div><div class="field"><label for="discipline-teacher">Responsável</label><input id="discipline-teacher" placeholder="Nome do docente"></div></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Disciplina preparada no protótipo.">Salvar</button></div>');
         else if (action === "new-class") openSimpleModal("Nova turma", '<div class="field"><label for="class-name">Nome da turma</label><input id="class-name" placeholder="Ex.: ADS 2º A"></div><div class="field"><label for="class-term">Período</label><input id="class-term" value="2027.1"></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Turma preparada no protótipo.">Salvar</button></div>');
         else if (action === "new-user") openSimpleModal("Adicionar professor", '<div class="field"><label for="user-name">Nome completo</label><input id="user-name"></div><div class="field"><label for="user-email">E-mail institucional</label><input id="user-email" type="email"></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Convite preparado para envio.">Preparar convite</button></div>');
@@ -2134,7 +2224,7 @@
             action = function () { app.enrollmentFilter = "pending"; navigate("classes"); };
           }
         } else if (/comunicado|aviso|publicar mensagem/.test(text)) {
-          var activeAnnouncements = announcements.filter(function (item) { return item.active; }).length;
+          var activeAnnouncements = announcementScope().filter(function (item) { return item.active; }).length;
           response = "Há " + activeAnnouncements + " comunicados ativos. Abri a área para você consultar os avisos disponíveis.";
           source = "Comunicados cadastrados na demonstração";
           actionLabel = "Comunicados abertos";
