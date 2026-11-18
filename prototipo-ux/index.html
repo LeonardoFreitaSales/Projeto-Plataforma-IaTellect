@@ -563,6 +563,60 @@
     .person-avatar { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #e9eef6; font-weight: 850; }
     .person strong { display: block; }
     .person small { color: var(--muted); }
+    .enrollment-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+      padding-bottom: 3px;
+    }
+    .enrollment-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 40px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: white;
+      color: var(--muted);
+      font-weight: 760;
+      white-space: nowrap;
+    }
+    .enrollment-tab.active { border-color: #9fcbd3; background: var(--brand-soft); color: var(--brand-strong); }
+    .enrollment-tab .tag { padding: 1px 7px; }
+    .selection-checkbox { width: 19px; min-height: 19px; accent-color: var(--brand); }
+    .bulk-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 11px 13px;
+      border: 1px solid #b9dce2;
+      border-radius: 11px;
+      background: #eff9fa;
+    }
+    .bulk-bar strong { color: var(--brand-strong); }
+    .bulk-actions { display: flex; gap: 8px; }
+    .mobile-records { display: none; gap: 11px; }
+    .enrollment-card { padding: 16px; }
+    .enrollment-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .enrollment-card dl { display: grid; grid-template-columns: 85px 1fr; gap: 6px 10px; margin: 15px 0; font-size: .82rem; }
+    .enrollment-card dt { color: var(--muted); }
+    .enrollment-card dd { margin: 0; }
+    .enrollment-card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .decision-summary {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 13px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--surface-subtle);
+    }
+    .decision-summary .person-avatar { width: 42px; height: 42px; }
+    .decision-summary p { margin: 3px 0 0; color: var(--muted); font-size: .84rem; }
 
     .announcement { display: grid; grid-template-columns: 45px 1fr auto; gap: 15px; align-items: start; padding: 19px; }
     .announcement + .announcement { margin-top: 12px; }
@@ -774,6 +828,10 @@
       .policy-preview dd { margin-bottom: 9px; }
       .wizard-actions { align-items: stretch; flex-direction: column; }
       .wizard-actions-group, .wizard-actions-group .btn, .draft-button { width: 100%; }
+      .enrollment-table { display: none; }
+      .mobile-records { display: grid; }
+      .bulk-bar { align-items: stretch; flex-direction: column; }
+      .bulk-actions, .bulk-actions .btn { width: 100%; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -1011,6 +1069,7 @@
         statusFilter: "all",
         disciplineLayout: "cards",
         enrollmentFilter: "all",
+        selectedEnrollments: [],
         lastFocus: null
       };
       var demoMode = new URLSearchParams(window.location.search).get("demo") === "1";
@@ -1359,21 +1418,77 @@
       }
 
       function classesView() {
+        var counts = {
+          all: enrollments.length,
+          pending: enrollments.filter(function (item) { return item.status === "pending"; }).length,
+          approved: enrollments.filter(function (item) { return item.status === "approved"; }).length,
+          refused: enrollments.filter(function (item) { return item.status === "refused"; }).length
+        };
         var rows = enrollments.filter(function (item) { return app.enrollmentFilter === "all" || item.status === app.enrollmentFilter; });
+        var pendingVisible = rows.filter(function (item) { return item.status === "pending"; });
+        var tabs = [
+          { value: "all", label: "Todas" },
+          { value: "pending", label: "Pendentes" },
+          { value: "approved", label: "Aprovadas" },
+          { value: "refused", label: "Recusadas" }
+        ].map(function (tab) {
+          return '<button class="enrollment-tab ' + (app.enrollmentFilter === tab.value ? "active" : "") + '" type="button" data-enrollment-tab="' + tab.value + '" aria-pressed="' + (app.enrollmentFilter === tab.value) + '">' + tab.label + '<span class="tag">' + counts[tab.value] + '</span></button>';
+        }).join("");
+        var bulkBar = app.selectedEnrollments.length ? '<div class="bulk-bar"><strong>' + app.selectedEnrollments.length + ' solicitação(ões) selecionada(s)</strong><div class="bulk-actions"><button class="btn small primary" type="button" data-bulk-action="approve">Aprovar selecionadas</button><button class="btn small danger" type="button" data-bulk-action="refuse">Recusar selecionadas</button><button class="btn small" type="button" data-bulk-action="clear">Limpar seleção</button></div></div>' : "";
+        var empty = '<section class="demo-state"><div class="state-box"><span class="state-illustration" aria-hidden="true">◇</span><h2>Nenhuma solicitação nesta situação</h2><p>Use outra aba para consultar as demais matrículas.</p></div></section>';
+        var table = rows.length ? '<div class="table-wrap enrollment-table"><table><thead><tr><th><input class="selection-checkbox" id="select-visible-enrollments" type="checkbox" aria-label="Selecionar solicitações pendentes visíveis"' + (pendingVisible.length && pendingVisible.every(function (item) { return app.selectedEnrollments.indexOf(item.id) >= 0; }) ? " checked" : "") + (pendingVisible.length ? "" : " disabled") + '></th><th>Estudante</th><th>Turma</th><th>Solicitada em</th><th>Status</th><th>Ações</th></tr></thead><tbody>' +
+          rows.map(function (item) {
+            var selectable = item.status === "pending";
+            var checked = app.selectedEnrollments.indexOf(item.id) >= 0;
+            var actions = item.status === "pending" ? '<button class="btn small primary" type="button" data-enrollment-action="approve" data-id="' + item.id + '">Aprovar</button><button class="btn small danger" type="button" data-enrollment-action="refuse" data-id="' + item.id + '">Recusar</button>' : "";
+            actions += '<button class="btn small" type="button" data-enrollment-action="details" data-id="' + item.id + '">Detalhes</button>';
+            return '<tr><td><input class="selection-checkbox" type="checkbox" data-select-enrollment="' + item.id + '" aria-label="Selecionar matrícula de ' + esc(item.name) + '"' + (checked ? " checked" : "") + (selectable ? "" : " disabled") + '></td><td><div class="person"><span class="person-avatar">' + esc(initials(item.name)) + '</span><span><strong>' + esc(item.name) + '</strong><small>' + esc(item.email) + '</small></span></div></td><td>' + esc(item.className) + '</td><td>' + esc(item.date) + '</td><td><span class="tag ' + item.status + '">' + esc(statusLabel(item.status)) + '</span></td><td><div class="row-actions">' + actions + '</div></td></tr>';
+          }).join("") + '</tbody></table></div>' : empty;
+        var cards = rows.length ? '<div class="mobile-records">' + rows.map(function (item) {
+          var checked = app.selectedEnrollments.indexOf(item.id) >= 0;
+          var actions = item.status === "pending" ? '<button class="btn small primary" type="button" data-enrollment-action="approve" data-id="' + item.id + '">Aprovar</button><button class="btn small danger" type="button" data-enrollment-action="refuse" data-id="' + item.id + '">Recusar</button>' : "";
+          actions += '<button class="btn small" type="button" data-enrollment-action="details" data-id="' + item.id + '">Detalhes</button>';
+          return '<article class="card enrollment-card"><div class="enrollment-card-head"><div class="person"><span class="person-avatar">' + esc(initials(item.name)) + '</span><span><strong>' + esc(item.name) + '</strong><small>' + esc(item.email) + '</small></span></div><span class="tag ' + item.status + '">' + esc(statusLabel(item.status)) + '</span></div><dl><dt>Turma</dt><dd>' + esc(item.className) + '</dd><dt>Solicitada</dt><dd>' + esc(item.date) + '</dd></dl>' + (item.status === "pending" ? '<label class="check-option"><input class="selection-checkbox" type="checkbox" data-select-enrollment="' + item.id + '"' + (checked ? " checked" : "") + '><span>Selecionar para ação em lote</span></label>' : "") + '<div class="enrollment-card-actions">' + actions + '</div></article>';
+        }).join("") + '</div>' : "";
         return pageHead("Gestão acadêmica", "Turmas e matrículas", "Analise solicitações e acompanhe os vínculos dos estudantes com segurança.", button("Nova turma", "new-class", "primary")) +
           '<section class="grid three-col" style="margin-bottom:18px">' +
             '<article class="card card-pad"><span class="stat-label">ADS 4º A</span><strong class="stat-value">32</strong><span class="stat-note">4 disciplinas vinculadas</span></article>' +
             '<article class="card card-pad"><span class="stat-label">SI 6º B</span><strong class="stat-value">28</strong><span class="stat-note">5 disciplinas vinculadas</span></article>' +
-            '<article class="card card-pad"><span class="stat-label">Pendências</span><strong class="stat-value">' + enrollments.filter(function (e) { return e.status === "pending"; }).length + '</strong><span class="stat-note">Aguardando análise</span></article>' +
+            '<article class="card card-pad"><span class="stat-label">Pendências</span><strong class="stat-value">' + counts.pending + '</strong><span class="stat-note">Aguardando análise</span></article>' +
           '</section>' +
-          '<div class="toolbar"><div class="field"><label for="enrollment-status">Filtrar solicitações</label><select id="enrollment-status"><option value="all">Todas</option><option value="pending">Pendentes</option><option value="approved">Aprovadas</option><option value="refused">Recusadas</option></select></div></div>' +
-          '<div class="table-wrap"><table><thead><tr><th>Estudante</th><th>Turma</th><th>Solicitada em</th><th>Status</th><th>Ações</th></tr></thead><tbody>' +
-            rows.map(function (item) {
-              return '<tr><td><div class="person"><span class="person-avatar">' + esc(initials(item.name)) + '</span><span><strong>' + esc(item.name) + '</strong><small>' + esc(item.email) + '</small></span></div></td><td>' + esc(item.className) + '</td><td>' + esc(item.date) + '</td><td><span class="tag ' + item.status + '">' + esc(statusLabel(item.status)) + '</span></td><td><div class="row-actions">' +
-                (item.status === "pending" ? '<button class="btn small primary" data-enrollment="approve" data-id="' + item.id + '">Aprovar</button><button class="btn small danger" data-enrollment="refuse" data-id="' + item.id + '">Recusar</button>' : '<button class="btn small" data-action="view-enrollment">Detalhes</button>') +
-              '</div></td></tr>';
-            }).join("") +
-          '</tbody></table></div>';
+          '<div class="enrollment-tabs" aria-label="Filtrar matrículas por situação">' + tabs + '</div>' +
+          bulkBar + table + cards;
+      }
+
+      function openEnrollmentDetails(id) {
+        var item = enrollments.find(function (entry) { return entry.id === id; });
+        if (!item) return;
+        var actions = item.status === "pending" ? '<button class="btn primary" type="button" data-detail-enrollment="approve">Aprovar</button><button class="btn danger" type="button" data-detail-enrollment="refuse">Recusar</button>' : "";
+        openSimpleModal("Detalhes da matrícula", '<div class="decision-summary"><span class="person-avatar">' + esc(initials(item.name)) + '</span><div><strong>' + esc(item.name) + '</strong><p>' + esc(item.email) + '</p></div></div><dl class="policy-preview" style="display:grid;grid-template-columns:120px 1fr;gap:9px 14px;margin-top:16px"><dt>Turma</dt><dd>' + esc(item.className) + '</dd><dt>Solicitada em</dt><dd>' + esc(item.date) + '</dd><dt>Situação</dt><dd><span class="tag ' + item.status + '">' + esc(statusLabel(item.status)) + '</span></dd><dt>Justificativa</dt><dd>' + esc(item.reason || "Nenhuma justificativa registrada.") + '</dd></dl><div class="modal-actions">' + actions + '<button class="btn" type="button" data-modal-cancel>Fechar</button></div>');
+        modalBody.querySelectorAll("[data-detail-enrollment]").forEach(function (node) {
+          node.addEventListener("click", function () { closeModal(); openEnrollmentDecision([item.id], node.getAttribute("data-detail-enrollment")); });
+        });
+      }
+
+      function openEnrollmentDecision(ids, decision) {
+        var items = enrollments.filter(function (item) { return ids.indexOf(item.id) >= 0 && item.status === "pending"; });
+        if (!items.length) { toast("Nenhuma matrícula pendente foi selecionada."); return; }
+        var approving = decision === "approve";
+        var names = items.map(function (item) { return item.name; }).join(", ");
+        var reasonField = approving ? "" : '<div class="field" style="margin-top:16px"><label for="refusal-reason">Justificativa da recusa</label><textarea id="refusal-reason" placeholder="Explique de forma objetiva o motivo da decisão."></textarea></div>';
+        openSimpleModal(approving ? "Aprovar matrícula" : "Recusar matrícula", '<div class="decision-summary"><span class="person-avatar">' + items.length + '</span><div><strong>' + esc(names) + '</strong><p>' + items.length + ' solicitação(ões) serão ' + (approving ? "aprovadas" : "recusadas") + '.</p></div></div>' + reasonField + '<div id="decision-message"></div><div class="modal-actions"><button class="btn" type="button" data-modal-cancel>Cancelar</button><button class="btn ' + (approving ? "primary" : "danger") + '" type="button" data-confirm-decision>Confirmar ' + (approving ? "aprovação" : "recusa") + '</button></div>');
+        modalBody.querySelector("[data-confirm-decision]").addEventListener("click", function () {
+          var reason = approving ? "" : document.getElementById("refusal-reason").value.trim();
+          if (!approving && reason.length < 8) {
+            document.getElementById("decision-message").innerHTML = '<div class="auth-message" role="alert" style="margin-top:12px">Informe uma justificativa com pelo menos oito caracteres.</div>';
+            return;
+          }
+          items.forEach(function (item) { item.status = approving ? "approved" : "refused"; item.reason = reason; });
+          app.selectedEnrollments = app.selectedEnrollments.filter(function (id) { return ids.indexOf(id) < 0; });
+          closeModal();
+          render();
+          toast(items.length + ' matrícula(s) ' + (approving ? "aprovada(s)." : "recusada(s)."));
+        });
       }
 
       function announcementsView() {
@@ -1493,25 +1608,51 @@
             render();
           });
         });
-        var enrollmentStatus = document.getElementById("enrollment-status");
-        if (enrollmentStatus) {
-          enrollmentStatus.value = app.enrollmentFilter;
-          enrollmentStatus.addEventListener("change", function () { app.enrollmentFilter = enrollmentStatus.value; render(); });
-        }
+        root.querySelectorAll("[data-enrollment-tab]").forEach(function (node) {
+          node.addEventListener("click", function () {
+            app.enrollmentFilter = node.getAttribute("data-enrollment-tab");
+            app.selectedEnrollments = [];
+            render();
+          });
+        });
+        root.querySelectorAll("[data-select-enrollment]").forEach(function (node) {
+          node.addEventListener("change", function () {
+            var id = node.getAttribute("data-select-enrollment");
+            if (node.checked && app.selectedEnrollments.indexOf(id) < 0) app.selectedEnrollments.push(id);
+            if (!node.checked) app.selectedEnrollments = app.selectedEnrollments.filter(function (selectedId) { return selectedId !== id; });
+            render();
+          });
+        });
+        var selectVisible = document.getElementById("select-visible-enrollments");
+        if (selectVisible) selectVisible.addEventListener("change", function () {
+          var visiblePending = enrollments.filter(function (item) { return item.status === "pending" && (app.enrollmentFilter === "all" || app.enrollmentFilter === "pending"); }).map(function (item) { return item.id; });
+          if (selectVisible.checked) {
+            visiblePending.forEach(function (id) { if (app.selectedEnrollments.indexOf(id) < 0) app.selectedEnrollments.push(id); });
+          } else {
+            app.selectedEnrollments = app.selectedEnrollments.filter(function (id) { return visiblePending.indexOf(id) < 0; });
+          }
+          render();
+        });
+        root.querySelectorAll("[data-bulk-action]").forEach(function (node) {
+          node.addEventListener("click", function () {
+            var action = node.getAttribute("data-bulk-action");
+            if (action === "clear") { app.selectedEnrollments = []; render(); return; }
+            openEnrollmentDecision(app.selectedEnrollments.slice(), action);
+          });
+        });
+        root.querySelectorAll("[data-enrollment-action]").forEach(function (node) {
+          node.addEventListener("click", function () {
+            var action = node.getAttribute("data-enrollment-action");
+            var id = node.getAttribute("data-id");
+            if (action === "details") openEnrollmentDetails(id);
+            else openEnrollmentDecision([id], action);
+          });
+        });
         root.querySelectorAll("[data-view-jump]").forEach(function (node) {
           node.addEventListener("click", function () { navigate(node.getAttribute("data-view-jump")); });
         });
         root.querySelectorAll("[data-action]").forEach(function (node) {
           node.addEventListener("click", function () { handleAction(node.getAttribute("data-action")); });
-        });
-        root.querySelectorAll("[data-enrollment]").forEach(function (node) {
-          node.addEventListener("click", function () {
-            var item = enrollments.find(function (entry) { return entry.id === node.getAttribute("data-id"); });
-            if (!item) return;
-            item.status = node.getAttribute("data-enrollment") === "approve" ? "approved" : "refused";
-            render();
-            toast("Matrícula de " + item.name + " " + (item.status === "approved" ? "aprovada." : "recusada."));
-          });
         });
       }
 
