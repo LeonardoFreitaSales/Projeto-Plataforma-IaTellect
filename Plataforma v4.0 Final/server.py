@@ -259,7 +259,8 @@ def init_database(create_admin=True):
         for column in ("authorId", "authorName", "authorRole", "changes"):
             _add_column(conn, "history", column, "TEXT")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_disciplines_owner ON disciplines(ownerId)")
-        conn.execute("PRAGMA user_version = 3")
+        if not os.environ.get("TURSO_DATABASE_URL"):
+            conn.execute("PRAGMA user_version = 3")
         conn.commit()
         if create_admin:
             ensure_admin(conn)
