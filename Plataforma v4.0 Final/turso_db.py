@@ -104,7 +104,15 @@ class Connection:
 
     def executescript(self, script):
         self.begin()
-        self.pipeline([{'type': 'sequence', 'sql': script}])
+        requests = []
+        statement = ''
+        for char in script:
+            statement += char
+            if char == ';' and sqlite3.complete_statement(statement):
+                requests.append(self.statement(statement))
+                statement = ''
+        if requests:
+            self.pipeline(requests)
 
     def commit(self):
         if self.transaction:
