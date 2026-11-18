@@ -89,8 +89,6 @@ class Connection:
                 code = item['error'].get('code', 'UNKNOWN')
                 if code.startswith('SQLITE_CONSTRAINT'):
                     raise sqlite3.IntegrityError('Restricao de integridade do banco.')
-                if code == 'SQL_PARSE_ERROR':
-                    raise RuntimeError('SQL_PARSE_ERROR: ' + item['error'].get('message', '')[:250])
                 raise RuntimeError('Falha no banco remoto: ' + code)
             results.append(item['response'])
         return results
