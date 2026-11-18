@@ -630,10 +630,13 @@
     .communication-summary { margin-bottom: 18px; }
     .timeline { position: relative; display: grid; gap: 0; }
     .timeline::before { content: ""; position: absolute; left: 19px; top: 15px; bottom: 15px; width: 2px; background: #dfe7f1; }
-    .timeline-item { position: relative; display: grid; grid-template-columns: 40px 1fr; gap: 13px; padding: 8px 0 18px; }
+    .timeline-item { position: relative; display: grid; grid-template-columns: 40px 1fr auto; gap: 13px; align-items: start; padding: 8px 0 18px; }
     .timeline-dot { z-index: 1; width: 16px; height: 16px; margin: 4px 0 0 12px; border: 4px solid white; border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 2px #bcd4df; }
     .timeline-item p { margin-bottom: 3px; }
     .timeline-item small { color: var(--muted); }
+    .audit-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 7px; }
+    .audit-meta small { font-size: .76rem; }
+    .audit-scope-note { margin-bottom: 18px; }
 
     .checklist { display: grid; gap: 10px; }
     .check-row {
@@ -845,6 +848,8 @@
       .announcement { grid-template-columns: 40px 1fr; }
       .announcement-side { grid-column: 2; justify-items: start; min-width: 0; }
       .announcement-actions { justify-content: flex-start; }
+      .timeline-item { grid-template-columns: 34px 1fr; }
+      .timeline-item > .btn { grid-column: 2; justify-self: start; }
       .state-toolbar { display: none; }
       .assistant-toggle span:last-child { display: none; }
       .assistant-toggle { width: 56px; padding: 8px; }
@@ -1109,6 +1114,8 @@
         selectedEnrollments: [],
         announcementFilter: "active",
         announcementSearch: "",
+        historyCategory: "all",
+        historySearch: "",
         responsibleChecks: [false, false, false, false],
         reflectionPurpose: "",
         reflectionReview: "",
@@ -1157,11 +1164,11 @@
       ];
 
       var historyItems = [
-        { action: "Política atualizada", detail: "Projeto integrador · Programação Web", author: "Lívia Rocha", role: "Professor", date: "18 nov., 15:42" },
-        { action: "Matrícula aprovada", detail: "Caio Oliveira · SI 6º B", author: "Bruno Lima", role: "Professor", date: "18 nov., 14:18" },
-        { action: "Comunicado publicado", detail: "Semana de avaliações", author: "Ana Martins", role: "Administrador", date: "18 nov., 10:06" },
-        { action: "Disciplina vinculada", detail: "Ética e Sociedade · ADS 4º A", author: "Ana Martins", role: "Administrador", date: "17 nov., 16:30" },
-        { action: "Responsável alterado", detail: "Estatística Aplicada · Carla Souza", author: "Ana Martins", role: "Administrador", date: "17 nov., 11:21" }
+        { id: "h1", category: "policy", scope: "d2", action: "Política atualizada", detail: "Projeto integrador · Programação Web", author: "Lívia Rocha", role: "Professor", date: "18 nov., 15:42" },
+        { id: "h2", category: "enrollment", scope: "d1", action: "Matrícula aprovada", detail: "Caio Oliveira · SI 6º B", author: "Bruno Lima", role: "Professor", date: "18 nov., 14:18" },
+        { id: "h3", category: "communication", scope: "global", action: "Comunicado publicado", detail: "Semana de avaliações", author: "Ana Martins", role: "Administrador", date: "18 nov., 10:06" },
+        { id: "h4", category: "discipline", scope: "d3", action: "Disciplina vinculada", detail: "Ética e Sociedade · ADS 4º A", author: "Ana Martins", role: "Administrador", date: "17 nov., 16:30" },
+        { id: "h5", category: "access", scope: "d4", action: "Responsável alterado", detail: "Estatística Aplicada · Carla Souza", author: "Ana Martins", role: "Administrador", date: "17 nov., 11:21" }
       ];
 
       var users = [
@@ -1566,7 +1573,11 @@
             document.getElementById("decision-message").innerHTML = '<div class="auth-message" role="alert" style="margin-top:12px">Informe uma justificativa com pelo menos oito caracteres.</div>';
             return;
           }
-          items.forEach(function (item) { item.status = approving ? "approved" : "refused"; item.reason = reason; });
+          items.forEach(function (item) {
+            item.status = approving ? "approved" : "refused";
+            item.reason = reason;
+            recordHistory("enrollment", "d1", approving ? "Matrícula aprovada" : "Matrícula recusada", item.name + " · " + item.className, app.role === "admin" ? "Ana Martins" : "Bruno Lima", roleName());
+          });
           app.selectedEnrollments = app.selectedEnrollments.filter(function (id) { return ids.indexOf(id) < 0; });
           closeModal();
           render();
@@ -1627,7 +1638,7 @@
           var audience = document.getElementById("announce-audience").value;
           var priority = document.getElementById("announce-priority").value;
           announcements.unshift({ id: "a" + Date.now(), title: title, body: body, author: "Ana Martins", date: "18 nov. 2026", audience: audience, priority: priority, active: true });
-          historyItems.unshift({ action: "Comunicado publicado", detail: title + " · " + audience, author: "Ana Martins", role: "Administrador", date: "18 nov., agora" });
+          recordHistory("communication", "global", "Comunicado publicado", title + " · " + audience, "Ana Martins", "Administrador");
           app.announcementFilter = "active";
           app.announcementSearch = "";
           closeModal();
@@ -1641,7 +1652,7 @@
         var item = announcements.find(function (announcement) { return announcement.id === id; });
         if (!item) return;
         item.active = !item.active;
-        historyItems.unshift({ action: item.active ? "Comunicado reativado" : "Comunicado arquivado", detail: item.title, author: "Ana Martins", role: "Administrador", date: "18 nov., agora" });
+        recordHistory("communication", "global", item.active ? "Comunicado reativado" : "Comunicado arquivado", item.title, "Ana Martins", "Administrador");
         render();
         toast(item.active ? "Comunicado reativado." : "Comunicado arquivado.");
       }
@@ -1657,11 +1668,71 @@
           '</tbody></table></div>';
       }
 
+      function recordHistory(category, scope, action, detail, author, role) {
+        historyItems.unshift({ id: "h" + Date.now() + historyItems.length, category: category, scope: scope, action: action, detail: detail, author: author, role: role, date: "18 nov., agora" });
+      }
+
+      function historyCategoryLabel(category) {
+        return { policy: "Políticas", enrollment: "Matrículas", communication: "Comunicados", discipline: "Disciplinas", access: "Acessos" }[category] || "Operação";
+      }
+
+      function historyScope() {
+        if (app.role === "admin") return historyItems;
+        return historyItems.filter(function (item) { return item.scope === "d1" || item.scope === "d2" || item.author === "Bruno Lima"; });
+      }
+
+      function filteredHistoryItems() {
+        var query = normalize(app.historySearch);
+        return historyScope().filter(function (item) {
+          var matchesCategory = app.historyCategory === "all" || item.category === app.historyCategory;
+          var searchable = normalize(item.action + " " + item.detail + " " + item.author + " " + item.role);
+          return matchesCategory && searchable.indexOf(query) >= 0;
+        });
+      }
+
       function historyView() {
-        return pageHead("Auditoria", "Histórico de operações", "Veja quem alterou cada registro e mantenha rastreabilidade das decisões.", button("Exportar histórico", "export-history", "")) +
-          '<article class="card card-pad"><div class="timeline">' +
-            historyItems.map(function (item) { return '<div class="timeline-item"><span class="timeline-dot" aria-hidden="true"></span><div><p><strong>' + esc(item.action) + '</strong> · ' + esc(item.detail) + '</p><small>' + esc(item.author) + ' · ' + esc(item.role) + ' · ' + esc(item.date) + '</small></div></div>'; }).join("") +
-          '</div></article>';
+        var scoped = historyScope();
+        var filtered = filteredHistoryItems();
+        var actors = new Set(scoped.map(function (item) { return item.author; })).size;
+        var policyCount = scoped.filter(function (item) { return item.category === "policy"; }).length;
+        var timeline = filtered.map(function (item) {
+          return '<div class="timeline-item"><span class="timeline-dot" aria-hidden="true"></span><div><p><strong>' + esc(item.action) + '</strong> · ' + esc(item.detail) + '</p><div class="audit-meta"><span class="tag">' + esc(historyCategoryLabel(item.category)) + '</span><small>' + esc(item.author) + ' · ' + esc(item.role) + '</small><small>' + esc(item.date) + '</small></div></div><button class="btn small" type="button" data-history-details="' + esc(item.id) + '">Detalhes</button></div>';
+        }).join("");
+        if (!timeline) timeline = '<div class="empty-state"><strong>Nenhuma operação encontrada</strong><p>Ajuste a busca ou a categoria para consultar outros registros autorizados.</p><button class="btn" type="button" data-action="clear-history-filters">Limpar filtros</button></div>';
+        var scopeText = app.role === "admin" ? "Você está consultando o histórico institucional completo desta demonstração." : "O histórico foi limitado às disciplinas MET-201 e WEB-302 e às suas próprias operações.";
+        return pageHead("Auditoria", "Histórico de operações", "Veja quem alterou cada registro e mantenha rastreabilidade das decisões.", button("Exportar CSV", "export-history", "")) +
+          '<section class="quality-kpis communication-summary" aria-label="Resumo do histórico"><div class="quality-kpi"><strong>' + scoped.length + '</strong><span>Operações autorizadas</span></div><div class="quality-kpi"><strong>' + actors + '</strong><span>Pessoas identificadas</span></div><div class="quality-kpi"><strong>' + policyCount + '</strong><span>Alterações em políticas</span></div></section>' +
+          '<div class="governance-note audit-scope-note"><strong>Escopo aplicado · ' + esc(roleName()) + '</strong><p>' + esc(scopeText) + ' A versão real deve aplicar essa restrição no servidor, antes de consultar ou exportar os registros.</p></div>' +
+          '<div class="toolbar"><div class="field search-field"><label for="history-search">Buscar operação</label><input id="history-search" type="search" value="' + esc(app.historySearch) + '" placeholder="Ação, registro ou responsável"></div><div class="field"><label for="history-category">Categoria</label><select id="history-category"><option value="all">Todas</option><option value="policy">Políticas</option><option value="enrollment">Matrículas</option><option value="communication">Comunicados</option><option value="discipline">Disciplinas</option><option value="access">Acessos</option></select></div></div>' +
+          '<div class="results-summary"><span><strong>' + filtered.length + '</strong> de ' + scoped.length + ' operação(ões) no escopo atual</span></div>' +
+          '<article class="card card-pad"><div class="timeline">' + timeline + '</div></article>';
+      }
+
+      function openHistoryDetails(id) {
+        var item = historyScope().find(function (entry) { return entry.id === id; });
+        if (!item) { toast("Operação não disponível para este perfil."); return; }
+        var discipline = disciplines.find(function (entry) { return entry.id === item.scope; });
+        var scope = item.scope === "global" ? "Institucional" : discipline ? discipline.code + " · " + discipline.name : "Escopo autorizado";
+        openSimpleModal("Detalhes da operação", '<div class="policy-preview"><div class="policy-preview-head"><div><span class="tag">' + esc(historyCategoryLabel(item.category)) + '</span><h3 style="margin-top:10px">' + esc(item.action) + '</h3></div><span class="tag approved">Registrada</span></div><dl><dt>Registro</dt><dd>' + esc(item.detail) + '</dd><dt>Responsável</dt><dd>' + esc(item.author) + '</dd><dt>Perfil</dt><dd>' + esc(item.role) + '</dd><dt>Data e hora</dt><dd>' + esc(item.date) + '</dd><dt>Escopo</dt><dd>' + esc(scope) + '</dd><dt>Identificador</dt><dd>' + esc(item.id) + '</dd></dl></div><div class="governance-note"><strong>Protótipo demonstrativo</strong><p>Na versão real, o evento deve ser imutável, gerado no servidor e associado ao usuário autenticado.</p></div><div class="modal-actions"><button class="btn primary" type="button" data-modal-cancel>Fechar</button></div>');
+      }
+
+      function exportHistoryCsv() {
+        var items = filteredHistoryItems();
+        if (!items.length) { toast("Não há registros para exportar com os filtros atuais."); return; }
+        function csv(value) { return '"' + String(value == null ? "" : value).replace(/"/g, '""') + '"'; }
+        var rows = [["ID", "Categoria", "Ação", "Detalhe", "Responsável", "Perfil", "Data", "Escopo"]].concat(items.map(function (item) {
+          return [item.id, historyCategoryLabel(item.category), item.action, item.detail, item.author, item.role, item.date, item.scope];
+        }));
+        var content = "\ufeff" + rows.map(function (row) { return row.map(csv).join(";"); }).join("\r\n");
+        var url = URL.createObjectURL(new Blob([content], { type: "text/csv;charset=utf-8" }));
+        var link = document.createElement("a");
+        link.href = url;
+        link.download = "historico-iatelect.csv";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        toast(items.length + " registro(s) exportado(s) em CSV.");
       }
 
       function policyAudit() {
@@ -1823,6 +1894,18 @@
         root.querySelectorAll("[data-announcement-toggle]").forEach(function (node) {
           node.addEventListener("click", function () { toggleAnnouncement(node.getAttribute("data-announcement-toggle")); });
         });
+        var historyCategory = document.getElementById("history-category");
+        if (historyCategory) {
+          historyCategory.value = app.historyCategory;
+          historyCategory.addEventListener("change", function () { app.historyCategory = historyCategory.value; render(); });
+        }
+        var historySearch = document.getElementById("history-search");
+        if (historySearch) {
+          historySearch.addEventListener("input", function () { app.historySearch = historySearch.value; render(); var next = document.getElementById("history-search"); if (next) { next.focus(); next.setSelectionRange(next.value.length, next.value.length); } });
+        }
+        root.querySelectorAll("[data-history-details]").forEach(function (node) {
+          node.addEventListener("click", function () { openHistoryDetails(node.getAttribute("data-history-details")); });
+        });
         root.querySelectorAll("[data-layout]").forEach(function (node) {
           node.addEventListener("click", function () {
             app.disciplineLayout = node.getAttribute("data-layout");
@@ -1942,6 +2025,7 @@
         else if (action === "consult-ai") { navigate("disciplines"); openAssistant("Quero consultar uma regra de uso de IA."); }
         else if (action === "new-announcement") openAnnouncementForm();
         else if (action === "clear-announcement-filters") { app.announcementFilter = "active"; app.announcementSearch = ""; render(); }
+        else if (action === "clear-history-filters") { app.historyCategory = "all"; app.historySearch = ""; render(); }
         else if (action === "new-discipline") openSimpleModal("Nova disciplina", '<div class="field"><label for="discipline-name">Nome</label><input id="discipline-name" placeholder="Ex.: Banco de Dados"></div><div class="form-grid"><div class="field"><label for="discipline-code">Código</label><input id="discipline-code" placeholder="BD-210"></div><div class="field"><label for="discipline-teacher">Responsável</label><input id="discipline-teacher" placeholder="Nome do docente"></div></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Disciplina preparada no protótipo.">Salvar</button></div>');
         else if (action === "new-class") openSimpleModal("Nova turma", '<div class="field"><label for="class-name">Nome da turma</label><input id="class-name" placeholder="Ex.: ADS 2º A"></div><div class="field"><label for="class-term">Período</label><input id="class-term" value="2027.1"></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Turma preparada no protótipo.">Salvar</button></div>');
         else if (action === "new-user") openSimpleModal("Adicionar professor", '<div class="field"><label for="user-name">Nome completo</label><input id="user-name"></div><div class="field"><label for="user-email">E-mail institucional</label><input id="user-email" type="email"></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Convite preparado para envio.">Preparar convite</button></div>');
@@ -1950,7 +2034,7 @@
         else if (action === "save-reflection") saveResponsiblePlan();
         else if (action === "reset-reflection") { app.responsibleChecks = [false, false, false, false]; app.reflectionPurpose = ""; app.reflectionReview = ""; render(); toast("Reflexão reiniciada."); }
         else if (action === "review-plan") openReviewPlan();
-        else if (action === "export-history") toast("Exportação simulada. Na versão real, gere CSV no servidor.");
+        else if (action === "export-history") exportHistoryCsv();
         else toast("Ação demonstrada no protótipo.");
       }
 
@@ -2071,6 +2155,7 @@
           var discipline = disciplines.find(function (item) { return item.id === wizardData.disciplineId; });
           discipline.policies.push({ activity: wizardData.activity, type: wizardData.type, status: wizardData.status, conditions: wizardData.conditions, details: wizardData.details, source: wizardData.source });
           discipline.updated = "agora";
+          recordHistory("policy", discipline.id, "Política publicada", wizardData.activity + " · " + discipline.name, app.role === "admin" ? "Ana Martins" : "Bruno Lima", roleName());
           closeModal();
           render();
           toast("Política publicada na demonstração.");
@@ -2234,8 +2319,9 @@
             response = "O histórico operacional não está disponível para o perfil Aluno. As fontes e datas das políticas autorizadas aparecem nos detalhes das disciplinas.";
             source = "Regra de acesso do perfil Aluno";
           } else {
-            response = "Abri a trilha de auditoria. A alteração mais recente foi “" + historyItems[0].action + "”, registrada por " + historyItems[0].author + ".";
-            source = "Histórico de operações · " + historyItems[0].date;
+            var visibleHistory = historyScope();
+            response = "Abri a trilha de auditoria. A alteração mais recente no seu escopo foi “" + visibleHistory[0].action + "”, registrada por " + visibleHistory[0].author + ".";
+            source = "Histórico autorizado · " + visibleHistory[0].date;
             actionLabel = "Histórico aberto";
             action = function () { navigate("history"); };
           }
