@@ -346,6 +346,103 @@
     .section-head h2 { margin: 0; }
     .section-link { border: 0; background: transparent; color: var(--brand-strong); font-weight: 800; }
 
+    .dashboard-banner {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 18px;
+      overflow: hidden;
+      margin-bottom: 18px;
+      padding: 20px 22px;
+      border: 1px solid #cddfe5;
+      border-radius: var(--radius);
+      background: linear-gradient(110deg, #f7fcfd, #eef7f9);
+      box-shadow: var(--shadow-sm);
+    }
+    .dashboard-banner::after {
+      content: "";
+      position: absolute;
+      right: -55px;
+      top: -90px;
+      width: 190px;
+      height: 190px;
+      border: 24px solid rgba(8, 117, 138, .05);
+      border-radius: 50%;
+    }
+    .dashboard-banner.professor { border-color: #d6deeb; background: linear-gradient(110deg, #f8faff, #f0f4fa); }
+    .dashboard-banner.aluno { border-color: #d8e4d5; background: linear-gradient(110deg, #f9fcf8, #f0f7ee); }
+    .dashboard-banner-icon {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 13px;
+      background: white;
+      color: var(--brand-strong);
+      box-shadow: var(--shadow-sm);
+    }
+    .dashboard-banner-icon .icon { width: 25px; height: 25px; }
+    .dashboard-banner h2 { margin: 0 0 3px; font-size: 1.05rem; }
+    .dashboard-banner p { margin: 0; color: var(--muted); font-size: .88rem; }
+    .dashboard-banner .tag { position: relative; z-index: 1; }
+    .dashboard-section { margin-top: 18px; }
+    .dashboard-list { display: grid; gap: 0; }
+    .dashboard-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      min-height: 64px;
+      padding: 11px 2px;
+      border-bottom: 1px solid #e8edf3;
+    }
+    .dashboard-row:last-child { border-bottom: 0; }
+    .dashboard-row strong { display: block; font-size: .9rem; }
+    .dashboard-row small { color: var(--muted); }
+    .dashboard-row-main { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .dashboard-row-icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+    }
+    .dashboard-row-icon .icon { width: 18px; height: 18px; }
+    .scope-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface-subtle);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+    .scope-note .icon { width: 18px; height: 18px; color: var(--brand-strong); }
+    .progress-line { margin-top: 8px; }
+    .progress-line-track { height: 7px; overflow: hidden; border-radius: 999px; background: #e6edf2; }
+    .progress-line-fill { height: 100%; border-radius: inherit; background: var(--brand); }
+    .progress-line-meta { display: flex; justify-content: space-between; margin-top: 6px; color: var(--muted); font-size: .75rem; }
+    .attention-list { display: grid; gap: 10px; }
+    .attention-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 11px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: white;
+    }
+    .attention-item strong { display: block; font-size: .87rem; }
+    .attention-item small { color: var(--muted); }
+
     .policy-bars { display: grid; gap: 15px; }
     .bar-row { display: grid; grid-template-columns: minmax(110px, .8fr) 2fr 42px; gap: 12px; align-items: center; font-size: .86rem; }
     .bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: #e9eef5; }
@@ -567,6 +664,10 @@
       .assistant-toggle { width: 56px; padding: 8px; }
       .page-head { gap: 16px; margin-bottom: 20px; }
       h1 { font-size: 1.75rem; }
+      .dashboard-banner { grid-template-columns: auto 1fr; padding: 16px; }
+      .dashboard-banner > .tag { grid-column: 2; justify-self: start; }
+      .attention-item { grid-template-columns: auto 1fr; }
+      .attention-item > .btn, .attention-item > .tag:last-child { grid-column: 2; justify-self: start; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -963,6 +1064,22 @@
         return '<button class="btn ' + esc(variant || "") + '" type="button" data-action="' + esc(action) + '">' + esc(label) + '</button>';
       }
 
+      function svgIcon(name) {
+        return '<svg class="icon" aria-hidden="true"><use href="#icon-' + esc(name) + '"/></svg>';
+      }
+
+      function statCard(label, value, note, color) {
+        return '<article class="card stat" style="--stat-color:' + esc(color || "#c9e8ed") + '"><span class="stat-label">' + esc(label) + '</span><strong class="stat-value">' + esc(value) + '</strong><span class="stat-note">' + esc(note) + '</span></article>';
+      }
+
+      function dashboardBanner(kind, iconName, title, description, tagText, tagClass) {
+        return '<section class="dashboard-banner ' + esc(kind || "") + '"><span class="dashboard-banner-icon">' + svgIcon(iconName) + '</span><div><h2>' + esc(title) + '</h2><p>' + esc(description) + '</p></div><span class="tag ' + esc(tagClass || "") + '">' + esc(tagText) + '</span></section>';
+      }
+
+      function dashboardRow(iconName, title, description, trailing) {
+        return '<div class="dashboard-row"><div class="dashboard-row-main"><span class="dashboard-row-icon">' + svgIcon(iconName) + '</span><div><strong>' + esc(title) + '</strong><small>' + esc(description) + '</small></div></div>' + (trailing || "") + '</div>';
+      }
+
       function demoState() {
         if (app.demoState === "normal") return "";
         if (app.demoState === "loading") {
@@ -974,67 +1091,101 @@
         return '<section class="demo-state" role="alert"><div class="state-box"><span class="state-illustration" aria-hidden="true">!</span><h2>Não foi possível carregar</h2><p>Houve uma falha simulada ao buscar os dados. Verifique a conexão e tente novamente.</p>' + button("Tentar novamente", "retry", "primary") + '</div></section>';
       }
 
-      function homeView() {
+      function studentDashboard() {
+        return pageHead("Área do estudante", "Olá, Beatriz", "Veja apenas as disciplinas liberadas para sua matrícula e consulte as regras antes de cada atividade.", button("Consultar regra de IA", "consult-ai", "primary")) +
+          dashboardBanner("aluno", "book", "Matrícula ativa em ADS 4º A", "Cinco disciplinas estão disponíveis neste semestre.", "Aprovada", "approved") +
+          '<section class="grid stats-grid" aria-label="Resumo do estudante">' +
+            statCard("Minhas disciplinas", "5", "Vinculadas à matrícula aprovada", "#c9e8ed") +
+            statCard("Políticas disponíveis", "8", "Regras para consultar antes das entregas", "#dcead4") +
+            statCard("Comunicados novos", "2", "Publicados desde o último acesso", "#f5dfbe") +
+            statCard("Plano responsável", "60%", "Quatro de seis etapas concluídas", "#dedcf1") +
+          '</section>' +
+          '<section class="grid two-col dashboard-section">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Antes da próxima atividade</h2><button class="section-link" data-view-jump="disciplines">Ver todas as regras</button></div><div class="attention-list">' +
+              '<div class="attention-item"><span class="tag restricted">Com restrições</span><div><strong>Revisão bibliográfica · TCC</strong><small>Confirme cada referência na fonte original e declare o apoio recebido.</small></div><button class="btn small" data-action="consult-d5">Consultar</button></div>' +
+              '<div class="attention-item"><span class="tag prohibited">Proibido</span><div><strong>Prova final · Metodologia Científica</strong><small>Nenhum recurso de IA é permitido durante a avaliação.</small></div><button class="btn small" data-action="consult-d1">Consultar</button></div>' +
+            '</div></article>' +
+            '<article class="card card-pad"><div class="section-head"><h2>Minhas disciplinas</h2><button class="section-link" data-view-jump="disciplines">Abrir lista</button></div><div class="dashboard-list">' +
+              dashboardRow("book", "Programação Web", "2 políticas publicadas", '<span class="tag restricted">Atenção</span>') +
+              dashboardRow("book", "Metodologia Científica", "3 políticas publicadas", '<span class="tag">MET-201</span>') +
+              dashboardRow("book", "Projeto de Conclusão", "1 política publicada", '<span class="tag">TCC-401</span>') +
+            '</div></article>' +
+          '</section>' +
+          '<section class="grid two-col dashboard-section">' +
+            '<article class="card card-pad insight-card"><span class="new-badge" style="margin:0 0 14px">Novo</span><h2>Continue seu plano de uso responsável</h2><p>Registre objetivo, verificação e transparência antes de usar uma ferramenta de IA.</p><button class="btn" data-view-jump="responsible">Continuar reflexão</button></article>' +
+            '<article class="card card-pad"><div class="section-head"><h2>Comunicado em destaque</h2><span class="tag">Hoje</span></div><strong>Semana de avaliações</strong><p style="margin:7px 0;color:var(--muted)">Confira as políticas específicas de cada disciplina antes de iniciar as atividades.</p><button class="section-link" data-view-jump="announcements">Ver comunicados</button></article>' +
+          '</section>';
+      }
+
+      function professorDashboard() {
         var pending = enrollments.filter(function (item) { return item.status === "pending"; }).length;
-        if (app.role === "aluno") {
-          return pageHead("Visão geral · Aluno", "Boa tarde, Ana", "Consulte as disciplinas da sua matrícula aprovada e tome decisões conscientes sobre o uso de IA.", button("Consultar regra de IA", "consult-ai", "primary")) +
-            '<section class="grid stats-grid" aria-label="Indicadores principais">' +
-              '<article class="card stat"><span class="stat-label">Minhas disciplinas</span><strong class="stat-value">5</strong><span class="stat-note">Matrículas aprovadas</span></article>' +
-              '<article class="card stat"><span class="stat-label">Políticas disponíveis</span><strong class="stat-value">8</strong><span class="stat-note">Consulte antes de cada atividade</span></article>' +
-              '<article class="card stat"><span class="stat-label">Comunicados novos</span><strong class="stat-value">2</strong><span class="stat-note">Desde seu último acesso</span></article>' +
-              '<article class="card stat"><span class="stat-label">Plano responsável</span><strong class="stat-value">60%</strong><span class="stat-note">Continue sua reflexão</span></article>' +
-            '</section><section class="grid two-col" style="margin-top:18px">' +
-              '<article class="card card-pad"><div class="section-head"><h2>Regras que merecem atenção</h2><button class="section-link" data-view-jump="disciplines">Ver todas</button></div><div class="checklist">' +
-                '<button class="check-row" data-action="consult-d5" style="text-align:left"><span class="tag restricted">TCC</span><span><strong>Revisão bibliográfica</strong><small>Verifique todas as referências na fonte original.</small></span></button>' +
-                '<button class="check-row" data-action="consult-d1" style="text-align:left"><span class="tag prohibited">Prova</span><span><strong>Metodologia Científica</strong><small>Uso de IA proibido durante a avaliação.</small></span></button>' +
-              '</div></article>' +
-              '<article class="card card-pad insight-card"><span class="new-badge" style="margin:0 0 14px">Novo</span><h2>Seu plano de uso responsável</h2><p>Reflita sobre objetivo, verificação e transparência antes de usar qualquer ferramenta.</p><button class="btn" data-view-jump="responsible">Continuar plano</button></article>' +
-            '</section>';
-        }
-        if (app.role === "professor") {
-          return pageHead("Visão geral · Professor", "Boa tarde, Prof. Bruno", "Acompanhe suas disciplinas, políticas e solicitações de matrícula.", button("Nova política", "new-policy", "primary")) +
-            '<section class="grid stats-grid" aria-label="Indicadores principais">' +
-              '<article class="card stat"><span class="stat-label">Minhas disciplinas</span><strong class="stat-value">2</strong><span class="stat-note">7 políticas publicadas</span></article>' +
-              '<article class="card stat"><span class="stat-label">Matrículas pendentes</span><strong class="stat-value">' + pending + '</strong><span class="stat-note">Requerem análise</span></article>' +
-              '<article class="card stat"><span class="stat-label">Políticas a revisar</span><strong class="stat-value">2</strong><span class="stat-note">Sem fonte ou condições completas</span></article>' +
-              '<article class="card stat"><span class="stat-label">Cobertura</span><strong class="stat-value">86%</strong><span class="stat-note">Nas disciplinas sob sua responsabilidade</span></article>' +
-            '</section><section class="grid two-col" style="margin-top:18px">' +
-              '<article class="card card-pad"><div class="section-head"><h2>Próximas ações</h2></div><div class="checklist">' +
-                '<button class="check-row" data-view-jump="classes" style="text-align:left"><span class="tag pending">3</span><span><strong>Analisar matrículas</strong><small>Solicitações aguardando decisão</small></span></button>' +
-                '<button class="check-row" data-view-jump="reports" style="text-align:left"><span class="tag restricted">2</span><span><strong>Completar políticas</strong><small>Adicione fonte e condições objetivas</small></span></button>' +
-              '</div></article>' +
-              '<article class="card card-pad insight-card"><span class="new-badge" style="margin:0 0 14px">Novo</span><h2>Clareza das políticas</h2><p>Veja onde seus estudantes ainda podem ter dúvidas e gere um plano de revisão.</p><button class="btn" data-view-jump="reports">Ver análise</button></article>' +
-            '</section>';
-        }
-        return pageHead("Visão geral · " + roleName(), "Boa tarde, Ana", "Acompanhe políticas, matrículas e pontos que precisam de atenção.", button("Consultar regra de IA", "consult-ai", "") + button("Nova política", "new-policy", "primary")) +
-          '<section class="grid stats-grid" aria-label="Indicadores principais">' +
-            '<article class="card stat" style="--stat-color:#dff4f7"><span class="stat-label">Disciplinas ativas</span><strong class="stat-value">' + disciplines.length + '</strong><span class="stat-note">5 com políticas publicadas</span></article>' +
-            '<article class="card stat" style="--stat-color:#fff0d9"><span class="stat-label">Matrículas pendentes</span><strong class="stat-value">' + pending + '</strong><span class="stat-note"><span class="status-dot" style="color:#d68c20"></span>Requerem análise</span></article>' +
-            '<article class="card stat" style="--stat-color:#e4f5ea"><span class="stat-label">Políticas cadastradas</span><strong class="stat-value">9</strong><span class="stat-note">3 revisadas neste mês</span></article>' +
-            '<article class="card stat" style="--stat-color:#f5e9f4"><span class="stat-label">Cobertura das atividades</span><strong class="stat-value">78%</strong><span class="stat-note">+9% desde outubro</span></article>' +
+        return pageHead("Área do professor", "Olá, Prof. Bruno", "Acompanhe somente suas disciplinas, turmas autorizadas e solicitações que dependem da sua decisão.", button("Nova política", "new-policy", "primary")) +
+          dashboardBanner("professor", "classes", pending + " matrículas aguardam análise", "As solicitações mais antigas foram recebidas em 17 de novembro.", "Ação necessária", "pending") +
+          '<section class="grid stats-grid" aria-label="Resumo do professor">' +
+            statCard("Minhas disciplinas", "2", "Sob sua responsabilidade", "#cbdfea") +
+            statCard("Matrículas pendentes", pending, "Nas turmas que você gerencia", "#f5dfbe") +
+            statCard("Políticas publicadas", "7", "Duas revisadas neste mês", "#dcead4") +
+            statCard("Cobertura", "86%", "Atividades com orientação definida", "#dedcf1") +
           '</section>' +
-          '<section class="grid two-col" style="margin-top:18px">' +
-            '<article class="card card-pad"><div class="section-head"><h2>Distribuição das políticas</h2><button class="section-link" data-view-jump="disciplines">Ver detalhes</button></div>' +
-              '<div class="policy-bars">' +
-                '<div class="bar-row"><span>Permitido</span><div class="bar-track"><div class="bar-fill" style="--bar:#3e9c6a;width:33%"></div></div><span class="bar-value">3</span></div>' +
-                '<div class="bar-row"><span>Com restrições</span><div class="bar-track"><div class="bar-fill" style="--bar:#e0a13e;width:44%"></div></div><span class="bar-value">4</span></div>' +
-                '<div class="bar-row"><span>Proibido</span><div class="bar-track"><div class="bar-fill" style="--bar:#ce5365;width:22%"></div></div><span class="bar-value">2</span></div>' +
-              '</div>' +
-            '</article>' +
-            '<article class="card card-pad insight-card"><span class="new-badge" style="margin:0 0 14px">Novo</span><h2>Clareza das políticas</h2><p>Uma disciplina ainda não tem regra cadastrada e duas possuem atividades sem condições detalhadas.</p>' + button("Ver lacunas", "open-reports", "") + '</article>' +
+          '<section class="grid two-col dashboard-section">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Solicitações recentes</h2><button class="section-link" data-view-jump="classes">Analisar todas</button></div><div class="dashboard-list">' +
+              dashboardRow("users", "Beatriz Mendes", "ADS 4º A · solicitada hoje", '<span class="tag pending">Pendente</span>') +
+              dashboardRow("users", "João Pedro Silva", "ADS 4º A · solicitada hoje", '<span class="tag pending">Pendente</span>') +
+              dashboardRow("users", "Marina Costa", "SI 6º B · solicitada ontem", '<span class="tag pending">Pendente</span>') +
+            '</div><div class="scope-note">' + svgIcon("classes") + '<span>Você só pode decidir matrículas de turmas vinculadas às suas disciplinas.</span></div></article>' +
+            '<article class="card card-pad"><div class="section-head"><h2>Qualidade das políticas</h2><button class="section-link" data-view-jump="reports">Ver diagnóstico</button></div><div class="progress-line"><div class="progress-line-track"><div class="progress-line-fill" style="width:86%"></div></div><div class="progress-line-meta"><span>Cobertura atual</span><strong>86%</strong></div></div><div class="attention-list" style="margin-top:18px">' +
+              '<div class="attention-item"><span class="tag restricted">2</span><div><strong>Condições a detalhar</strong><small>Explique limites e formas de declaração.</small></div></div>' +
+              '<div class="attention-item"><span class="tag pending">1</span><div><strong>Fonte não informada</strong><small>Vincule a orientação ao plano de ensino.</small></div></div>' +
+            '</div></article>' +
           '</section>' +
-          '<section class="grid two-col" style="margin-top:18px">' +
+          '<section class="grid two-col dashboard-section">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Minhas disciplinas</h2><button class="section-link" data-view-jump="disciplines">Gerenciar</button></div><div class="dashboard-list">' +
+              dashboardRow("book", "Metodologia Científica", "MET-201 · 3 políticas", '<span class="tag approved">Completa</span>') +
+              dashboardRow("book", "Programação Web", "WEB-302 · 2 políticas", '<span class="tag restricted">Revisar</span>') +
+            '</div></article>' +
+            '<article class="card card-pad insight-card"><span class="new-badge" style="margin:0 0 14px">Novo</span><h2>Reduza dúvidas antes da entrega</h2><p>O painel de clareza mostra atividades sem regra, fonte ou condições suficientes.</p><button class="btn" data-view-jump="reports">Ver clareza das políticas</button></article>' +
+          '</section>';
+      }
+
+      function adminDashboard() {
+        var pending = enrollments.filter(function (item) { return item.status === "pending"; }).length;
+        return pageHead("Administração institucional", "Olá, Ana", "Acompanhe a saúde da plataforma, os responsáveis acadêmicos e os pontos que precisam de governança.", button("Adicionar professor", "new-user", "") + button("Nova política", "new-policy", "primary")) +
+          dashboardBanner("admin", "chart", "Ambiente acadêmico operando normalmente", "Há três pendências de matrícula e uma disciplina ainda sem política.", "2 alertas", "restricted") +
+          '<section class="grid stats-grid" aria-label="Resumo institucional">' +
+            statCard("Disciplinas ativas", disciplines.length, "Cinco possuem políticas publicadas", "#c9e8ed") +
+            statCard("Matrículas pendentes", pending, "Distribuídas em duas turmas", "#f5dfbe") +
+            statCard("Políticas cadastradas", "9", "Três revisadas neste mês", "#dcead4") +
+            statCard("Cobertura geral", "78%", "Nove pontos acima de outubro", "#dedcf1") +
+          '</section>' +
+          '<section class="grid two-col dashboard-section">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Distribuição das políticas</h2><button class="section-link" data-view-jump="disciplines">Ver detalhes</button></div><div class="policy-bars">' +
+              '<div class="bar-row"><span>Permitido</span><div class="bar-track"><div class="bar-fill" style="--bar:#3e9c6a;width:33%"></div></div><span class="bar-value">3</span></div>' +
+              '<div class="bar-row"><span>Com restrições</span><div class="bar-track"><div class="bar-fill" style="--bar:#e0a13e;width:44%"></div></div><span class="bar-value">4</span></div>' +
+              '<div class="bar-row"><span>Proibido</span><div class="bar-track"><div class="bar-fill" style="--bar:#ce5365;width:22%"></div></div><span class="bar-value">2</span></div>' +
+            '</div><div class="scope-note">' + svgIcon("chart") + '<span>Indicadores agregados ajudam a identificar lacunas; não avaliam autoria nem detectam uso de IA.</span></div></article>' +
+            '<article class="card card-pad"><div class="section-head"><h2>Pontos de atenção</h2><button class="section-link" data-view-jump="reports">Abrir diagnóstico</button></div><div class="attention-list">' +
+              '<div class="attention-item"><span class="tag prohibited">Alta</span><div><strong>Design de Interfaces sem política</strong><small>A disciplina ainda não orienta nenhuma atividade.</small></div><button class="btn small" data-action="manage-d6">Corrigir</button></div>' +
+              '<div class="attention-item"><span class="tag restricted">Média</span><div><strong>Três políticas sem fonte</strong><small>Vincule a origem institucional da orientação.</small></div><button class="btn small" data-view-jump="reports">Revisar</button></div>' +
+            '</div></article>' +
+          '</section>' +
+          '<section class="grid two-col dashboard-section">' +
             '<article class="card card-pad"><div class="section-head"><h2>Atividade recente</h2><button class="section-link" data-view-jump="history">Abrir histórico</button></div><div class="activity-list">' +
-              historyItems.slice(0,4).map(function (item, index) {
-                return '<div class="activity-item"><span class="activity-icon" aria-hidden="true">' + ["↻","✓","◉","＋"][index] + '</span><div><strong>' + esc(item.action) + '</strong><small>' + esc(item.detail) + '</small></div><span class="time">' + esc(item.date.split(",")[1] || item.date) + '</span></div>';
+              historyItems.slice(0,4).map(function (item) {
+                return '<div class="activity-item"><span class="activity-icon" aria-hidden="true">' + svgIcon("history") + '</span><div><strong>' + esc(item.action) + '</strong><small>' + esc(item.detail) + '</small></div><span class="time">' + esc(item.date.split(",")[1] || item.date) + '</span></div>';
               }).join("") +
             '</div></article>' +
-            '<article class="card card-pad"><div class="section-head"><h2>Próximas ações</h2></div><div class="checklist">' +
-              '<button class="check-row" data-view-jump="classes" style="text-align:left"><span class="tag pending">3</span><span><strong>Analisar matrículas</strong><small>Solicitações aguardando decisão</small></span></button>' +
-              '<button class="check-row" data-view-jump="reports" style="text-align:left"><span class="tag prohibited">1</span><span><strong>Cobrir disciplina sem política</strong><small>Design de Interfaces está sem orientação</small></span></button>' +
-              '<button class="check-row" data-view-jump="announcements" style="text-align:left"><span class="tag">2</span><span><strong>Revisar comunicados ativos</strong><small>Confirme se ainda são atuais</small></span></button>' +
+            '<article class="card card-pad"><div class="section-head"><h2>Governança de acesso</h2><button class="section-link" data-view-jump="users">Gerenciar usuários</button></div><div class="dashboard-list">' +
+              dashboardRow("users", "5 contas ativas", "1 administrador e 3 professores", '<span class="tag approved">Ativo</span>') +
+              dashboardRow("book", "6 disciplinas", "Todas possuem responsável definido", '<span class="tag approved">Completo</span>') +
+              dashboardRow("history", "Auditoria atualizada", "Última operação registrada hoje", '<span class="tag">500 registros</span>') +
             '</div></article>' +
           '</section>';
+      }
+
+      function homeView() {
+        if (app.role === "aluno") return studentDashboard();
+        if (app.role === "professor") return professorDashboard();
+        return adminDashboard();
       }
 
       function disciplineCard(item) {
