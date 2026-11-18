@@ -483,6 +483,29 @@
     .field label { font-size: .81rem; color: #42516a; font-weight: 760; }
     .toolbar .field { min-width: 150px; }
     .toolbar .search-field { flex: 1; min-width: 230px; }
+    .results-summary {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: .84rem;
+    }
+    .results-summary strong { color: var(--ink); }
+    .view-toggle { display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; background: #edf2f6; }
+    .view-toggle button {
+      min-height: 34px;
+      padding: 5px 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 800;
+    }
+    .view-toggle button.active { background: white; color: var(--ink); box-shadow: var(--shadow-sm); }
     input, select, textarea {
       width: 100%; min-height: 44px; padding: 9px 11px; border: 1px solid #c5d1df; border-radius: 9px;
       background: white; color: var(--ink);
@@ -502,11 +525,31 @@
     .discipline-card .section-head { align-items: flex-start; }
     .discipline-card h2 { font-size: 1.05rem; }
     .discipline-card p { color: var(--muted); font-size: .86rem; }
+    .discipline-meta { display: flex; flex-wrap: wrap; gap: 8px 13px; margin: -7px 0 8px; color: var(--muted); font-size: .76rem; }
     .policy-mini { display: grid; gap: 9px; margin: 12px 0 18px; }
     .policy-mini div { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: .82rem; }
     .discipline-actions { display: flex; gap: 8px; margin-top: auto; }
     .coverage { display: flex; height: 7px; overflow: hidden; margin: 8px 0 17px; border-radius: 999px; background: #edf1f6; }
     .coverage i { display: block; height: 100%; }
+    .policy-detail-list { display: grid; gap: 12px; margin-top: 18px; }
+    .policy-detail {
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface-subtle);
+    }
+    .policy-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 9px; }
+    .policy-detail h3 { margin: 0 0 2px; }
+    .policy-detail p { margin: 7px 0; color: var(--ink-soft); }
+    .policy-source { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: .78rem; }
+    .discipline-detail-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .discipline-detail-head p { margin: 4px 0 0; color: var(--muted); }
 
     .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 15px; background: white; }
     table { width: 100%; border-collapse: collapse; min-width: 760px; }
@@ -903,32 +946,33 @@
         demoState: "normal",
         search: "",
         statusFilter: "all",
+        disciplineLayout: "cards",
         enrollmentFilter: "all",
         lastFocus: null
       };
       var demoMode = new URLSearchParams(window.location.search).get("demo") === "1";
 
       var disciplines = [
-        { id: "d1", name: "Metodologia Científica", code: "MET-201", teacher: "Prof. Bruno Lima", policies: [
-          { activity: "Projeto de pesquisa", type: "Trabalho", status: "restricted", conditions: "Pode apoiar a revisão, com declaração de uso e conferência das fontes." },
-          { activity: "Prova final", type: "Prova", status: "prohibited", conditions: "Nenhum recurso de IA é permitido durante a avaliação." },
-          { activity: "Mapa conceitual", type: "Atividade", status: "allowed", conditions: "Uso livre, com registro dos prompts mais relevantes." }
+        { id: "d1", name: "Metodologia Científica", code: "MET-201", teacher: "Prof. Bruno Lima", updated: "18 nov. 2026", policies: [
+          { activity: "Projeto de pesquisa", type: "Trabalho", status: "restricted", conditions: "Pode apoiar a revisão, com declaração de uso e conferência das fontes.", source: "Plano de ensino 2026.2" },
+          { activity: "Prova final", type: "Prova", status: "prohibited", conditions: "Nenhum recurso de IA é permitido durante a avaliação.", source: "Plano de avaliação 2026.2" },
+          { activity: "Mapa conceitual", type: "Atividade", status: "allowed", conditions: "Uso livre, com registro dos prompts mais relevantes.", source: "Orientação docente de 10/11" }
         ]},
-        { id: "d2", name: "Programação Web", code: "WEB-302", teacher: "Profa. Lívia Rocha", policies: [
-          { activity: "Projeto integrador", type: "Projeto", status: "restricted", conditions: "Código sugerido por IA deve ser compreendido, testado e identificado no README." },
-          { activity: "Exercícios de laboratório", type: "Atividade", status: "allowed", conditions: "Permitido como apoio, mantendo autoria das decisões técnicas." }
+        { id: "d2", name: "Programação Web", code: "WEB-302", teacher: "Profa. Lívia Rocha", updated: "16 nov. 2026", policies: [
+          { activity: "Projeto integrador", type: "Projeto", status: "restricted", conditions: "Código sugerido por IA deve ser compreendido, testado e identificado no README.", source: "Guia do projeto integrador" },
+          { activity: "Exercícios de laboratório", type: "Atividade", status: "allowed", conditions: "Permitido como apoio, mantendo autoria das decisões técnicas.", source: "Plano de ensino 2026.2" }
         ]},
-        { id: "d3", name: "Ética e Sociedade", code: "ETI-104", teacher: "Prof. Mauro Reis", policies: [
-          { activity: "Ensaio argumentativo", type: "Trabalho", status: "restricted", conditions: "Permitido apenas para brainstorming. A redação final deve ser autoral." }
+        { id: "d3", name: "Ética e Sociedade", code: "ETI-104", teacher: "Prof. Mauro Reis", updated: "12 nov. 2026", policies: [
+          { activity: "Ensaio argumentativo", type: "Trabalho", status: "restricted", conditions: "Permitido apenas para brainstorming. A redação final deve ser autoral.", source: "Plano de ensino 2026.2" }
         ]},
-        { id: "d4", name: "Estatística Aplicada", code: "EST-211", teacher: "Profa. Carla Souza", policies: [
-          { activity: "Lista de exercícios", type: "Atividade", status: "allowed", conditions: "Pode conferir cálculos; apresente o desenvolvimento completo." },
-          { activity: "Avaliação presencial", type: "Prova", status: "prohibited", conditions: "Uso proibido durante a avaliação." }
+        { id: "d4", name: "Estatística Aplicada", code: "EST-211", teacher: "Profa. Carla Souza", updated: "8 nov. 2026", policies: [
+          { activity: "Lista de exercícios", type: "Atividade", status: "allowed", conditions: "Pode conferir cálculos; apresente o desenvolvimento completo.", source: "Roteiro de atividades" },
+          { activity: "Avaliação presencial", type: "Prova", status: "prohibited", conditions: "Uso proibido durante a avaliação.", source: "Plano de avaliação 2026.2" }
         ]},
-        { id: "d5", name: "Projeto de Conclusão", code: "TCC-401", teacher: "Profa. Nádia Alves", policies: [
-          { activity: "Revisão bibliográfica", type: "Pesquisa", status: "restricted", conditions: "Não aceite referências sem verificar a fonte original." }
+        { id: "d5", name: "Projeto de Conclusão", code: "TCC-401", teacher: "Profa. Nádia Alves", updated: "5 nov. 2026", policies: [
+          { activity: "Revisão bibliográfica", type: "Pesquisa", status: "restricted", conditions: "Não aceite referências sem verificar a fonte original.", source: "Manual de TCC 2026" }
         ]},
-        { id: "d6", name: "Design de Interfaces", code: "UX-220", teacher: "Prof. Diego Ramos", policies: [] }
+        { id: "d6", name: "Design de Interfaces", code: "UX-220", teacher: "Prof. Diego Ramos", updated: "Sem revisão", policies: [] }
       ];
 
       var enrollments = [
@@ -1192,9 +1236,10 @@
         var counts = { allowed: 0, restricted: 0, prohibited: 0 };
         item.policies.forEach(function (policy) { counts[policy.status] += 1; });
         var total = Math.max(item.policies.length, 1);
+        var manageAction = app.role === "aluno" ? "" : button("Adicionar política", "manage-" + item.id, "primary");
         return '<article class="card discipline-card">' +
-          '<div class="section-head"><div><span class="tag">' + esc(item.code) + '</span><h2 style="margin-top:10px">' + esc(item.name) + '</h2></div><button class="icon-btn" type="button" aria-label="Mais opções para ' + esc(item.name) + '">•••</button></div>' +
-          '<p>' + esc(item.teacher) + ' · ' + item.policies.length + ' política(s)</p>' +
+          '<div class="section-head"><div><span class="tag">' + esc(item.code) + '</span><h2 style="margin-top:10px">' + esc(item.name) + '</h2></div><span class="tag ' + (item.policies.length ? "approved" : "prohibited") + '">' + (item.policies.length ? item.policies.length + " política(s)" : "Sem política") + '</span></div>' +
+          '<p>' + esc(item.teacher) + '</p><div class="discipline-meta"><span>Revisada em ' + esc(item.updated) + '</span><span>' + item.policies.filter(function (p) { return p.source; }).length + ' fonte(s) informada(s)</span></div>' +
           '<div class="coverage" aria-label="Distribuição das políticas">' +
             '<i style="width:' + (counts.allowed / total * 100) + '%;background:#3e9c6a"></i>' +
             '<i style="width:' + (counts.restricted / total * 100) + '%;background:#e0a13e"></i>' +
@@ -1202,23 +1247,51 @@
           '</div>' +
           '<div class="policy-mini">' +
             (item.policies.length ? item.policies.slice(0,2).map(function (policy) { return '<div><span>' + esc(policy.activity) + '</span><span class="tag ' + policy.status + '">' + esc(statusLabel(policy.status)) + '</span></div>'; }).join("") : '<div><span>Nenhuma política cadastrada</span><span class="tag prohibited">Atenção</span></div>') +
-          '</div><div class="discipline-actions">' + button("Consultar", "consult-" + item.id, "") + button("Gerenciar", "manage-" + item.id, "primary") + '</div></article>';
+          '</div><div class="discipline-actions">' + button("Ver detalhes", "details-" + item.id, "") + manageAction + '</div></article>';
+      }
+
+      function disciplineTable(items) {
+        return '<div class="table-wrap"><table><thead><tr><th>Disciplina</th><th>Responsável</th><th>Políticas</th><th>Última revisão</th><th>Ações</th></tr></thead><tbody>' +
+          items.map(function (item) {
+            var action = '<button class="btn small" type="button" data-action="details-' + item.id + '">Ver detalhes</button>';
+            if (app.role !== "aluno") action += '<button class="btn small primary" type="button" data-action="manage-' + item.id + '">Adicionar política</button>';
+            return '<tr><td><strong>' + esc(item.name) + '</strong><br><small>' + esc(item.code) + '</small></td><td>' + esc(item.teacher) + '</td><td><span class="tag ' + (item.policies.length ? "approved" : "prohibited") + '">' + item.policies.length + '</span></td><td>' + esc(item.updated) + '</td><td><div class="row-actions">' + action + '</div></td></tr>';
+          }).join("") +
+        '</tbody></table></div>';
       }
 
       function disciplinesView() {
-        var filtered = disciplines.filter(function (item) {
+        var scoped = app.role === "aluno" ? disciplines.filter(function (item) { return item.id !== "d6"; }) : app.role === "professor" ? disciplines.filter(function (item) { return item.id === "d1" || item.id === "d2"; }) : disciplines;
+        var filtered = scoped.filter(function (item) {
           var text = (item.name + " " + item.code + " " + item.teacher).toLocaleLowerCase("pt-BR");
           var matchesText = text.indexOf(app.search.toLocaleLowerCase("pt-BR")) >= 0;
           var matchesStatus = app.statusFilter === "all" || item.policies.some(function (p) { return p.status === app.statusFilter; });
           return matchesText && matchesStatus;
         });
-        return pageHead("Governança acadêmica", "Disciplinas e políticas", "Consulte, filtre e mantenha orientações claras para cada tipo de atividade.", button("Nova disciplina", "new-discipline", "") + button("Nova política", "new-policy", "primary")) +
+        var actions = app.role === "admin" ? button("Nova disciplina", "new-discipline", "") + button("Nova política", "new-policy", "primary") : app.role === "professor" ? button("Nova política", "new-policy", "primary") : "";
+        var compare = app.role === "aluno" ? "" : '<button class="btn" type="button" data-action="compare-policies">Comparar versões <span class="new-badge">Novo</span></button>';
+        var policyCount = scoped.reduce(function (total, item) { return total + item.policies.length; }, 0);
+        return pageHead(app.role === "aluno" ? "Consulta acadêmica" : "Governança acadêmica", "Disciplinas e políticas", app.role === "aluno" ? "Consulte somente as orientações disponíveis para sua matrícula aprovada." : "Consulte, filtre e mantenha orientações claras para cada tipo de atividade.", actions) +
           '<div class="toolbar">' +
             '<div class="field search-field"><label for="policy-search">Buscar</label><input id="policy-search" type="search" value="' + esc(app.search) + '" placeholder="Disciplina, código ou docente"></div>' +
             '<div class="field"><label for="policy-status">Situação</label><select id="policy-status"><option value="all">Todas</option><option value="allowed">Permitido</option><option value="restricted">Com restrições</option><option value="prohibited">Proibido</option></select></div>' +
-            '<button class="btn" type="button" data-action="compare-policies">Comparar versões <span class="new-badge">Novo</span></button>' +
+            compare +
           '</div>' +
-          (filtered.length ? '<section class="grid cards-list">' + filtered.map(disciplineCard).join("") + '</section>' : '<section class="demo-state"><div class="state-box"><span class="state-illustration">⌕</span><h2>Nenhuma disciplina encontrada</h2><p>Revise os filtros ou faça uma busca diferente.</p>' + button("Limpar filtros", "clear-filters", "") + '</div></section>');
+          '<div class="results-summary"><span><strong>' + filtered.length + '</strong> de ' + scoped.length + ' disciplinas · ' + policyCount + ' políticas no seu escopo</span><div class="view-toggle" aria-label="Formato da lista"><button type="button" data-layout="cards" class="' + (app.disciplineLayout === "cards" ? "active" : "") + '" aria-pressed="' + (app.disciplineLayout === "cards") + '">Cartões</button><button type="button" data-layout="table" class="' + (app.disciplineLayout === "table" ? "active" : "") + '" aria-pressed="' + (app.disciplineLayout === "table") + '">Tabela</button></div></div>' +
+          (filtered.length ? (app.disciplineLayout === "cards" ? '<section class="grid cards-list">' + filtered.map(disciplineCard).join("") + '</section>' : disciplineTable(filtered)) : '<section class="demo-state"><div class="state-box"><span class="state-illustration">⌕</span><h2>Nenhuma disciplina encontrada</h2><p>Revise os filtros ou faça uma busca diferente.</p>' + button("Limpar filtros", "clear-filters", "") + '</div></section>');
+      }
+
+      function openDisciplineDetails(id) {
+        var item = disciplines.find(function (discipline) { return discipline.id === id; });
+        if (!item) return;
+        var policies = item.policies.length ? item.policies.map(function (policy) {
+          return '<article class="policy-detail"><div class="policy-detail-head"><div><h3>' + esc(policy.activity) + '</h3><small>' + esc(policy.type) + '</small></div><span class="tag ' + policy.status + '">' + esc(statusLabel(policy.status)) + '</span></div><p>' + esc(policy.conditions) + '</p><div class="policy-source">' + svgIcon("book") + '<span>Fonte: ' + esc(policy.source || "Não informada") + '</span></div></article>';
+        }).join("") : '<div class="auth-message">Esta disciplina ainda não possui política publicada.</div>';
+        var manage = app.role === "aluno" ? "" : '<button class="btn primary" type="button" data-detail-manage="' + esc(item.id) + '">Adicionar política</button>';
+        openSimpleModal(item.name, '<div class="discipline-detail-head"><div><span class="tag">' + esc(item.code) + '</span><p>' + esc(item.teacher) + ' · última revisão: ' + esc(item.updated) + '</p></div><span class="tag ' + (item.policies.length ? "approved" : "prohibited") + '">' + item.policies.length + ' política(s)</span></div><div class="policy-detail-list">' + policies + '</div><div class="modal-actions"><button class="btn" type="button" data-copy-guidance>Copiar resumo</button>' + manage + '<button class="btn" type="button" data-modal-cancel>Fechar</button></div>');
+        var manageButton = modalBody.querySelector("[data-detail-manage]");
+        if (manageButton) manageButton.addEventListener("click", function () { closeModal(); openPolicyModal(item.id); });
+        modalBody.querySelector("[data-copy-guidance]").addEventListener("click", function () { toast("Resumo da orientação copiado na demonstração."); });
       }
 
       function classesView() {
@@ -1350,6 +1423,12 @@
         if (search) {
           search.addEventListener("input", function () { app.search = search.value; render(); var next = document.getElementById("policy-search"); if (next) { next.focus(); next.setSelectionRange(next.value.length, next.value.length); } });
         }
+        root.querySelectorAll("[data-layout]").forEach(function (node) {
+          node.addEventListener("click", function () {
+            app.disciplineLayout = node.getAttribute("data-layout");
+            render();
+          });
+        });
         var enrollmentStatus = document.getElementById("enrollment-status");
         if (enrollmentStatus) {
           enrollmentStatus.value = app.enrollmentFilter;
@@ -1374,7 +1453,8 @@
 
       function handleAction(action) {
         if (action === "new-policy" || action.indexOf("manage-") === 0) openPolicyModal(action.replace("manage-", ""));
-        else if (action.indexOf("consult-") === 0) { app.search = disciplines.find(function (d) { return d.id === action.replace("consult-", ""); }).name; navigate("disciplines"); }
+        else if (action.indexOf("details-") === 0) openDisciplineDetails(action.replace("details-", ""));
+        else if (action.indexOf("consult-") === 0) openDisciplineDetails(action.replace("consult-", ""));
         else if (action === "retry") { app.demoState = "normal"; document.getElementById("state-select").value = "normal"; render(); toast("Conteúdo carregado."); }
         else if (action === "clear-filters") { app.search = ""; app.statusFilter = "all"; render(); }
         else if (action === "open-reports") navigate("reports");
@@ -1392,8 +1472,13 @@
       }
 
       function openPolicyModal(prefillId) {
+        if (app.role === "aluno") {
+          toast("O perfil de aluno pode consultar políticas, mas não pode alterá-las.");
+          return;
+        }
         var selected = disciplines.find(function (item) { return item.id === prefillId; });
-        var options = disciplines.map(function (item) { return '<option value="' + item.id + '"' + (selected && selected.id === item.id ? " selected" : "") + '>' + esc(item.name) + '</option>'; }).join("");
+        var allowedDisciplines = app.role === "professor" ? disciplines.filter(function (item) { return item.id === "d1" || item.id === "d2"; }) : disciplines;
+        var options = allowedDisciplines.map(function (item) { return '<option value="' + item.id + '"' + (selected && selected.id === item.id ? " selected" : "") + '>' + esc(item.name) + '</option>'; }).join("");
         openSimpleModal("Nova política", '<div class="form-grid"><div class="field"><label for="modal-discipline">Disciplina</label><select id="modal-discipline">' + options + '</select></div><div class="field"><label for="modal-activity-type">Tipo de atividade</label><select id="modal-activity-type"><option>Trabalho</option><option>Prova</option><option>Atividade</option><option>Pesquisa</option></select></div></div><div class="field"><label for="modal-activity">Atividade</label><input id="modal-activity" placeholder="Ex.: relatório final"></div><div class="field"><label for="modal-status">Uso de IA</label><select id="modal-status"><option value="restricted">Permitido com restrições</option><option value="allowed">Permitido</option><option value="prohibited">Proibido</option></select></div><div class="field"><label for="modal-conditions">Condições e transparência</label><textarea id="modal-conditions" placeholder="Explique exatamente o que pode ou não pode ser feito."></textarea></div><div class="field"><label for="modal-source">Fonte da política</label><input id="modal-source" placeholder="Regulamento, plano de ensino ou orientação docente"></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Política preparada no protótipo.">Salvar política</button></div>');
       }
 
