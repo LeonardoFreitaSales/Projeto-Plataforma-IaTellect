@@ -618,6 +618,62 @@
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .modal .field { margin-bottom: 14px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 20px; }
+    .wizard-progress { margin-bottom: 22px; }
+    .wizard-progress-track { height: 6px; overflow: hidden; border-radius: 999px; background: #e6edf2; }
+    .wizard-progress-fill { height: 100%; border-radius: inherit; background: var(--brand); transition: width .2s ease; }
+    .wizard-progress-meta { display: flex; justify-content: space-between; margin-top: 7px; color: var(--muted); font-size: .75rem; }
+    .wizard-steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 0 0 22px; padding: 0; list-style: none; }
+    .wizard-step {
+      min-width: 0;
+      padding: 8px 6px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface-subtle);
+      color: var(--muted);
+      text-align: center;
+      font-size: .7rem;
+      font-weight: 780;
+    }
+    .wizard-step.active { border-color: #9fcbd3; background: var(--brand-soft); color: var(--brand-strong); }
+    .wizard-step.complete { border-color: #b9dfc8; background: var(--success-soft); color: var(--success); }
+    .wizard-panel h3 { margin-bottom: 6px; font-size: 1.08rem; }
+    .wizard-panel > p { margin-bottom: 18px; color: var(--muted); }
+    .choice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .policy-choice { position: relative; cursor: pointer; }
+    .policy-choice input { position: absolute; opacity: 0; pointer-events: none; }
+    .policy-choice-body {
+      display: block;
+      min-height: 145px;
+      padding: 15px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      background: white;
+    }
+    .policy-choice input:focus-visible + .policy-choice-body { box-shadow: var(--focus); }
+    .policy-choice input:checked + .policy-choice-body { border-color: var(--brand); background: #f4fbfc; }
+    .policy-choice-body strong { display: block; margin: 10px 0 5px; }
+    .policy-choice-body small { display: block; color: var(--muted); }
+    .wizard-hint {
+      margin-top: 13px;
+      padding: 12px 13px;
+      border: 1px solid #d5e3ea;
+      border-radius: 10px;
+      background: #f5f9fb;
+      color: var(--ink-soft);
+      font-size: .82rem;
+    }
+    .check-option { display: flex; align-items: flex-start; gap: 10px; margin: 8px 0; }
+    .check-option input { width: 19px; min-height: 19px; margin-top: 2px; accent-color: var(--brand); }
+    .check-option span { color: var(--ink-soft); font-size: .86rem; }
+    .policy-preview { padding: 18px; border: 1px solid #cddfe5; border-radius: 14px; background: linear-gradient(145deg, #fbfefe, #f3f9fa); }
+    .policy-preview-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
+    .policy-preview h3 { margin: 0 0 3px; }
+    .policy-preview dl { display: grid; grid-template-columns: 130px 1fr; gap: 9px 14px; margin: 0; }
+    .policy-preview dt { color: var(--muted); font-size: .78rem; font-weight: 750; }
+    .policy-preview dd { margin: 0; color: var(--ink-soft); font-size: .86rem; }
+    .wizard-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; }
+    .wizard-actions-group { display: flex; gap: 9px; }
+    .draft-button { margin-right: auto; }
 
     .assistant-toggle {
       position: fixed; right: 24px; bottom: 24px; z-index: 50;
@@ -711,6 +767,13 @@
       .dashboard-banner > .tag { grid-column: 2; justify-self: start; }
       .attention-item { grid-template-columns: auto 1fr; }
       .attention-item > .btn, .attention-item > .tag:last-child { grid-column: 2; justify-self: start; }
+      .wizard-steps { grid-template-columns: repeat(5, minmax(62px, 1fr)); overflow-x: auto; padding-bottom: 5px; }
+      .choice-grid { grid-template-columns: 1fr; }
+      .policy-choice-body { min-height: auto; }
+      .policy-preview dl { grid-template-columns: 1fr; gap: 3px; }
+      .policy-preview dd { margin-bottom: 9px; }
+      .wizard-actions { align-items: stretch; flex-direction: column; }
+      .wizard-actions-group, .wizard-actions-group .btn, .draft-button { width: 100%; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -951,6 +1014,7 @@
         lastFocus: null
       };
       var demoMode = new URLSearchParams(window.location.search).get("demo") === "1";
+      var policyWizard = null;
 
       var disciplines = [
         { id: "d1", name: "Metodologia Científica", code: "MET-201", teacher: "Prof. Bruno Lima", updated: "18 nov. 2026", policies: [
@@ -1476,10 +1540,122 @@
           toast("O perfil de aluno pode consultar políticas, mas não pode alterá-las.");
           return;
         }
-        var selected = disciplines.find(function (item) { return item.id === prefillId; });
         var allowedDisciplines = app.role === "professor" ? disciplines.filter(function (item) { return item.id === "d1" || item.id === "d2"; }) : disciplines;
-        var options = allowedDisciplines.map(function (item) { return '<option value="' + item.id + '"' + (selected && selected.id === item.id ? " selected" : "") + '>' + esc(item.name) + '</option>'; }).join("");
-        openSimpleModal("Nova política", '<div class="form-grid"><div class="field"><label for="modal-discipline">Disciplina</label><select id="modal-discipline">' + options + '</select></div><div class="field"><label for="modal-activity-type">Tipo de atividade</label><select id="modal-activity-type"><option>Trabalho</option><option>Prova</option><option>Atividade</option><option>Pesquisa</option></select></div></div><div class="field"><label for="modal-activity">Atividade</label><input id="modal-activity" placeholder="Ex.: relatório final"></div><div class="field"><label for="modal-status">Uso de IA</label><select id="modal-status"><option value="restricted">Permitido com restrições</option><option value="allowed">Permitido</option><option value="prohibited">Proibido</option></select></div><div class="field"><label for="modal-conditions">Condições e transparência</label><textarea id="modal-conditions" placeholder="Explique exatamente o que pode ou não pode ser feito."></textarea></div><div class="field"><label for="modal-source">Fonte da política</label><input id="modal-source" placeholder="Regulamento, plano de ensino ou orientação docente"></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Política preparada no protótipo.">Salvar política</button></div>');
+        var selected = allowedDisciplines.find(function (item) { return item.id === prefillId; }) || allowedDisciplines[0];
+        policyWizard = {
+          step: 1,
+          allowedDisciplines: allowedDisciplines,
+          disciplineId: selected.id,
+          type: "Trabalho",
+          activity: "",
+          status: "restricted",
+          conditions: "",
+          details: "",
+          requireDeclaration: true,
+          source: "",
+          validity: "Semestre 2026.2",
+          reviewReminder: true,
+          error: ""
+        };
+        app.lastFocus = document.activeElement;
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
+        renderPolicyWizard();
+      }
+
+      function policyWizardContent() {
+        var wizard = policyWizard;
+        if (wizard.step === 1) {
+          var options = wizard.allowedDisciplines.map(function (item) { return '<option value="' + item.id + '"' + (item.id === wizard.disciplineId ? " selected" : "") + '>' + esc(item.name) + '</option>'; }).join("");
+          return '<div class="wizard-panel"><h3>Contexto da política</h3><p>Defina onde a orientação será aplicada.</p><div class="form-grid"><div class="field"><label for="wizard-discipline">Disciplina</label><select id="wizard-discipline">' + options + '</select></div><div class="field"><label for="wizard-type">Tipo de atividade</label><select id="wizard-type"><option' + (wizard.type === "Trabalho" ? " selected" : "") + '>Trabalho</option><option' + (wizard.type === "Prova" ? " selected" : "") + '>Prova</option><option' + (wizard.type === "Atividade" ? " selected" : "") + '>Atividade</option><option' + (wizard.type === "Pesquisa" ? " selected" : "") + '>Pesquisa</option><option' + (wizard.type === "Projeto" ? " selected" : "") + '>Projeto</option></select></div></div><div class="field"><label for="wizard-activity">Nome da atividade</label><input id="wizard-activity" value="' + esc(wizard.activity) + '" placeholder="Ex.: relatório final ou prova bimestral"></div><div class="wizard-hint">Use um nome específico para que o estudante reconheça exatamente a atividade.</div></div>';
+        }
+        if (wizard.step === 2) {
+          var choices = [
+            { value: "allowed", label: "Permitido", help: "O uso é aceito como apoio, respeitando autoria e verificação." },
+            { value: "restricted", label: "Com restrições", help: "O uso depende de condições, limites ou declaração obrigatória." },
+            { value: "prohibited", label: "Proibido", help: "Nenhum recurso de IA pode ser usado nesta atividade." }
+          ];
+          return '<div class="wizard-panel"><h3>Decisão sobre o uso de IA</h3><p>Escolha a classificação que será apresentada aos estudantes.</p><div class="choice-grid">' + choices.map(function (choice) { return '<label class="policy-choice"><input type="radio" name="wizard-status" value="' + choice.value + '"' + (wizard.status === choice.value ? " checked" : "") + '><span class="policy-choice-body"><span class="tag ' + choice.value + '">' + esc(choice.label) + '</span><strong>' + esc(choice.label) + '</strong><small>' + esc(choice.help) + '</small></span></label>'; }).join("") + '</div><div class="wizard-hint">A classificação não substitui as condições detalhadas da próxima etapa.</div></div>';
+        }
+        if (wizard.step === 3) {
+          return '<div class="wizard-panel"><h3>Condições e transparência</h3><p>Escreva uma orientação objetiva, com limites e responsabilidades verificáveis.</p><div class="field"><label for="wizard-conditions">O que pode ou não pode ser feito?</label><textarea id="wizard-conditions" placeholder="Ex.: pode apoiar a revisão, mas todas as fontes devem ser verificadas.">' + esc(wizard.conditions) + '</textarea></div><div class="field"><label for="wizard-details">Exemplo ou explicação complementar</label><textarea id="wizard-details" placeholder="Ex.: informe a ferramenta e descreva como ela contribuiu.">' + esc(wizard.details) + '</textarea></div><label class="check-option"><input id="wizard-declaration" type="checkbox"' + (wizard.requireDeclaration ? " checked" : "") + '><span>Exigir declaração de uso da ferramenta na entrega.</span></label></div>';
+        }
+        if (wizard.step === 4) {
+          return '<div class="wizard-panel"><h3>Fonte e validade</h3><p>Informe de onde vem a orientação e quando ela deverá ser revisada.</p><div class="field"><label for="wizard-source">Fonte da política</label><input id="wizard-source" value="' + esc(wizard.source) + '" placeholder="Ex.: plano de ensino 2026.2 ou manual de TCC"></div><div class="field"><label for="wizard-validity">Validade</label><select id="wizard-validity"><option' + (wizard.validity === "Semestre 2026.2" ? " selected" : "") + '>Semestre 2026.2</option><option' + (wizard.validity === "Ano letivo de 2027" ? " selected" : "") + '>Ano letivo de 2027</option><option' + (wizard.validity === "Até nova revisão" ? " selected" : "") + '>Até nova revisão</option></select></div><label class="check-option"><input id="wizard-reminder" type="checkbox"' + (wizard.reviewReminder ? " checked" : "") + '><span>Lembrar o responsável de revisar esta política antes do próximo período.</span></label></div>';
+        }
+        var discipline = disciplines.find(function (item) { return item.id === wizard.disciplineId; });
+        return '<div class="wizard-panel"><h3>Revise antes de publicar</h3><p>Esta é a forma como a orientação será apresentada à comunidade acadêmica.</p><article class="policy-preview"><div class="policy-preview-head"><div><h3>' + esc(wizard.activity) + '</h3><small>' + esc(discipline.name) + ' · ' + esc(wizard.type) + '</small></div><span class="tag ' + wizard.status + '">' + esc(statusLabel(wizard.status)) + '</span></div><dl><dt>Condições</dt><dd>' + esc(wizard.conditions) + '</dd><dt>Detalhes</dt><dd>' + esc(wizard.details || "Nenhuma explicação complementar.") + '</dd><dt>Declaração</dt><dd>' + (wizard.requireDeclaration ? "Obrigatória" : "Não exigida") + '</dd><dt>Fonte</dt><dd>' + esc(wizard.source) + '</dd><dt>Validade</dt><dd>' + esc(wizard.validity) + '</dd></dl></article><div class="wizard-hint">Publicar altera apenas os dados em memória desta demonstração.</div></div>';
+      }
+
+      function capturePolicyWizard(validate) {
+        var wizard = policyWizard;
+        wizard.error = "";
+        if (wizard.step === 1) {
+          wizard.disciplineId = document.getElementById("wizard-discipline").value;
+          wizard.type = document.getElementById("wizard-type").value;
+          wizard.activity = document.getElementById("wizard-activity").value.trim();
+          if (validate && wizard.activity.length < 3) wizard.error = "Informe um nome de atividade com pelo menos três caracteres.";
+        } else if (wizard.step === 2) {
+          var checked = modalBody.querySelector('input[name="wizard-status"]:checked');
+          wizard.status = checked ? checked.value : "";
+          if (validate && !wizard.status) wizard.error = "Escolha uma classificação para o uso de IA.";
+        } else if (wizard.step === 3) {
+          wizard.conditions = document.getElementById("wizard-conditions").value.trim();
+          wizard.details = document.getElementById("wizard-details").value.trim();
+          wizard.requireDeclaration = document.getElementById("wizard-declaration").checked;
+          if (validate && wizard.conditions.length < 15) wizard.error = "Explique as condições com pelo menos quinze caracteres.";
+        } else if (wizard.step === 4) {
+          wizard.source = document.getElementById("wizard-source").value.trim();
+          wizard.validity = document.getElementById("wizard-validity").value;
+          wizard.reviewReminder = document.getElementById("wizard-reminder").checked;
+          if (validate && wizard.source.length < 3) wizard.error = "Informe a fonte institucional ou docente da política.";
+        }
+        return !wizard.error;
+      }
+
+      function renderPolicyWizard() {
+        var labels = ["Contexto", "Decisão", "Condições", "Fonte", "Revisão"];
+        var wizard = policyWizard;
+        modalTitle.textContent = "Nova política · etapa " + wizard.step + " de 5";
+        var steps = labels.map(function (label, index) {
+          var number = index + 1;
+          var className = number === wizard.step ? "active" : number < wizard.step ? "complete" : "";
+          return '<li class="wizard-step ' + className + '">' + esc(label) + '</li>';
+        }).join("");
+        var error = wizard.error ? '<div class="auth-message" role="alert">' + esc(wizard.error) + '</div>' : "";
+        var back = wizard.step > 1 ? '<button class="btn" type="button" data-wizard-back>Voltar</button>' : "";
+        var primary = wizard.step < 5 ? '<button class="btn primary" type="button" data-wizard-next>Continuar</button>' : '<button class="btn primary" type="button" data-wizard-publish>Publicar política</button>';
+        modalBody.innerHTML = '<div class="wizard-progress"><div class="wizard-progress-track"><div class="wizard-progress-fill" style="width:' + (wizard.step / 5 * 100) + '%"></div></div><div class="wizard-progress-meta"><span>Etapa ' + wizard.step + ' de 5</span><span>' + (wizard.step * 20) + '% concluído</span></div></div><ol class="wizard-steps">' + steps + '</ol>' + policyWizardContent() + error + '<div class="wizard-actions"><button class="btn draft-button" type="button" data-wizard-draft>Salvar rascunho</button><div class="wizard-actions-group"><button class="btn" type="button" data-wizard-cancel>Cancelar</button>' + back + primary + '</div></div>';
+        var first = modalBody.querySelector("input, select, textarea, button");
+        if (first) first.focus();
+        modalBody.querySelector("[data-wizard-cancel]").addEventListener("click", closeModal);
+        modalBody.querySelector("[data-wizard-draft]").addEventListener("click", function () {
+          capturePolicyWizard(false);
+          closeModal();
+          toast("Rascunho salvo apenas nesta demonstração.");
+        });
+        var backButton = modalBody.querySelector("[data-wizard-back]");
+        if (backButton) backButton.addEventListener("click", function () {
+          capturePolicyWizard(false);
+          policyWizard.step -= 1;
+          renderPolicyWizard();
+        });
+        var nextButton = modalBody.querySelector("[data-wizard-next]");
+        if (nextButton) nextButton.addEventListener("click", function () {
+          if (!capturePolicyWizard(true)) { renderPolicyWizard(); return; }
+          policyWizard.step += 1;
+          renderPolicyWizard();
+        });
+        var publishButton = modalBody.querySelector("[data-wizard-publish]");
+        if (publishButton) publishButton.addEventListener("click", function () {
+          var wizardData = policyWizard;
+          var discipline = disciplines.find(function (item) { return item.id === wizardData.disciplineId; });
+          discipline.policies.push({ activity: wizardData.activity, type: wizardData.type, status: wizardData.status, conditions: wizardData.conditions, details: wizardData.details, source: wizardData.source });
+          discipline.updated = "agora";
+          closeModal();
+          render();
+          toast("Política publicada na demonstração.");
+        });
       }
 
       function openSimpleModal(title, html) {
@@ -1499,6 +1675,7 @@
       function closeModal() {
         modal.hidden = true;
         document.body.style.overflow = "";
+        policyWizard = null;
         if (app.lastFocus && typeof app.lastFocus.focus === "function") app.lastFocus.focus();
       }
 
