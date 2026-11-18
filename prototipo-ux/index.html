@@ -641,7 +641,26 @@
       width: 125px; height: 125px; display: grid; place-items: center; margin: 0 auto 15px;
       border-radius: 50%; background: conic-gradient(var(--brand) 0 78%, #e6edf4 78%);
     }
-    .metric-ring::before { content: "78%"; width: 93px; height: 93px; display: grid; place-items: center; border-radius: 50%; background: white; font-size: 1.35rem; font-weight: 900; }
+    .metric-ring::before { content: attr(data-value); width: 93px; height: 93px; display: grid; place-items: center; border-radius: 50%; background: white; font-size: 1.35rem; font-weight: 900; }
+    .quality-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+    .quality-kpi { padding: 13px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-subtle); }
+    .quality-kpi strong { display: block; font-size: 1.25rem; }
+    .quality-kpi span { color: var(--muted); font-size: .76rem; }
+    .governance-note {
+      display: flex; gap: 11px; margin-top: 17px; padding: 13px;
+      border: 1px solid #d6e3ea; border-radius: 11px; background: #f5f9fb;
+      color: var(--ink-soft); font-size: .82rem;
+    }
+    .governance-note .icon { color: var(--brand-strong); }
+    .reflection-progress { display: grid; grid-template-columns: auto 1fr; gap: 22px; align-items: center; margin-bottom: 18px; }
+    .reflection-progress .metric-ring { width: 105px; height: 105px; margin: 0; }
+    .reflection-progress .metric-ring::before { width: 77px; height: 77px; font-size: 1.1rem; }
+    .declaration-preview {
+      min-height: 125px; margin-top: 14px; padding: 14px;
+      border: 1px dashed #9fc2cc; border-radius: 11px; background: #f6fbfc;
+      color: var(--ink-soft); font-size: .86rem;
+    }
+    .declaration-preview.empty { color: var(--muted); font-style: italic; }
 
     .state-toolbar {
       position: fixed; right: 24px; bottom: 92px; z-index: 18;
@@ -832,6 +851,8 @@
       .mobile-records { display: grid; }
       .bulk-bar { align-items: stretch; flex-direction: column; }
       .bulk-actions, .bulk-actions .btn { width: 100%; }
+      .quality-kpis { grid-template-columns: 1fr; }
+      .reflection-progress { grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -1070,6 +1091,9 @@
         disciplineLayout: "cards",
         enrollmentFilter: "all",
         selectedEnrollments: [],
+        responsibleChecks: [false, false, false, false],
+        reflectionPurpose: "",
+        reflectionReview: "",
         lastFocus: null
       };
       var demoMode = new URLSearchParams(window.location.search).get("demo") === "1";
@@ -1517,33 +1541,91 @@
           '</div></article>';
       }
 
+      function policyAudit() {
+        var scoped = app.role === "professor" ? disciplines.filter(function (item) { return item.id === "d1" || item.id === "d2"; }) : disciplines;
+        var policies = [];
+        scoped.forEach(function (discipline) {
+          discipline.policies.forEach(function (policy) { policies.push({ discipline: discipline, policy: policy }); });
+        });
+        var noPolicy = scoped.filter(function (item) { return item.policies.length === 0; });
+        var missingSource = policies.filter(function (item) { return !item.policy.source || item.policy.source.trim().length < 5; });
+        var shortConditions = policies.filter(function (item) { return !item.policy.conditions || item.policy.conditions.trim().length < 70; });
+        var stale = scoped.filter(function (item) { return item.updated === "Sem revisão"; });
+        var coverage = Math.round(((scoped.length - noPolicy.length) / Math.max(scoped.length, 1)) * 100);
+        var sourceQuality = Math.round(((policies.length - missingSource.length) / Math.max(policies.length, 1)) * 100);
+        var detailQuality = Math.round(((policies.length - shortConditions.length) / Math.max(policies.length, 1)) * 100);
+        var reviewQuality = Math.round(((scoped.length - stale.length) / Math.max(scoped.length, 1)) * 100);
+        return {
+          scoped: scoped,
+          policies: policies,
+          noPolicy: noPolicy,
+          missingSource: missingSource,
+          shortConditions: shortConditions,
+          stale: stale,
+          coverage: coverage,
+          sourceQuality: sourceQuality,
+          detailQuality: detailQuality,
+          reviewQuality: reviewQuality,
+          score: Math.round((coverage + sourceQuality + detailQuality + reviewQuality) / 4)
+        };
+      }
+
       function reportsView() {
+        var audit = policyAudit();
+        var attention = [];
+        audit.noPolicy.forEach(function (discipline) {
+          attention.push('<div class="check-row"><span class="tag prohibited">Alta</span><span><strong>' + esc(discipline.name) + ' está sem política</strong><small>' + esc(discipline.code) + ' · defina ao menos uma regra para as atividades principais.</small></span><button class="btn small" type="button" data-action="manage-' + esc(discipline.id) + '">Criar</button></div>');
+        });
+        audit.shortConditions.slice(0, 3).forEach(function (item) {
+          attention.push('<div class="check-row"><span class="tag restricted">Média</span><span><strong>Detalhar ' + esc(item.policy.activity) + '</strong><small>' + esc(item.discipline.name) + ' · explique limites, exceções e forma de declaração.</small></span><button class="btn small" type="button" data-action="details-' + esc(item.discipline.id) + '">Consultar</button></div>');
+        });
+        audit.missingSource.slice(0, 2).forEach(function (item) {
+          attention.push('<div class="check-row"><span class="tag pending">Média</span><span><strong>Adicionar fonte institucional</strong><small>' + esc(item.discipline.name) + ' · ' + esc(item.policy.activity) + '</small></span><button class="btn small" type="button" data-action="manage-' + esc(item.discipline.id) + '">Revisar</button></div>');
+        });
+        if (!attention.length) attention.push('<div class="empty-state"><strong>Nenhuma lacuna prioritária encontrada</strong><p>As políticas deste escopo atendem aos critérios automáticos atuais.</p></div>');
+        var statusClass = audit.score >= 85 ? "approved" : audit.score >= 65 ? "restricted" : "prohibited";
+        var statusLabel = audit.score >= 85 ? "Boa clareza" : audit.score >= 65 ? "Atenção moderada" : "Revisão prioritária";
         return pageHead("Novo · Qualidade da informação", "Clareza das políticas", "Identifique lacunas antes que elas gerem dúvidas ou decisões inconsistentes.", button("Gerar plano de revisão", "review-plan", "primary")) +
+          '<section class="card card-pad" style="margin-bottom:18px"><div class="section-head"><div><span class="new-badge" style="margin:0 0 10px">Novo</span><h2>Índice de clareza do escopo</h2></div><span class="tag ' + statusClass + '">' + statusLabel + '</span></div>' +
+            '<div class="grid" style="grid-template-columns:170px 1fr;align-items:center"><div><div class="metric-ring" data-value="' + audit.score + '%" style="background:conic-gradient(var(--brand) 0 ' + audit.score + '%,#e6edf4 ' + audit.score + '%)"></div><p style="text-align:center;color:var(--muted)">qualidade estimada</p></div>' +
+            '<div class="quality-kpis"><div class="quality-kpi"><strong>' + audit.coverage + '%</strong><span>Cobertura</span></div><div class="quality-kpi"><strong>' + audit.detailQuality + '%</strong><span>Detalhamento</span></div><div class="quality-kpi"><strong>' + audit.sourceQuality + '%</strong><span>Fontes</span></div><div class="quality-kpi"><strong>' + audit.reviewQuality + '%</strong><span>Revisão</span></div></div></div></section>' +
           '<section class="grid two-col">' +
-            '<article class="card card-pad"><div class="section-head"><h2>Cobertura geral</h2><span class="tag restricted">Atenção moderada</span></div><div class="grid" style="grid-template-columns:170px 1fr;align-items:center"><div><div class="metric-ring"></div><p style="text-align:center;color:var(--muted)">atividades cobertas</p></div><div class="checklist">' +
-              '<div class="check-row"><span class="tag prohibited">1</span><span><strong>Disciplina sem política</strong><small>Design de Interfaces</small></span></div>' +
-              '<div class="check-row"><span class="tag restricted">2</span><span><strong>Condições pouco detalhadas</strong><small>Ética e Sociedade; Projeto de Conclusão</small></span></div>' +
-              '<div class="check-row"><span class="tag pending">3</span><span><strong>Políticas sem fonte</strong><small>Adicione a origem institucional da orientação</small></span></div>' +
-            '</div></div></article>' +
-            '<article class="card card-pad"><h2>Recomendações automáticas</h2><p style="color:var(--muted)">Regras simples verificam campos ausentes, cobertura e tempo desde a última revisão.</p><div class="checklist">' +
-              '<label class="check-row"><input type="checkbox"><span><strong>Criar regra para UX-220</strong><small>Prioridade alta · 10 minutos</small></span></label>' +
-              '<label class="check-row"><input type="checkbox"><span><strong>Revisar política do TCC</strong><small>Prioridade média · 15 minutos</small></span></label>' +
-              '<label class="check-row"><input type="checkbox"><span><strong>Adicionar fontes oficiais</strong><small>Prioridade média · 20 minutos</small></span></label>' +
-            '</div></article>' +
+            '<article class="card card-pad"><div class="section-head"><h2>Pontos de atenção</h2><span class="tag pending">' + attention.length + ' prioridade(s)</span></div><div class="checklist">' + attention.join("") + '</div></article>' +
+            '<article class="card card-pad"><h2>Como o índice é calculado</h2><p style="color:var(--muted)">Quatro regras determinísticas verificam o preenchimento dos registros deste protótipo.</p><div class="checklist">' +
+              '<div class="check-row"><span class="tag approved">' + audit.coverage + '%</span><span><strong>Disciplinas cobertas</strong><small>Possuem ao menos uma política cadastrada.</small></span></div>' +
+              '<div class="check-row"><span class="tag approved">' + audit.sourceQuality + '%</span><span><strong>Origem informada</strong><small>A política cita plano, manual ou orientação institucional.</small></span></div>' +
+              '<div class="check-row"><span class="tag restricted">' + audit.detailQuality + '%</span><span><strong>Condições detalhadas</strong><small>O texto possui conteúdo suficiente para orientar a decisão.</small></span></div>' +
+              '<div class="check-row"><span class="tag approved">' + audit.reviewQuality + '%</span><span><strong>Revisão registrada</strong><small>A disciplina possui uma data de atualização.</small></span></div>' +
+            '</div><div class="governance-note"><strong>Limite da análise</strong><p>O índice aponta campos incompletos por regras locais. Ele não avalia a qualidade pedagógica, não detecta uso de IA e não comprova autoria.</p></div></article>' +
           '</section>';
       }
 
+      function reflectionDeclaration() {
+        var purpose = app.reflectionPurpose.trim();
+        var review = app.reflectionReview.trim();
+        if (!purpose && !review) return "";
+        return 'Declaro que utilizei apoio de ferramenta de IA para ' + (purpose || "[descreva a finalidade]") + '. Verifiquei ou modifiquei ' + (review || "[descreva sua revisão crítica]") + '. Assumo a responsabilidade pelo conteúdo final entregue.';
+      }
+
       function responsibleView() {
-        return pageHead("Novo · Apoio ao estudante", "Plano de uso responsável", "Uma jornada de autorreflexão que orienta decisões sem detectar autoria nem acusar uso de IA.", button("Salvar reflexão", "save-reflection", "primary")) +
+        var completed = app.responsibleChecks.filter(Boolean).length;
+        var progress = Math.round((completed / app.responsibleChecks.length) * 100);
+        var checks = [
+          ["Li a política da atividade", "Confirme se o uso é permitido e quais condições se aplicam."],
+          ["Defini o objetivo do apoio", "Ex.: brainstorming, revisão de clareza ou depuração de código."],
+          ["Vou verificar fatos e referências", "Respostas de IA podem conter erros ou fontes inexistentes."],
+          ["Sei como declarar o uso", "Registre ferramenta, finalidade e principais contribuições."]
+        ];
+        var declaration = reflectionDeclaration();
+        var actions = button("Recomeçar", "reset-reflection", "") + button("Salvar reflexão", "save-reflection", "primary");
+        return pageHead("Novo · Apoio ao estudante", "Plano de uso responsável", "Uma jornada de autorreflexão que orienta decisões sem detectar autoria nem acusar uso de IA.", actions) +
+          '<section class="reflection-progress card card-pad" style="margin-bottom:18px"><div class="metric-ring" data-value="' + progress + '%" style="background:conic-gradient(var(--brand) 0 ' + progress + '%,#e6edf4 ' + progress + '%)"></div><div><span class="new-badge" style="margin:0 0 10px">Novo</span><h2>' + completed + ' de ' + checks.length + ' cuidados confirmados</h2><p>Complete a lista e descreva sua revisão crítica para formar uma declaração pessoal de uso responsável.</p></div></section>' +
           '<section class="grid two-col">' +
             '<article class="card card-pad"><h2>Antes de usar uma ferramenta de IA</h2><p style="color:var(--muted)">Marque cada item para construir um registro pessoal de decisão.</p><div class="checklist">' +
-              '<label class="check-row"><input type="checkbox"><span><strong>Li a política da atividade</strong><small>Confirme se o uso é permitido e quais condições se aplicam.</small></span></label>' +
-              '<label class="check-row"><input type="checkbox"><span><strong>Defini o objetivo do apoio</strong><small>Ex.: brainstorming, revisão de clareza ou depuração de código.</small></span></label>' +
-              '<label class="check-row"><input type="checkbox"><span><strong>Vou verificar fatos e referências</strong><small>Respostas de IA podem conter erros ou fontes inexistentes.</small></span></label>' +
-              '<label class="check-row"><input type="checkbox"><span><strong>Sei como declarar o uso</strong><small>Registre ferramenta, finalidade e principais contribuições.</small></span></label>' +
+              checks.map(function (item, index) { return '<label class="check-row"><input type="checkbox" data-responsible-check="' + index + '"' + (app.responsibleChecks[index] ? " checked" : "") + '><span><strong>' + esc(item[0]) + '</strong><small>' + esc(item[1]) + '</small></span></label>'; }).join("") +
             '</div></article>' +
-            '<article class="card card-pad"><span class="new-badge" style="margin:0 0 12px">Novo</span><h2>Rascunho de declaração</h2><div class="field"><label for="reflection-purpose">Como a ferramenta ajudou?</label><textarea id="reflection-purpose" placeholder="Ex.: usei para levantar alternativas de estrutura; revisei e reescrevi todo o texto final."></textarea></div><div class="field"><label for="reflection-review">O que você verificou ou modificou?</label><textarea id="reflection-review" placeholder="Descreva sua revisão crítica."></textarea></div><p style="color:var(--muted);font-size:.82rem">Este registro é uma declaração do próprio estudante; não comprova autoria nem uso de IA.</p></article>' +
-          '</section>';
+            '<article class="card card-pad"><h2>Rascunho de declaração</h2><div class="field"><label for="reflection-purpose">Como a ferramenta ajudou?</label><textarea id="reflection-purpose" data-reflection-field="purpose" placeholder="Ex.: usei para levantar alternativas de estrutura; revisei e reescrevi todo o texto final.">' + esc(app.reflectionPurpose) + '</textarea></div><div class="field"><label for="reflection-review">O que você verificou ou modificou?</label><textarea id="reflection-review" data-reflection-field="review" placeholder="Descreva sua revisão crítica.">' + esc(app.reflectionReview) + '</textarea></div><h3>Prévia</h3><div id="declaration-preview" class="declaration-preview' + (declaration ? "" : " empty") + '" aria-live="polite">' + esc(declaration || "Sua declaração será montada aqui conforme você responder.") + '</div><div id="reflection-message" aria-live="polite"></div></article>' +
+          '</section><div class="governance-note"><strong>Privacidade e finalidade</strong><p>Este plano é uma autodeclaração educativa, armazenada apenas em memória nesta demonstração. Ele não analisa arquivos, não detecta autoria e não comprova se houve uso de IA.</p></div>';
       }
 
       function render() {
@@ -1651,9 +1733,64 @@
         root.querySelectorAll("[data-view-jump]").forEach(function (node) {
           node.addEventListener("click", function () { navigate(node.getAttribute("data-view-jump")); });
         });
+        root.querySelectorAll("[data-responsible-check]").forEach(function (node) {
+          node.addEventListener("change", function () {
+            var index = Number(node.getAttribute("data-responsible-check"));
+            app.responsibleChecks[index] = node.checked;
+            render();
+          });
+        });
+        root.querySelectorAll("[data-reflection-field]").forEach(function (node) {
+          node.addEventListener("input", function () {
+            if (node.getAttribute("data-reflection-field") === "purpose") app.reflectionPurpose = node.value;
+            else app.reflectionReview = node.value;
+            var preview = document.getElementById("declaration-preview");
+            var declaration = reflectionDeclaration();
+            if (preview) {
+              preview.textContent = declaration || "Sua declaração será montada aqui conforme você responder.";
+              preview.classList.toggle("empty", !declaration);
+            }
+          });
+        });
         root.querySelectorAll("[data-action]").forEach(function (node) {
           node.addEventListener("click", function () { handleAction(node.getAttribute("data-action")); });
         });
+      }
+
+      function saveResponsiblePlan() {
+        var message = document.getElementById("reflection-message");
+        var completed = app.responsibleChecks.filter(Boolean).length;
+        var missing = [];
+        if (completed < app.responsibleChecks.length) missing.push("confirme os quatro cuidados");
+        if (app.reflectionPurpose.trim().length < 10) missing.push("explique a finalidade com pelo menos dez caracteres");
+        if (app.reflectionReview.trim().length < 10) missing.push("descreva sua revisão crítica com pelo menos dez caracteres");
+        if (missing.length) {
+          if (message) message.innerHTML = '<div class="auth-message" role="alert" style="margin-top:12px"><strong>Antes de salvar:</strong> ' + esc(missing.join("; ")) + '.</div>';
+          return;
+        }
+        if (message) message.innerHTML = '<div class="auth-message success" role="status" style="margin-top:12px"><strong>Reflexão salva nesta demonstração.</strong> Os dados permanecem somente na memória do navegador.</div>';
+        toast("Plano de uso responsável concluído.");
+      }
+
+      function openReviewPlan() {
+        var audit = policyAudit();
+        var tasks = [];
+        audit.noPolicy.forEach(function (discipline) {
+          tasks.push({ level: "Alta", className: "prohibited", title: "Criar política para " + discipline.code, detail: discipline.name + " ainda não orienta nenhuma atividade." });
+        });
+        audit.shortConditions.forEach(function (item) {
+          tasks.push({ level: "Média", className: "restricted", title: "Detalhar " + item.policy.activity, detail: item.discipline.name + " precisa explicitar limites, exceções e declaração." });
+        });
+        audit.missingSource.forEach(function (item) {
+          tasks.push({ level: "Média", className: "pending", title: "Informar fonte de " + item.policy.activity, detail: item.discipline.name + " não possui uma origem institucional suficiente." });
+        });
+        audit.stale.forEach(function (discipline) {
+          if (!audit.noPolicy.some(function (item) { return item.id === discipline.id; })) tasks.push({ level: "Baixa", className: "pending", title: "Registrar revisão de " + discipline.code, detail: discipline.name + " está sem data de atualização." });
+        });
+        var content = tasks.length ? tasks.slice(0, 8).map(function (task, index) {
+          return '<div class="check-row"><span class="tag ' + task.className + '">' + esc(task.level) + '</span><span><strong>' + (index + 1) + '. ' + esc(task.title) + '</strong><small>' + esc(task.detail) + '</small></span></div>';
+        }).join("") : '<div class="empty-state"><strong>O escopo está em dia</strong><p>Nenhuma ação foi sugerida pelas regras automáticas.</p></div>';
+        openSimpleModal("Plano de revisão · " + tasks.length + " ação(ões)", '<p>Prioridades calculadas a partir de cobertura, detalhamento, fontes e data de revisão.</p><div class="checklist">' + content + '</div><div class="governance-note"><strong>Revisão humana necessária</strong><p>As sugestões organizam o trabalho, mas a decisão pedagógica continua com a equipe responsável.</p></div><div class="modal-actions"><button class="btn primary" type="button" data-modal-cancel>Concluir</button></div>');
       }
 
       function handleAction(action) {
@@ -1670,8 +1807,9 @@
         else if (action === "new-user") openSimpleModal("Adicionar professor", '<div class="field"><label for="user-name">Nome completo</label><input id="user-name"></div><div class="field"><label for="user-email">E-mail institucional</label><input id="user-email" type="email"></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Convite preparado para envio.">Preparar convite</button></div>');
         else if (action === "compare-policies") openSimpleModal("Comparar versões · Novo", '<p>Esta proposta destaca alterações em condições, detalhes e fonte antes da publicação.</p><div class="check-row"><span class="tag prohibited">Antes</span><span><strong>Uso proibido</strong><small>Sem justificativa informada</small></span></div><div class="check-row" style="margin-top:10px"><span class="tag restricted">Agora</span><span><strong>Permitido com restrições</strong><small>Exige declaração e verificação das fontes</small></span></div><div class="modal-actions"><button class="btn primary" data-modal-cancel>Entendi</button></div>');
         else if (action === "show-auth-plan") openSimpleModal("Plano de autenticação institucional", '<ol><li>Usar e-mail ou identificador acadêmico único.</li><li>Integrar SSO via OIDC/SAML quando houver provedor institucional.</li><li>Adicionar recuperação de conta com fluxo auditável.</li><li>Exigir segundo fator para administradores.</li><li>Manter autorização por perfil e disciplina no servidor.</li></ol><div class="modal-actions"><button class="btn primary" data-modal-cancel>Fechar</button></div>');
-        else if (action === "save-reflection") toast("Reflexão salva apenas nesta demonstração.");
-        else if (action === "review-plan") toast("Plano de revisão gerado com 3 prioridades.");
+        else if (action === "save-reflection") saveResponsiblePlan();
+        else if (action === "reset-reflection") { app.responsibleChecks = [false, false, false, false]; app.reflectionPurpose = ""; app.reflectionReview = ""; render(); toast("Reflexão reiniciada."); }
+        else if (action === "review-plan") openReviewPlan();
         else if (action === "export-history") toast("Exportação simulada. Na versão real, gere CSV no servidor.");
         else toast("Ação demonstrada no protótipo.");
       }
