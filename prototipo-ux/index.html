@@ -765,12 +765,19 @@
     .assistant-head .bot-avatar { width: 41px; height: 41px; display: grid; place-items: center; border-radius: 13px; background: #61c4cd; color: #0a293b; font-weight: 900; }
     .assistant-head strong { display: block; }
     .assistant-head small { color: #c7e0e7; }
-    .assistant-close { margin-left: auto; border-color: rgba(255,255,255,.2); background: transparent; color: white; }
+    .assistant-head-copy { min-width: 0; }
+    .assistant-context { display: block; max-width: 205px; overflow: hidden; color: #d9eef2; text-overflow: ellipsis; white-space: nowrap; }
+    .assistant-tools { display: flex; gap: 6px; margin-left: auto; }
+    .assistant-tools .icon-btn { border-color: rgba(255,255,255,.2); background: transparent; color: white; }
     .chat-log { overflow-y: auto; padding: 16px; background: #f6f8fb; }
     .message { width: fit-content; max-width: 88%; margin-bottom: 12px; padding: 10px 12px; border-radius: 14px 14px 14px 4px; background: white; box-shadow: 0 3px 10px rgba(20,35,55,.06); font-size: .88rem; }
     .message.user { margin-left: auto; border-radius: 14px 14px 4px 14px; background: var(--brand); color: white; }
-    .message small { display: block; margin-top: 5px; color: var(--muted); font-size: .67rem; }
+    .message small { display: block; margin-top: 5px; color: var(--muted); font-size: .75rem; }
     .message.user small { color: #d9f0f4; }
+    .message-source { display: flex; align-items: flex-start; gap: 6px; margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: .75rem; line-height: 1.4; }
+    .message-source strong { flex: 0 0 auto; color: var(--brand-strong); }
+    .message-action { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; padding: 4px 7px; border-radius: 7px; background: var(--success-soft); color: var(--success); font-size: .75rem; font-weight: 780; }
+    .assistant-limit { margin: 0 0 12px; padding: 9px 10px; border: 1px solid #d5e3ea; border-radius: 10px; background: #eef6f8; color: var(--ink-soft); font-size: .75rem; line-height: 1.45; }
     .typing { display: flex; gap: 4px; align-items: center; }
     .typing i { width: 7px; height: 7px; border-radius: 50%; background: #7b8aa0; animation: bounce 1s infinite alternate; }
     .typing i:nth-child(2) { animation-delay: .2s; }
@@ -778,11 +785,11 @@
     @keyframes bounce { to { transform: translateY(-4px); opacity: .45; } }
     .chat-footer { padding: 12px; border-top: 1px solid var(--line); background: white; }
     .suggestions { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 9px; }
-    .chip { flex: 0 0 auto; padding: 6px 9px; border: 1px solid #b9cfda; border-radius: 999px; background: #f0f8fa; color: #174e64; font-size: .73rem; font-weight: 760; }
+    .chip { flex: 0 0 auto; padding: 6px 9px; border: 1px solid #b9cfda; border-radius: 999px; background: #f0f8fa; color: #174e64; font-size: .76rem; font-weight: 760; }
     .chat-form { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
     .chat-form input { min-width: 0; }
     .send-button { width: 44px; border: 0; border-radius: 11px; background: var(--brand); color: white; font-weight: 900; }
-    .assistant-disclaimer { margin: 7px 2px 0; color: var(--muted); font-size: .67rem; text-align: center; }
+    .assistant-disclaimer { margin: 7px 2px 0; color: var(--muted); font-size: .75rem; text-align: center; }
     .toast {
       position: fixed; left: 50%; bottom: 24px; z-index: 90; transform: translate(-50%, 130%);
       max-width: calc(100vw - 30px); padding: 11px 16px; border-radius: 11px; background: #13233f; color: white;
@@ -1045,18 +1052,20 @@
   <section class="assistant-panel" id="assistant-panel" aria-label="Assistente virtual Lia" hidden>
     <header class="assistant-head">
       <span class="bot-avatar" aria-hidden="true">L</span>
-      <div><strong>Lia</strong><small>Clara, cuidadosa e objetiva</small></div>
-      <button class="icon-btn assistant-close" id="assistant-close" type="button" aria-label="Fechar assistente">×</button>
+      <div class="assistant-head-copy"><strong>Lia</strong><small class="assistant-context" id="assistant-context">Nesta tela: Visão geral</small></div>
+      <div class="assistant-tools">
+        <button class="icon-btn" id="assistant-clear" type="button" aria-label="Limpar conversa" title="Limpar conversa">↻</button>
+        <button class="icon-btn assistant-close" id="assistant-close" type="button" aria-label="Fechar assistente">×</button>
+      </div>
     </header>
     <div class="chat-log" id="chat-log" aria-live="polite" aria-relevant="additions">
-      <div class="message">Olá! Eu sou a Lia. Posso localizar políticas, abrir telas, aplicar filtros e preparar formulários. O que você precisa?<small>agora</small></div>
+      <p class="assistant-limit"><strong>Assistente local:</strong> usa apenas regras e dados desta demonstração. Não envia mensagens para serviços externos.</p>
+      <div class="message">Olá! Posso consultar políticas com suas fontes e executar ações permitidas para o seu perfil. O que você precisa?<small>agora</small></div>
     </div>
     <footer class="chat-footer">
-      <div class="suggestions" aria-label="Sugestões rápidas">
-        <button class="chip" type="button">Posso usar IA no TCC?</button>
-        <button class="chip" type="button">Ver matrículas pendentes</button>
-        <button class="chip" type="button">Criar nova política</button>
-        <button class="chip" type="button">Onde há lacunas?</button>
+      <div class="suggestions" id="assistant-suggestions" aria-label="Sugestões rápidas">
+        <button class="chip" type="button" data-assistant-prompt="Posso usar IA no TCC?">Posso usar IA no TCC?</button>
+        <button class="chip" type="button" data-assistant-prompt="Onde há lacunas?">Onde há lacunas?</button>
       </div>
       <form class="chat-form" id="chat-form">
         <label class="sr-only" for="chat-input">Mensagem para Lia</label>
@@ -1205,6 +1214,7 @@
         roleControl.hidden = !demoMode;
         stateToolbar.hidden = !demoMode;
         document.body.classList.add("authenticated");
+        resetChat();
         render();
         document.getElementById("main-content").focus();
       }
@@ -1221,6 +1231,7 @@
         document.body.classList.remove("authenticated", "menu-open");
         loginForm.reset();
         document.getElementById("login-message").innerHTML = "";
+        resetChat();
         showAuthTab("login");
       }
 
@@ -1240,6 +1251,44 @@
 
       function statusLabel(status) {
         return { allowed: "Permitido", restricted: "Com restrições", prohibited: "Proibido", pending: "Pendente", approved: "Aprovada", refused: "Recusada" }[status] || status;
+      }
+
+      function viewLabel(view) {
+        return { home: "Visão geral", disciplines: "Disciplinas e políticas", classes: "Turmas e matrículas", announcements: "Comunicados", users: "Usuários e acessos", history: "Histórico", reports: "Clareza das políticas", responsible: "Uso responsável" }[view] || "Plataforma";
+      }
+
+      function assistantPrompts() {
+        var byView = {
+          home: ["O que exige atenção?", "Posso usar IA no TCC?"],
+          disciplines: ["Filtre políticas proibidas", "Qual é a regra do TCC?"],
+          classes: ["Ver matrículas pendentes", "Quantas solicitações aguardam análise?"],
+          announcements: ["O que há nos comunicados?", "Voltar ao painel"],
+          users: ["Explique os controles de acesso", "Mostrar plano de autenticação"],
+          history: ["Quem alterou as políticas?", "Voltar ao painel"],
+          reports: ["Onde estão as lacunas?", "Gerar plano de revisão"],
+          responsible: ["Como declarar o uso de IA?", "O que devo verificar?"]
+        };
+        var prompts = app.role === "aluno" && app.view === "home" ? ["Posso usar IA no TCC?", "Como declarar o uso de IA?"] : (byView[app.view] || byView.home).slice();
+        if (app.role === "aluno") prompts.push("Como usar IA com responsabilidade?");
+        else prompts.push("Criar nova política");
+        return prompts.slice(0, 4);
+      }
+
+      function updateAssistantContext() {
+        var context = document.getElementById("assistant-context");
+        var suggestions = document.getElementById("assistant-suggestions");
+        if (context) context.textContent = "Nesta tela: " + viewLabel(app.view) + " · " + roleName();
+        if (!suggestions) return;
+        suggestions.innerHTML = "";
+        assistantPrompts().forEach(function (prompt) {
+          var chip = document.createElement("button");
+          chip.className = "chip";
+          chip.type = "button";
+          chip.textContent = prompt;
+          chip.setAttribute("data-assistant-prompt", prompt);
+          chip.addEventListener("click", function () { submitChat(prompt); });
+          suggestions.appendChild(chip);
+        });
       }
 
       function pageHead(eyebrow, title, description, actions) {
@@ -1652,6 +1701,7 @@
         document.querySelectorAll("[data-pending-count]").forEach(function (node) {
           node.textContent = enrollments.filter(function (item) { return item.status === "pending"; }).length;
         });
+        updateAssistantContext();
       }
 
       function navigate(view, announce) {
@@ -1965,15 +2015,44 @@
         toastNode.timer = window.setTimeout(function () { toastNode.classList.remove("show"); }, 2800);
       }
 
-      function chatMessage(text, fromUser) {
+      function chatMessage(text, fromUser, meta) {
         var node = document.createElement("div");
         node.className = "message" + (fromUser ? " user" : "");
         node.appendChild(document.createTextNode(text));
+        if (meta && meta.source) {
+          var source = document.createElement("div");
+          source.className = "message-source";
+          var sourceLabel = document.createElement("strong");
+          sourceLabel.textContent = "Fonte:";
+          var sourceText = document.createElement("span");
+          sourceText.textContent = meta.source;
+          source.appendChild(sourceLabel);
+          source.appendChild(sourceText);
+          node.appendChild(source);
+        }
+        if (meta && meta.actionLabel) {
+          var action = document.createElement("span");
+          action.className = "message-action";
+          action.textContent = "✓ " + meta.actionLabel;
+          node.appendChild(action);
+        }
         var time = document.createElement("small");
         time.textContent = "agora";
         node.appendChild(time);
         chatLog.appendChild(node);
         chatLog.scrollTop = chatLog.scrollHeight;
+      }
+
+      function resetChat() {
+        chatLog.innerHTML = "";
+        var limit = document.createElement("p");
+        limit.className = "assistant-limit";
+        var limitTitle = document.createElement("strong");
+        limitTitle.textContent = "Assistente local: ";
+        limit.appendChild(limitTitle);
+        limit.appendChild(document.createTextNode("usa apenas regras e dados desta demonstração. Não envia mensagens para serviços externos."));
+        chatLog.appendChild(limit);
+        chatMessage("Olá! Posso consultar políticas com suas fontes e executar ações permitidas para o seu perfil. O que você precisa?", false);
       }
 
       function typing(show) {
@@ -1993,50 +2072,148 @@
         return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
       }
 
+      function assistantDisciplineScope() {
+        if (app.role === "aluno") return disciplines.filter(function (item) { return item.id !== "d6"; });
+        if (app.role === "professor") return disciplines.filter(function (item) { return item.id === "d1" || item.id === "d2"; });
+        return disciplines;
+      }
+
+      function disciplineMentioned(text) {
+        var aliases = [
+          { pattern: /tcc|conclusao/, id: "d5" },
+          { pattern: /programacao|web-302/, id: "d2" },
+          { pattern: /estatistica|est-211/, id: "d4" },
+          { pattern: /metodologia|met-201/, id: "d1" },
+          { pattern: /design|ux-220|interface/, id: "d6" },
+          { pattern: /etica|eti-104/, id: "d3" }
+        ];
+        var match = aliases.find(function (item) { return item.pattern.test(text); });
+        return match ? disciplines.find(function (item) { return item.id === match.id; }) : null;
+      }
+
+      function policyMentioned(discipline, text) {
+        if (!discipline || !discipline.policies.length) return null;
+        var terms = text.match(/prova|avaliacao|projeto|exercicio|laboratorio|ensaio|revisao|bibliograf|mapa|pesquisa/);
+        if (!terms) return discipline.policies[0];
+        var term = terms[0];
+        return discipline.policies.find(function (policy) {
+          return normalize(policy.activity + " " + policy.type).indexOf(term) >= 0 || (term === "avaliacao" && policy.type === "Prova");
+        }) || discipline.policies[0];
+      }
+
       function assistantIntent(original) {
         var text = normalize(original);
-        var action = function () {};
+        var action = null;
         var response;
+        var source = "Regras locais da demonstração";
+        var actionLabel = "";
         if (/nova politica|criar politica|cadastrar politica|adicionar politica/.test(text)) {
-          response = "Vou abrir o formulário de nova política. Já deixei a disciplina pronta para você escolher.";
-          action = function () { navigate("disciplines"); openPolicyModal(); };
+          if (app.role === "aluno") {
+            response = "Seu perfil pode consultar políticas, mas não pode criá-las ou alterá-las. Procure o professor responsável caso uma orientação esteja ausente.";
+            source = "Regra de acesso do perfil Aluno";
+          } else {
+            response = "Vou abrir o fluxo guiado de nova política dentro do seu escopo de acesso.";
+            source = "Permissões do perfil " + roleName();
+            actionLabel = "Formulário de política aberto";
+            action = function () { navigate("disciplines"); openPolicyModal(); };
+          }
         } else if (/proibid|nao pode|bloquead/.test(text)) {
           response = "Filtrei as disciplinas que possuem atividades com uso de IA proibido.";
+          source = "Políticas publicadas no seu escopo";
+          actionLabel = "Filtro Proibido aplicado";
           action = function () { app.statusFilter = "prohibited"; app.search = ""; navigate("disciplines"); };
         } else if (/matricula|pendente|aprovar aluno|solicitac/.test(text)) {
-          response = "Abri as matrículas pendentes. Você pode aprovar ou recusar cada solicitação na tabela.";
-          action = function () { app.enrollmentFilter = "pending"; navigate("classes"); };
+          if (app.role === "aluno") {
+            response = "Seu perfil não pode analisar solicitações de outras pessoas. Você pode acompanhar somente as informações liberadas para sua própria matrícula.";
+            source = "Regra de acesso do perfil Aluno";
+          } else {
+            var pendingCount = enrollments.filter(function (item) { return item.status === "pending"; }).length;
+            response = "Há " + pendingCount + " solicitações aguardando análise. Abri a lista para você aprovar, recusar ou consultar os detalhes.";
+            source = "Solicitações de matrícula da demonstração";
+            actionLabel = "Matrículas pendentes abertas";
+            action = function () { app.enrollmentFilter = "pending"; navigate("classes"); };
+          }
         } else if (/comunicado|aviso|publicar mensagem/.test(text)) {
-          response = "Levei você para os comunicados. Use “Novo comunicado” para publicar um aviso.";
+          var activeAnnouncements = announcements.filter(function (item) { return item.active; }).length;
+          response = "Há " + activeAnnouncements + " comunicados ativos. Abri a área para você consultar os avisos disponíveis.";
+          source = "Comunicados cadastrados na demonstração";
+          actionLabel = "Comunicados abertos";
           action = function () { navigate("announcements"); };
         } else if (/historico|auditoria|quem alterou|mudanc/.test(text)) {
-          response = "Abri a trilha de auditoria com autor, ação e horário das alterações.";
-          action = function () { navigate("history"); };
+          if (app.role === "aluno") {
+            response = "O histórico operacional não está disponível para o perfil Aluno. As fontes e datas das políticas autorizadas aparecem nos detalhes das disciplinas.";
+            source = "Regra de acesso do perfil Aluno";
+          } else {
+            response = "Abri a trilha de auditoria. A alteração mais recente foi “" + historyItems[0].action + "”, registrada por " + historyItems[0].author + ".";
+            source = "Histórico de operações · " + historyItems[0].date;
+            actionLabel = "Histórico aberto";
+            action = function () { navigate("history"); };
+          }
         } else if (/usuario|professor|acesso|login|senha|autentic/.test(text)) {
-          response = "Abri usuários e acessos. A proposta nova de verificação institucional também está destacada.";
-          action = function () { navigate("users"); };
-        } else if (/lacuna|cobertura|relatorio|clareza|sem politica/.test(text)) {
-          response = "Encontrei uma disciplina sem política e outros pontos incompletos. Abri o painel de clareza.";
-          action = function () { navigate("reports"); };
-        } else if (/responsavel|autorreflex|declarar|etica|uso consciente/.test(text)) {
+          if (app.role !== "admin") {
+            response = "A gestão de usuários é exclusiva do perfil Administrador. As permissões do seu perfil continuam sendo aplicadas no servidor da versão real.";
+            source = "Matriz de acesso por perfil";
+          } else {
+            response = "Abri usuários e acessos. O plano propõe identidade institucional, recuperação auditável e segundo fator para perfis críticos.";
+            source = "Plano demonstrativo de autenticação institucional";
+            actionLabel = "Gestão de usuários aberta";
+            action = function () { navigate("users"); if (/plano/.test(text)) handleAction("show-auth-plan"); };
+          }
+        } else if (/lacuna|cobertura|relatorio|clareza|sem politica|atencao|plano de revisao/.test(text)) {
+          if (app.role === "aluno") {
+            response = "O diagnóstico institucional não fica disponível para estudantes. Abri suas disciplinas para você identificar políticas ausentes ou incompletas no seu próprio escopo.";
+            source = "Matriz de acesso por perfil";
+            actionLabel = "Suas disciplinas abertas";
+            action = function () { navigate("disciplines"); };
+          } else {
+            var audit = policyAudit();
+            response = "O índice atual é " + audit.score + "%. Encontrei " + audit.noPolicy.length + " disciplina(s) sem política e " + audit.shortConditions.length + " orientação(ões) que podem ser mais detalhadas.";
+            source = "Auditoria local de cobertura, fontes, detalhamento e revisão";
+            actionLabel = /plano de revisao|gerar plano/.test(text) ? "Plano de revisão gerado" : "Painel de clareza aberto";
+            action = function () { navigate("reports"); if (/plano de revisao|gerar plano/.test(text)) openReviewPlan(); };
+          }
+        } else if (/responsab|autorreflex|declarar|uso consciente|o que devo verificar/.test(text)) {
           response = "Abri o plano de uso responsável. Ele ajuda a decidir e declarar o uso sem tentar detectar autoria.";
+          source = "Roteiro educativo de autodeclaração";
+          actionLabel = "Plano de uso responsável aberto";
           action = function () { navigate("responsible"); };
         } else if (/tcc|metodologia|programacao|estatistica|design|etica|posso usar|regra|politica/.test(text)) {
-          var query = "";
-          if (text.indexOf("tcc") >= 0) query = "Projeto de Conclusão";
-          else if (text.indexOf("programacao") >= 0) query = "Programação Web";
-          else if (text.indexOf("estatistica") >= 0) query = "Estatística Aplicada";
-          else if (text.indexOf("metodologia") >= 0) query = "Metodologia Científica";
-          else if (text.indexOf("design") >= 0) query = "Design de Interfaces";
-          response = query ? "Localizei a disciplina e apliquei o filtro. Confira a regra da atividade e as condições detalhadas." : "Abri a consulta de disciplinas e políticas. Você pode filtrar por situação ou pesquisar uma atividade.";
-          action = function () { app.search = query; app.statusFilter = "all"; navigate("disciplines"); };
+          var discipline = disciplineMentioned(text);
+          var scope = assistantDisciplineScope();
+          var authorized = !discipline || scope.some(function (item) { return item.id === discipline.id; });
+          if (discipline && !authorized) {
+            response = "Essa disciplina não está no escopo autorizado para o perfil " + roleName() + ". Não vou exibir políticas fora das suas permissões.";
+            source = "Controle de acesso por perfil e disciplina";
+          } else if (discipline && !discipline.policies.length) {
+            response = discipline.name + " ainda não possui política cadastrada. A ausência de regra não significa que o uso de IA esteja permitido; confirme com o docente responsável.";
+            source = "Cadastro de " + discipline.code + " · sem política publicada";
+            actionLabel = "Disciplina localizada";
+            action = function () { app.search = discipline.name; app.statusFilter = "all"; navigate("disciplines"); };
+          } else if (discipline) {
+            var policy = policyMentioned(discipline, text);
+            response = "Em " + discipline.name + ", “" + policy.activity + "” está classificada como " + statusLabel(policy.status).toLowerCase() + ". " + policy.conditions;
+            source = policy.source + " · revisão: " + discipline.updated;
+            actionLabel = "Política localizada";
+            action = function () { app.search = discipline.name; app.statusFilter = "all"; navigate("disciplines"); };
+          } else {
+            response = "Abri a consulta de políticas do seu escopo. Informe também a disciplina ou a atividade para eu localizar uma orientação específica.";
+            source = "Políticas publicadas no seu escopo";
+            actionLabel = "Consulta de políticas aberta";
+            action = function () { app.search = ""; app.statusFilter = "all"; navigate("disciplines"); };
+          }
         } else if (/inicio|painel|visao geral|dashboard/.test(text)) {
           response = "Voltamos à visão geral.";
+          source = "Navegação da plataforma";
+          actionLabel = "Visão geral aberta";
           action = function () { navigate("home"); };
+        } else if (/ajuda|o que voce faz|como funciona/.test(text)) {
+          response = "Posso consultar políticas com fonte, aplicar filtros, abrir telas e preparar formulários respeitando seu perfil. Minhas respostas são simuladas por palavras-chave e regras locais.";
+          source = "Escopo funcional da Lia nesta demonstração";
         } else {
-          response = "Ainda não entendi esse pedido. Posso localizar políticas, filtrar proibições, abrir matrículas, comunicados, usuários, histórico, lacunas ou o plano de uso responsável.";
+          response = "Ainda não entendi esse pedido. Tente citar uma disciplina, “políticas proibidas”, “matrículas pendentes”, “comunicados”, “histórico”, “lacunas” ou “uso responsável”.";
+          source = "Intenções locais disponíveis nesta demonstração";
         }
-        return { response: response, action: action };
+        return { response: response, source: source, action: action, actionLabel: actionLabel };
       }
 
       function submitChat(text) {
@@ -2046,8 +2223,8 @@
         var intent = assistantIntent(text);
         window.setTimeout(function () {
           typing(false);
-          chatMessage(intent.response, false);
-          intent.action();
+          if (intent.action) intent.action();
+          chatMessage(intent.response, false, { source: intent.source, actionLabel: intent.actionLabel });
         }, 650);
       }
 
@@ -2114,6 +2291,7 @@
       });
       document.getElementById("role-select").addEventListener("change", function (event) {
         app.role = event.target.value;
+        resetChat();
         navigate("home", "Visualização alterada para " + roleName() + ".");
       });
       document.getElementById("state-select").addEventListener("change", function (event) {
@@ -2135,14 +2313,15 @@
         assistantToggle.setAttribute("aria-expanded", "false");
         assistantToggle.focus();
       });
+      document.getElementById("assistant-clear").addEventListener("click", function () {
+        resetChat();
+        document.getElementById("chat-input").focus();
+      });
       document.getElementById("chat-form").addEventListener("submit", function (event) {
         event.preventDefault();
         var input = document.getElementById("chat-input");
         submitChat(input.value);
         input.value = "";
-      });
-      document.querySelectorAll(".chip").forEach(function (chip) {
-        chip.addEventListener("click", function () { submitChat(chip.textContent); });
       });
       document.getElementById("modal-close").addEventListener("click", closeModal);
       modal.addEventListener("click", function (event) { if (event.target === modal) closeModal(); });
