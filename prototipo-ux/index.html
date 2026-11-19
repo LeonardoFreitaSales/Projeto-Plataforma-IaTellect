@@ -198,7 +198,7 @@
     }
     .demo-account:hover { border-color: #9cc7d0; background: #f7fcfd; }
     .demo-account strong { display: block; font-size: .78rem; }
-    .demo-account small { color: var(--muted); font-size: .7rem; }
+    .demo-account small { color: var(--muted); font-size: .75rem; }
     .auth-privacy { margin: 18px 0 0; color: var(--muted); font-size: .75rem; text-align: center; }
     .auth-privacy strong { color: var(--ink-soft); }
 
@@ -233,7 +233,7 @@
     .brand strong { display: block; font-size: 1.12rem; letter-spacing: -.025em; }
     .brand small { color: #aebed3; font-size: .8rem; }
     .nav-label {
-      margin: 16px 11px 7px; color: #8297b0; font-size: .72rem;
+      margin: 16px 11px 7px; color: #8297b0; font-size: .75rem;
       font-weight: 800; text-transform: uppercase; letter-spacing: .11em;
     }
     .nav-list { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }
@@ -254,7 +254,7 @@
     .new-badge {
       display: inline-flex; align-items: center; justify-content: center; margin-left: auto;
       padding: 2px 7px; border-radius: 999px; background: #efb45f; color: #34230a;
-      font-size: .7rem; font-weight: 900; text-transform: uppercase; letter-spacing: .04em;
+      font-size: .75rem; font-weight: 900; text-transform: uppercase; letter-spacing: .04em;
     }
     .sidebar-footer {
       margin-top: auto; padding: 14px; border: 1px solid rgba(255,255,255,.09);
@@ -691,7 +691,7 @@
       border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.95); box-shadow: var(--shadow);
     }
     .state-toolbar .field { gap: 2px; }
-    .state-toolbar label { font-size: .68rem; }
+    .state-toolbar label { font-size: .75rem; }
     .state-toolbar select { min-height: 34px; padding: 5px 8px; font-size: .78rem; }
     .demo-state { min-height: 360px; display: grid; place-items: center; padding: 30px; border: 1px solid var(--line); border-radius: var(--radius); background: white; text-align: center; }
     .state-box { max-width: 470px; }
@@ -727,7 +727,7 @@
       background: var(--surface-subtle);
       color: var(--muted);
       text-align: center;
-      font-size: .7rem;
+      font-size: .75rem;
       font-weight: 780;
     }
     .wizard-step.active { border-color: #9fcbd3; background: var(--brand-soft); color: var(--brand-strong); }
@@ -1270,6 +1270,7 @@
         authScreen.hidden = false;
         document.getElementById("skip-link").setAttribute("href", "#auth-card");
         document.body.classList.remove("authenticated", "menu-open");
+        document.title = "Acesso — IaTellect";
         loginForm.reset();
         document.getElementById("login-message").innerHTML = "";
         resetChat();
@@ -1393,19 +1394,19 @@
             statCard("Plano responsável", "60%", "Quatro de seis etapas concluídas", "#dedcf1") +
           '</section>' +
           '<section class="grid two-col dashboard-section">' +
-            '<article class="card card-pad"><div class="section-head"><h2>Antes da próxima atividade</h2><button class="section-link" data-view-jump="disciplines">Ver todas as regras</button></div><div class="attention-list">' +
-              '<div class="attention-item"><span class="tag restricted">Com restrições</span><div><strong>Revisão bibliográfica · TCC</strong><small>Confirme cada referência na fonte original e declare o apoio recebido.</small></div><button class="btn small" data-action="consult-d5">Consultar</button></div>' +
-              '<div class="attention-item"><span class="tag prohibited">Proibido</span><div><strong>Prova final · Metodologia Científica</strong><small>Nenhum recurso de IA é permitido durante a avaliação.</small></div><button class="btn small" data-action="consult-d1">Consultar</button></div>' +
+            '<article class="card card-pad"><div class="section-head"><h2>Antes da próxima atividade</h2><button class="section-link" type="button" data-view-jump="disciplines">Ver todas as regras</button></div><div class="attention-list">' +
+              '<div class="attention-item"><span class="tag restricted">Com restrições</span><div><strong>Revisão bibliográfica · TCC</strong><small>Confirme cada referência na fonte original e declare o apoio recebido.</small></div><button class="btn small" type="button" data-action="consult-d5">Consultar</button></div>' +
+              '<div class="attention-item"><span class="tag prohibited">Proibido</span><div><strong>Prova final · Metodologia Científica</strong><small>Nenhum recurso de IA é permitido durante a avaliação.</small></div><button class="btn small" type="button" data-action="consult-d1">Consultar</button></div>' +
             '</div></article>' +
-            '<article class="card card-pad"><div class="section-head"><h2>Minhas disciplinas</h2><button class="section-link" data-view-jump="disciplines">Abrir lista</button></div><div class="dashboard-list">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Minhas disciplinas</h2><button class="section-link" type="button" data-view-jump="disciplines">Abrir lista</button></div><div class="dashboard-list">' +
               dashboardRow("book", "Programação Web", "2 políticas publicadas", '<span class="tag restricted">Atenção</span>') +
               dashboardRow("book", "Metodologia Científica", "3 políticas publicadas", '<span class="tag">MET-201</span>') +
               dashboardRow("book", "Projeto de Conclusão", "1 política publicada", '<span class="tag">TCC-401</span>') +
             '</div></article>' +
           '</section>' +
           '<section class="grid two-col dashboard-section">' +
-            '<article class="card card-pad insight-card"><span class="new-badge" style="margin:0 0 14px">Novo</span><h2>Continue seu plano de uso responsável</h2><p>Registre objetivo, verificação e transparência antes de usar uma ferramenta de IA.</p><button class="btn" data-view-jump="responsible">Continuar reflexão</button></article>' +
-            '<article class="card card-pad"><div class="section-head"><h2>Comunicado em destaque</h2><span class="tag">Hoje</span></div><strong>Semana de avaliações</strong><p style="margin:7px 0;color:var(--muted)">Confira as políticas específicas de cada disciplina antes de iniciar as atividades.</p><button class="section-link" data-view-jump="announcements">Ver comunicados</button></article>' +
+            '<article class="card card-pad insight-card"><span class="new-badge" style="margin:0 0 14px">Novo</span><h2>Continue seu plano de uso responsável</h2><p>Registre objetivo, verificação e transparência antes de usar uma ferramenta de IA.</p><button class="btn" type="button" data-view-jump="responsible">Continuar reflexão</button></article>' +
+            '<article class="card card-pad"><div class="section-head"><h2>Comunicado em destaque</h2><span class="tag">Hoje</span></div><strong>Semana de avaliações</strong><p style="margin:7px 0;color:var(--muted)">Confira as políticas específicas de cada disciplina antes de iniciar as atividades.</p><button class="section-link" type="button" data-view-jump="announcements">Ver comunicados</button></article>' +
           '</section>';
       }
 
@@ -1420,22 +1421,22 @@
             statCard("Cobertura", "86%", "Atividades com orientação definida", "#dedcf1") +
           '</section>' +
           '<section class="grid two-col dashboard-section">' +
-            '<article class="card card-pad"><div class="section-head"><h2>Solicitações recentes</h2><button class="section-link" data-view-jump="classes">Analisar todas</button></div><div class="dashboard-list">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Solicitações recentes</h2><button class="section-link" type="button" data-view-jump="classes">Analisar todas</button></div><div class="dashboard-list">' +
               dashboardRow("users", "Beatriz Mendes", "ADS 4º A · solicitada hoje", '<span class="tag pending">Pendente</span>') +
               dashboardRow("users", "João Pedro Silva", "ADS 4º A · solicitada hoje", '<span class="tag pending">Pendente</span>') +
               dashboardRow("users", "Marina Costa", "SI 6º B · solicitada ontem", '<span class="tag pending">Pendente</span>') +
             '</div><div class="scope-note">' + svgIcon("classes") + '<span>Você só pode decidir matrículas de turmas vinculadas às suas disciplinas.</span></div></article>' +
-            '<article class="card card-pad"><div class="section-head"><h2>Qualidade das políticas</h2><button class="section-link" data-view-jump="reports">Ver diagnóstico</button></div><div class="progress-line"><div class="progress-line-track"><div class="progress-line-fill" style="width:86%"></div></div><div class="progress-line-meta"><span>Cobertura atual</span><strong>86%</strong></div></div><div class="attention-list" style="margin-top:18px">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Qualidade das políticas</h2><button class="section-link" type="button" data-view-jump="reports">Ver diagnóstico</button></div><div class="progress-line"><div class="progress-line-track"><div class="progress-line-fill" style="width:86%"></div></div><div class="progress-line-meta"><span>Cobertura atual</span><strong>86%</strong></div></div><div class="attention-list" style="margin-top:18px">' +
               '<div class="attention-item"><span class="tag restricted">2</span><div><strong>Condições a detalhar</strong><small>Explique limites e formas de declaração.</small></div></div>' +
               '<div class="attention-item"><span class="tag pending">1</span><div><strong>Fonte não informada</strong><small>Vincule a orientação ao plano de ensino.</small></div></div>' +
             '</div></article>' +
           '</section>' +
           '<section class="grid two-col dashboard-section">' +
-            '<article class="card card-pad"><div class="section-head"><h2>Minhas disciplinas</h2><button class="section-link" data-view-jump="disciplines">Gerenciar</button></div><div class="dashboard-list">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Minhas disciplinas</h2><button class="section-link" type="button" data-view-jump="disciplines">Gerenciar</button></div><div class="dashboard-list">' +
               dashboardRow("book", "Metodologia Científica", "MET-201 · 3 políticas", '<span class="tag approved">Completa</span>') +
               dashboardRow("book", "Programação Web", "WEB-302 · 2 políticas", '<span class="tag restricted">Revisar</span>') +
             '</div></article>' +
-            '<article class="card card-pad insight-card"><span class="new-badge" style="margin:0 0 14px">Novo</span><h2>Reduza dúvidas antes da entrega</h2><p>O painel de clareza mostra atividades sem regra, fonte ou condições suficientes.</p><button class="btn" data-view-jump="reports">Ver clareza das políticas</button></article>' +
+            '<article class="card card-pad insight-card"><span class="new-badge" style="margin:0 0 14px">Novo</span><h2>Reduza dúvidas antes da entrega</h2><p>O painel de clareza mostra atividades sem regra, fonte ou condições suficientes.</p><button class="btn" type="button" data-view-jump="reports">Ver clareza das políticas</button></article>' +
           '</section>';
       }
 
@@ -1452,23 +1453,23 @@
             statCard("Cobertura geral", "78%", "Nove pontos acima de outubro", "#dedcf1") +
           '</section>' +
           '<section class="grid two-col dashboard-section">' +
-            '<article class="card card-pad"><div class="section-head"><h2>Distribuição das políticas</h2><button class="section-link" data-view-jump="disciplines">Ver detalhes</button></div><div class="policy-bars">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Distribuição das políticas</h2><button class="section-link" type="button" data-view-jump="disciplines">Ver detalhes</button></div><div class="policy-bars">' +
               '<div class="bar-row"><span>Permitido</span><div class="bar-track"><div class="bar-fill" style="--bar:#3e9c6a;width:33%"></div></div><span class="bar-value">3</span></div>' +
               '<div class="bar-row"><span>Com restrições</span><div class="bar-track"><div class="bar-fill" style="--bar:#e0a13e;width:44%"></div></div><span class="bar-value">4</span></div>' +
               '<div class="bar-row"><span>Proibido</span><div class="bar-track"><div class="bar-fill" style="--bar:#ce5365;width:22%"></div></div><span class="bar-value">2</span></div>' +
             '</div><div class="scope-note">' + svgIcon("chart") + '<span>Indicadores agregados ajudam a identificar lacunas; não avaliam autoria nem detectam uso de IA.</span></div></article>' +
-            '<article class="card card-pad"><div class="section-head"><h2>Pontos de atenção</h2><button class="section-link" data-view-jump="reports">Abrir diagnóstico</button></div><div class="attention-list">' +
-              '<div class="attention-item"><span class="tag prohibited">Alta</span><div><strong>Design de Interfaces sem política</strong><small>A disciplina ainda não orienta nenhuma atividade.</small></div><button class="btn small" data-action="manage-d6">Corrigir</button></div>' +
-              '<div class="attention-item"><span class="tag restricted">Média</span><div><strong>Três políticas sem fonte</strong><small>Vincule a origem institucional da orientação.</small></div><button class="btn small" data-view-jump="reports">Revisar</button></div>' +
+            '<article class="card card-pad"><div class="section-head"><h2>Pontos de atenção</h2><button class="section-link" type="button" data-view-jump="reports">Abrir diagnóstico</button></div><div class="attention-list">' +
+              '<div class="attention-item"><span class="tag prohibited">Alta</span><div><strong>Design de Interfaces sem política</strong><small>A disciplina ainda não orienta nenhuma atividade.</small></div><button class="btn small" type="button" data-action="manage-d6">Corrigir</button></div>' +
+              '<div class="attention-item"><span class="tag restricted">Média</span><div><strong>Três políticas sem fonte</strong><small>Vincule a origem institucional da orientação.</small></div><button class="btn small" type="button" data-view-jump="reports">Revisar</button></div>' +
             '</div></article>' +
           '</section>' +
           '<section class="grid two-col dashboard-section">' +
-            '<article class="card card-pad"><div class="section-head"><h2>Atividade recente</h2><button class="section-link" data-view-jump="history">Abrir histórico</button></div><div class="activity-list">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Atividade recente</h2><button class="section-link" type="button" data-view-jump="history">Abrir histórico</button></div><div class="activity-list">' +
               historyItems.slice(0,4).map(function (item) {
                 return '<div class="activity-item"><span class="activity-icon" aria-hidden="true">' + svgIcon("history") + '</span><div><strong>' + esc(item.action) + '</strong><small>' + esc(item.detail) + '</small></div><span class="time">' + esc(item.date.split(",")[1] || item.date) + '</span></div>';
               }).join("") +
             '</div></article>' +
-            '<article class="card card-pad"><div class="section-head"><h2>Governança de acesso</h2><button class="section-link" data-view-jump="users">Gerenciar usuários</button></div><div class="dashboard-list">' +
+            '<article class="card card-pad"><div class="section-head"><h2>Governança de acesso</h2><button class="section-link" type="button" data-view-jump="users">Gerenciar usuários</button></div><div class="dashboard-list">' +
               dashboardRow("users", activeUsers + " contas ativas", "1 administrador e " + professors + " professores", '<span class="tag approved">Ativo</span>') +
               dashboardRow("book", "6 disciplinas", "Todas possuem responsável definido", '<span class="tag approved">Completo</span>') +
               dashboardRow("history", "Auditoria atualizada", "Última operação registrada hoje", '<span class="tag">500 registros</span>') +
@@ -2082,6 +2083,7 @@
           var views = { home: homeView, disciplines: disciplinesView, classes: classesView, announcements: announcementsView, users: usersView, history: historyView, reports: reportsView, responsible: responsibleView };
           root.innerHTML = views[app.view]();
         }
+        document.title = (appShell.hidden ? "Acesso" : state ? "Estados da interface" : viewLabel(app.view)) + " — IaTellect";
         bindDynamic();
         document.querySelectorAll("[data-pending-count]").forEach(function (node) {
           node.textContent = enrollments.filter(function (item) { return item.status === "pending"; }).length;
@@ -2099,13 +2101,16 @@
           view = "home";
           announce = "Esta área não está disponível para o perfil " + roleName() + ".";
         }
+        var preserveFocus = chatPanel.contains(document.activeElement);
         app.view = view;
         app.demoState = "normal";
         document.getElementById("state-select").value = "normal";
         document.body.classList.remove("menu-open");
         document.getElementById("mobile-menu").setAttribute("aria-expanded", "false");
         render();
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        if (!preserveFocus) document.getElementById("main-content").focus({ preventScroll: true });
+        var reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
         if (announce) toast(announce);
       }
 
@@ -2292,8 +2297,8 @@
         else if (action === "new-discipline") openDisciplineForm();
         else if (action === "new-class") openNewClassForm();
         else if (action === "new-user") openNewProfessorForm();
-        else if (action === "compare-policies") openSimpleModal("Comparar versões · Novo", '<p>Esta proposta destaca alterações em condições, detalhes e fonte antes da publicação.</p><div class="check-row"><span class="tag prohibited">Antes</span><span><strong>Uso proibido</strong><small>Sem justificativa informada</small></span></div><div class="check-row" style="margin-top:10px"><span class="tag restricted">Agora</span><span><strong>Permitido com restrições</strong><small>Exige declaração e verificação das fontes</small></span></div><div class="modal-actions"><button class="btn primary" data-modal-cancel>Entendi</button></div>');
-        else if (action === "show-auth-plan") openSimpleModal("Plano de autenticação institucional", '<ol><li>Usar e-mail ou identificador acadêmico único.</li><li>Integrar SSO via OIDC/SAML quando houver provedor institucional.</li><li>Adicionar recuperação de conta com fluxo auditável.</li><li>Exigir segundo fator para administradores.</li><li>Manter autorização por perfil e disciplina no servidor.</li></ol><div class="modal-actions"><button class="btn primary" data-modal-cancel>Fechar</button></div>');
+        else if (action === "compare-policies") openSimpleModal("Comparar versões · Novo", '<p>Esta proposta destaca alterações em condições, detalhes e fonte antes da publicação.</p><div class="check-row"><span class="tag prohibited">Antes</span><span><strong>Uso proibido</strong><small>Sem justificativa informada</small></span></div><div class="check-row" style="margin-top:10px"><span class="tag restricted">Agora</span><span><strong>Permitido com restrições</strong><small>Exige declaração e verificação das fontes</small></span></div><div class="modal-actions"><button class="btn primary" type="button" data-modal-cancel>Entendi</button></div>');
+        else if (action === "show-auth-plan") openSimpleModal("Plano de autenticação institucional", '<ol><li>Usar e-mail ou identificador acadêmico único.</li><li>Integrar SSO via OIDC/SAML quando houver provedor institucional.</li><li>Adicionar recuperação de conta com fluxo auditável.</li><li>Exigir segundo fator para administradores.</li><li>Manter autorização por perfil e disciplina no servidor.</li></ol><div class="modal-actions"><button class="btn primary" type="button" data-modal-cancel>Fechar</button></div>');
         else if (action === "save-reflection") saveResponsiblePlan();
         else if (action === "reset-reflection") { app.responsibleChecks = [false, false, false, false]; app.reflectionPurpose = ""; app.reflectionReview = ""; render(); toast("Reflexão reiniciada."); }
         else if (action === "review-plan") openReviewPlan();
@@ -2324,8 +2329,7 @@
           error: ""
         };
         app.lastFocus = document.activeElement;
-        modal.hidden = false;
-        document.body.style.overflow = "hidden";
+        setModalOpenState(true);
         renderPolicyWizard();
       }
 
@@ -2425,12 +2429,19 @@
         });
       }
 
+      function setModalOpenState(open) {
+        modal.hidden = !open;
+        document.body.style.overflow = open ? "hidden" : "";
+        appShell.inert = open;
+        assistantToggle.inert = open;
+        chatPanel.inert = open;
+      }
+
       function openSimpleModal(title, html) {
         app.lastFocus = document.activeElement;
         modalTitle.textContent = title;
         modalBody.innerHTML = html;
-        modal.hidden = false;
-        document.body.style.overflow = "hidden";
+        setModalOpenState(true);
         var first = modalBody.querySelector("input, select, textarea, button");
         if (first) first.focus();
         modalBody.querySelectorAll("[data-modal-cancel]").forEach(function (node) { node.addEventListener("click", closeModal); });
@@ -2440,10 +2451,23 @@
       }
 
       function closeModal() {
-        modal.hidden = true;
-        document.body.style.overflow = "";
+        setModalOpenState(false);
         policyWizard = null;
         if (app.lastFocus && typeof app.lastFocus.focus === "function") app.lastFocus.focus();
+      }
+
+      function trapModalFocus(event) {
+        var focusable = Array.from(modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter(function (node) { return !node.hidden && node.offsetParent !== null; });
+        if (!focusable.length) { event.preventDefault(); return; }
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (event.shiftKey && (document.activeElement === first || !modal.contains(document.activeElement))) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && (document.activeElement === last || !modal.contains(document.activeElement))) {
+          event.preventDefault();
+          first.focus();
+        }
       }
 
       function toast(message) {
@@ -2763,6 +2787,10 @@
       document.getElementById("modal-close").addEventListener("click", closeModal);
       modal.addEventListener("click", function (event) { if (event.target === modal) closeModal(); });
       document.addEventListener("keydown", function (event) {
+        if (event.key === "Tab" && !modal.hidden) {
+          trapModalFocus(event);
+          return;
+        }
         if (event.key === "Escape") {
           if (!modal.hidden) closeModal();
           else if (!chatPanel.hidden) {
