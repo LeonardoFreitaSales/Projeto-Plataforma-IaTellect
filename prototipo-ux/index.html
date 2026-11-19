@@ -637,6 +637,10 @@
     .audit-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 7px; }
     .audit-meta small { font-size: .76rem; }
     .audit-scope-note { margin-bottom: 18px; }
+    .user-scope-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .assignment-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 10px; }
+    .assignment-grid .check-option { margin: 0; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #f8fafc; }
+    .account-security-note { margin-top: 16px; }
 
     .checklist { display: grid; gap: 10px; }
     .check-row {
@@ -850,6 +854,7 @@
       .announcement-actions { justify-content: flex-start; }
       .timeline-item { grid-template-columns: 34px 1fr; }
       .timeline-item > .btn { grid-column: 2; justify-self: start; }
+      .assignment-grid { grid-template-columns: 1fr; }
       .state-toolbar { display: none; }
       .assistant-toggle span:last-child { display: none; }
       .assistant-toggle { width: 56px; padding: 8px; }
@@ -1116,6 +1121,8 @@
         announcementSearch: "",
         historyCategory: "all",
         historySearch: "",
+        userRoleFilter: "all",
+        userSearch: "",
         responsibleChecks: [false, false, false, false],
         reflectionPurpose: "",
         reflectionReview: "",
@@ -1172,11 +1179,11 @@
       ];
 
       var users = [
-        { name: "Ana Martins", email: "ana.martins@horizonte.edu", role: "Administrador", scope: "Acesso institucional", status: "Ativo" },
-        { name: "Bruno Lima", email: "bruno.lima@horizonte.edu", role: "Professor", scope: "2 disciplinas", status: "Ativo" },
-        { name: "Lívia Rocha", email: "livia.rocha@horizonte.edu", role: "Professor", scope: "2 disciplinas", status: "Ativo" },
-        { name: "Carla Souza", email: "carla.souza@horizonte.edu", role: "Professor", scope: "1 disciplina", status: "Ativo" },
-        { name: "Beatriz Mendes", email: "beatriz.mendes@aluno.edu", role: "Aluno", scope: "Matrícula pendente", status: "Pendente" }
+        { id: "u1", name: "Ana Martins", email: "ana.martins@horizonte.edu", role: "Administrador", roleKey: "admin", disciplineIds: [], status: "active", lastAccess: "Hoje, 17:42" },
+        { id: "u2", name: "Bruno Lima", email: "bruno.lima@horizonte.edu", role: "Professor", roleKey: "professor", disciplineIds: ["d1", "d2"], status: "active", lastAccess: "Hoje, 16:08" },
+        { id: "u3", name: "Lívia Rocha", email: "livia.rocha@horizonte.edu", role: "Professor", roleKey: "professor", disciplineIds: ["d2"], status: "active", lastAccess: "Hoje, 15:42" },
+        { id: "u4", name: "Carla Souza", email: "carla.souza@horizonte.edu", role: "Professor", roleKey: "professor", disciplineIds: ["d4"], status: "active", lastAccess: "Ontem, 18:20" },
+        { id: "u5", name: "Beatriz Mendes", email: "beatriz.mendes@aluno.edu", role: "Aluno", roleKey: "aluno", disciplineIds: [], status: "pending", lastAccess: "Ainda não acessou" }
       ];
 
       var root = document.getElementById("view-root");
@@ -1406,6 +1413,8 @@
 
       function adminDashboard() {
         var pending = enrollments.filter(function (item) { return item.status === "pending"; }).length;
+        var activeUsers = users.filter(function (item) { return item.status === "active"; }).length;
+        var professors = users.filter(function (item) { return item.roleKey === "professor"; }).length;
         return pageHead("Administração institucional", "Olá, Ana", "Acompanhe a saúde da plataforma, os responsáveis acadêmicos e os pontos que precisam de governança.", button("Adicionar professor", "new-user", "") + button("Nova política", "new-policy", "primary")) +
           dashboardBanner("admin", "chart", "Ambiente acadêmico operando normalmente", "Há três pendências de matrícula e uma disciplina ainda sem política.", "2 alertas", "restricted") +
           '<section class="grid stats-grid" aria-label="Resumo institucional">' +
@@ -1432,7 +1441,7 @@
               }).join("") +
             '</div></article>' +
             '<article class="card card-pad"><div class="section-head"><h2>Governança de acesso</h2><button class="section-link" data-view-jump="users">Gerenciar usuários</button></div><div class="dashboard-list">' +
-              dashboardRow("users", "5 contas ativas", "1 administrador e 3 professores", '<span class="tag approved">Ativo</span>') +
+              dashboardRow("users", activeUsers + " contas ativas", "1 administrador e " + professors + " professores", '<span class="tag approved">Ativo</span>') +
               dashboardRow("book", "6 disciplinas", "Todas possuem responsável definido", '<span class="tag approved">Completo</span>') +
               dashboardRow("history", "Auditoria atualizada", "Última operação registrada hoje", '<span class="tag">500 registros</span>') +
             '</div></article>' +
@@ -1657,15 +1666,101 @@
         toast(item.active ? "Comunicado reativado." : "Comunicado arquivado.");
       }
 
+      function userStatusLabel(status) {
+        return { active: "Ativo", pending: "Pendente", suspended: "Suspenso" }[status] || status;
+      }
+
+      function userStatusClass(status) {
+        return { active: "approved", pending: "pending", suspended: "refused" }[status] || "";
+      }
+
+      function userScopeText(user) {
+        if (user.roleKey === "admin") return "Acesso institucional";
+        if (user.roleKey === "aluno") return "Matrícula do estudante";
+        return user.disciplineIds.length + " disciplina(s)";
+      }
+
+      function assignmentMarkup(selectedIds) {
+        return '<div class="assignment-grid">' + disciplines.map(function (discipline) {
+          var checked = selectedIds.indexOf(discipline.id) >= 0 ? " checked" : "";
+          return '<label class="check-option"><input type="checkbox" data-user-discipline="' + esc(discipline.id) + '"' + checked + '><span><strong>' + esc(discipline.code) + '</strong><br>' + esc(discipline.name) + '</span></label>';
+        }).join("") + '</div>';
+      }
+
       function usersView() {
+        var query = normalize(app.userSearch);
+        var filtered = users.filter(function (user) {
+          var matchesRole = app.userRoleFilter === "all" || user.roleKey === app.userRoleFilter;
+          var searchable = normalize(user.name + " " + user.email + " " + user.role + " " + userScopeText(user));
+          return matchesRole && searchable.indexOf(query) >= 0;
+        });
+        var activeCount = users.filter(function (user) { return user.status === "active"; }).length;
+        var professorCount = users.filter(function (user) { return user.roleKey === "professor"; }).length;
+        var pendingCount = users.filter(function (user) { return user.status === "pending"; }).length;
+        var rows = filtered.map(function (user) {
+          var scopeChips = user.roleKey === "professor" ? '<div class="user-scope-chips">' + user.disciplineIds.slice(0, 3).map(function (id) { var discipline = disciplines.find(function (item) { return item.id === id; }); return discipline ? '<span class="tag">' + esc(discipline.code) + '</span>' : ""; }).join("") + '</div>' : "";
+          return '<tr><td><div class="person"><span class="person-avatar">' + esc(initials(user.name)) + '</span><span><strong>' + esc(user.name) + '</strong><small>' + esc(user.email) + '</small></span></div></td><td>' + esc(user.role) + '</td><td>' + esc(userScopeText(user)) + scopeChips + '</td><td><span class="tag ' + userStatusClass(user.status) + '">' + esc(userStatusLabel(user.status)) + '</span></td><td><button class="btn small" type="button" data-user-details="' + esc(user.id) + '">Gerenciar</button></td></tr>';
+        }).join("");
+        if (!rows) rows = '<tr><td colspan="5"><div class="empty-state"><strong>Nenhuma conta encontrada</strong><p>Ajuste a busca ou o filtro de perfil.</p><button class="btn" type="button" data-action="clear-user-filters">Limpar filtros</button></div></td></tr>';
         return pageHead("Acesso e segurança", "Usuários e responsáveis", "Gerencie perfis, responsáveis por disciplinas e a preparação para uma autenticação institucional.", button("Adicionar professor", "new-user", "primary")) +
-          '<section class="grid two-col" style="margin-bottom:18px">' +
-            '<article class="card card-pad"><div class="section-head"><h2>Contas cadastradas</h2><span class="tag approved">5 ativas</span></div><p style="color:var(--muted)">A v4 atual exige nome e senha para todos os perfis. O próximo passo recomendado é integrar a identidade institucional.</p></article>' +
-            '<article class="card card-pad insight-card"><span class="new-badge" style="margin:0 0 12px">Novo</span><h2>Verificação institucional</h2><p>Proposta de SSO/e-mail acadêmico, recuperação de acesso e segundo fator para perfis críticos.</p><button class="btn" type="button" data-action="show-auth-plan">Ver plano técnico</button></article>' +
-          '</section>' +
-          '<div class="table-wrap"><table><thead><tr><th>Usuário</th><th>Perfil</th><th>Escopo</th><th>Status</th><th>Ações</th></tr></thead><tbody>' +
-            users.map(function (user) { return '<tr><td><div class="person"><span class="person-avatar">' + esc(initials(user.name)) + '</span><span><strong>' + esc(user.name) + '</strong><small>' + esc(user.email) + '</small></span></div></td><td>' + esc(user.role) + '</td><td>' + esc(user.scope) + '</td><td><span class="tag approved">' + esc(user.status) + '</span></td><td><button class="btn small">Gerenciar</button></td></tr>'; }).join("") +
-          '</tbody></table></div>';
+          '<section class="quality-kpis communication-summary" aria-label="Resumo das contas"><div class="quality-kpi"><strong>' + activeCount + '</strong><span>Contas ativas</span></div><div class="quality-kpi"><strong>' + professorCount + '</strong><span>Professores</span></div><div class="quality-kpi"><strong>' + pendingCount + '</strong><span>Acessos pendentes</span></div></section>' +
+          '<article class="card card-pad insight-card" style="margin-bottom:18px"><div class="section-head"><div><span class="new-badge" style="margin:0 0 10px">Novo</span><h2>Verificação institucional</h2></div><button class="btn" type="button" data-action="show-auth-plan">Ver plano técnico</button></div><p>Proposta de SSO ou e-mail acadêmico verificado, recuperação auditável e segundo fator para perfis críticos.</p></article>' +
+          '<div class="toolbar"><div class="field search-field"><label for="user-search">Buscar conta</label><input id="user-search" type="search" value="' + esc(app.userSearch) + '" placeholder="Nome, e-mail ou disciplina"></div><div class="field"><label for="user-role-filter">Perfil</label><select id="user-role-filter"><option value="all">Todos</option><option value="admin">Administradores</option><option value="professor">Professores</option><option value="aluno">Alunos</option></select></div></div>' +
+          '<div class="results-summary"><span><strong>' + filtered.length + '</strong> de ' + users.length + ' conta(s)</span></div>' +
+          '<div class="table-wrap"><table><thead><tr><th>Usuário</th><th>Perfil</th><th>Escopo</th><th>Status</th><th>Ações</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+          '<div class="governance-note account-security-note"><strong>Controle demonstrativo</strong><p>Na versão real, criação de conta, alteração de escopo e suspensão devem ocorrer no servidor, exigir uma sessão administrativa válida e gerar auditoria imutável.</p></div>';
+      }
+
+      function openUserDetails(id) {
+        var user = users.find(function (item) { return item.id === id; });
+        if (!user || app.role !== "admin") { toast("Conta não disponível para gerenciamento."); return; }
+        var assignments = user.roleKey === "professor" ? '<h3>Disciplinas autorizadas</h3><p style="color:var(--muted)">Defina o escopo acadêmico que este professor poderá administrar.</p>' + assignmentMarkup(user.disciplineIds) : '<div class="governance-note"><strong>Escopo do perfil</strong><p>' + esc(userScopeText(user)) + '. Este protótipo não permite converter o tipo da conta.</p></div>';
+        var canToggle = user.id !== "u1";
+        var toggleLabel = user.status === "active" ? "Suspender conta" : user.status === "pending" ? "Ativar conta" : "Reativar conta";
+        openSimpleModal("Gerenciar usuário", '<div class="decision-summary"><span class="person-avatar">' + esc(initials(user.name)) + '</span><div><strong>' + esc(user.name) + '</strong><p>' + esc(user.email) + '</p></div><span class="tag ' + userStatusClass(user.status) + '">' + esc(userStatusLabel(user.status)) + '</span></div><dl class="policy-preview" style="display:grid;grid-template-columns:120px 1fr;gap:9px 14px;margin-top:16px"><dt>Perfil</dt><dd>' + esc(user.role) + '</dd><dt>Último acesso</dt><dd>' + esc(user.lastAccess) + '</dd><dt>Escopo atual</dt><dd>' + esc(userScopeText(user)) + '</dd></dl>' + assignments + '<div class="modal-actions">' + (canToggle ? '<button class="btn ' + (user.status === "active" ? "danger" : "") + '" type="button" data-user-toggle>' + esc(toggleLabel) + '</button>' : "") + '<button class="btn" type="button" data-modal-cancel>Cancelar</button>' + (user.roleKey === "professor" ? '<button class="btn primary" type="button" data-user-save-scope>Salvar escopo</button>' : "") + '</div>');
+        var save = modalBody.querySelector("[data-user-save-scope]");
+        if (save) save.addEventListener("click", function () {
+          user.disciplineIds = Array.from(modalBody.querySelectorAll("[data-user-discipline]:checked")).map(function (node) { return node.getAttribute("data-user-discipline"); });
+          recordHistory("access", "global", "Escopo de professor atualizado", user.name + " · " + userScopeText(user), "Ana Martins", "Administrador");
+          closeModal();
+          render();
+          toast("Escopo do professor atualizado.");
+        });
+        var toggle = modalBody.querySelector("[data-user-toggle]");
+        if (toggle) toggle.addEventListener("click", function () { closeModal(); toggleUserStatus(user.id); });
+      }
+
+      function toggleUserStatus(id) {
+        var user = users.find(function (item) { return item.id === id; });
+        if (!user || app.role !== "admin" || user.id === "u1") { toast("Esta conta não pode ser alterada."); return; }
+        user.status = user.status === "active" ? "suspended" : "active";
+        recordHistory("access", "global", user.status === "active" ? "Conta ativada" : "Conta suspensa", user.name + " · " + user.email, "Ana Martins", "Administrador");
+        render();
+        toast(user.status === "active" ? "Conta ativada." : "Conta suspensa.");
+      }
+
+      function openNewProfessorForm() {
+        if (app.role !== "admin") { toast("Somente administradores podem adicionar professores."); return; }
+        openSimpleModal("Adicionar professor", '<div class="field"><label for="user-name">Nome completo</label><input id="user-name" autocomplete="name" placeholder="Ex.: Rafael Almeida"></div><div class="field"><label for="user-email">E-mail institucional</label><input id="user-email" type="email" autocomplete="email" placeholder="nome@horizonte.edu"></div><h3>Disciplinas iniciais</h3>' + assignmentMarkup([]) + '<div id="user-form-message" aria-live="polite"></div><div class="governance-note"><strong>Demonstração local</strong><p>Nenhum convite será enviado. A conta ficará pendente até ser ativada pelo administrador.</p></div><div class="modal-actions"><button class="btn" type="button" data-modal-cancel>Cancelar</button><button class="btn primary" type="button" data-user-create>Adicionar conta</button></div>');
+        modalBody.querySelector("[data-user-create]").addEventListener("click", function () {
+          var name = document.getElementById("user-name").value.trim();
+          var email = document.getElementById("user-email").value.trim().toLowerCase();
+          var message = document.getElementById("user-form-message");
+          var duplicate = users.some(function (user) { return user.email.toLowerCase() === email; });
+          if (name.split(/\s+/).length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || duplicate) {
+            message.innerHTML = '<div class="auth-message" role="alert" style="margin-top:12px">Informe nome completo e um e-mail institucional válido que ainda não esteja cadastrado.</div>';
+            return;
+          }
+          var selected = Array.from(modalBody.querySelectorAll("[data-user-discipline]:checked")).map(function (node) { return node.getAttribute("data-user-discipline"); });
+          var user = { id: "u" + Date.now(), name: name, email: email, role: "Professor", roleKey: "professor", disciplineIds: selected, status: "pending", lastAccess: "Ainda não acessou" };
+          users.push(user);
+          recordHistory("access", "global", "Conta de professor preparada", user.name + " · " + user.email, "Ana Martins", "Administrador");
+          app.userRoleFilter = "all";
+          app.userSearch = "";
+          closeModal();
+          render();
+          toast("Conta adicionada como pendente na demonstração.");
+        });
       }
 
       function recordHistory(category, scope, action, detail, author, role) {
@@ -1906,6 +2001,18 @@
         root.querySelectorAll("[data-history-details]").forEach(function (node) {
           node.addEventListener("click", function () { openHistoryDetails(node.getAttribute("data-history-details")); });
         });
+        var userRoleFilter = document.getElementById("user-role-filter");
+        if (userRoleFilter) {
+          userRoleFilter.value = app.userRoleFilter;
+          userRoleFilter.addEventListener("change", function () { app.userRoleFilter = userRoleFilter.value; render(); });
+        }
+        var userSearch = document.getElementById("user-search");
+        if (userSearch) {
+          userSearch.addEventListener("input", function () { app.userSearch = userSearch.value; render(); var next = document.getElementById("user-search"); if (next) { next.focus(); next.setSelectionRange(next.value.length, next.value.length); } });
+        }
+        root.querySelectorAll("[data-user-details]").forEach(function (node) {
+          node.addEventListener("click", function () { openUserDetails(node.getAttribute("data-user-details")); });
+        });
         root.querySelectorAll("[data-layout]").forEach(function (node) {
           node.addEventListener("click", function () {
             app.disciplineLayout = node.getAttribute("data-layout");
@@ -2026,9 +2133,10 @@
         else if (action === "new-announcement") openAnnouncementForm();
         else if (action === "clear-announcement-filters") { app.announcementFilter = "active"; app.announcementSearch = ""; render(); }
         else if (action === "clear-history-filters") { app.historyCategory = "all"; app.historySearch = ""; render(); }
+        else if (action === "clear-user-filters") { app.userRoleFilter = "all"; app.userSearch = ""; render(); }
         else if (action === "new-discipline") openSimpleModal("Nova disciplina", '<div class="field"><label for="discipline-name">Nome</label><input id="discipline-name" placeholder="Ex.: Banco de Dados"></div><div class="form-grid"><div class="field"><label for="discipline-code">Código</label><input id="discipline-code" placeholder="BD-210"></div><div class="field"><label for="discipline-teacher">Responsável</label><input id="discipline-teacher" placeholder="Nome do docente"></div></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Disciplina preparada no protótipo.">Salvar</button></div>');
         else if (action === "new-class") openSimpleModal("Nova turma", '<div class="field"><label for="class-name">Nome da turma</label><input id="class-name" placeholder="Ex.: ADS 2º A"></div><div class="field"><label for="class-term">Período</label><input id="class-term" value="2027.1"></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Turma preparada no protótipo.">Salvar</button></div>');
-        else if (action === "new-user") openSimpleModal("Adicionar professor", '<div class="field"><label for="user-name">Nome completo</label><input id="user-name"></div><div class="field"><label for="user-email">E-mail institucional</label><input id="user-email" type="email"></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Convite preparado para envio.">Preparar convite</button></div>');
+        else if (action === "new-user") openNewProfessorForm();
         else if (action === "compare-policies") openSimpleModal("Comparar versões · Novo", '<p>Esta proposta destaca alterações em condições, detalhes e fonte antes da publicação.</p><div class="check-row"><span class="tag prohibited">Antes</span><span><strong>Uso proibido</strong><small>Sem justificativa informada</small></span></div><div class="check-row" style="margin-top:10px"><span class="tag restricted">Agora</span><span><strong>Permitido com restrições</strong><small>Exige declaração e verificação das fontes</small></span></div><div class="modal-actions"><button class="btn primary" data-modal-cancel>Entendi</button></div>');
         else if (action === "show-auth-plan") openSimpleModal("Plano de autenticação institucional", '<ol><li>Usar e-mail ou identificador acadêmico único.</li><li>Integrar SSO via OIDC/SAML quando houver provedor institucional.</li><li>Adicionar recuperação de conta com fluxo auditável.</li><li>Exigir segundo fator para administradores.</li><li>Manter autorização por perfil e disciplina no servidor.</li></ol><div class="modal-actions"><button class="btn primary" data-modal-cancel>Fechar</button></div>');
         else if (action === "save-reflection") saveResponsiblePlan();
