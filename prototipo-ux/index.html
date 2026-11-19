@@ -1294,6 +1294,17 @@
         return { allowed: "Permitido", restricted: "Com restrições", prohibited: "Proibido", pending: "Pendente", approved: "Aprovada", refused: "Recusada" }[status] || status;
       }
 
+      function professorDisciplineIds() {
+        var professor = users.find(function (user) { return user.id === "u2"; });
+        return professor ? professor.disciplineIds : [];
+      }
+
+      function disciplineScope() {
+        if (app.role === "aluno") return disciplines.filter(function (item) { return item.id !== "d6"; });
+        if (app.role === "professor") { var ids = professorDisciplineIds(); return disciplines.filter(function (item) { return ids.indexOf(item.id) >= 0; }); }
+        return disciplines;
+      }
+
       function viewLabel(view) {
         return { home: "Visão geral", disciplines: "Disciplinas e políticas", classes: "Turmas e matrículas", announcements: "Comunicados", users: "Usuários e acessos", history: "Histórico", reports: "Clareza das políticas", responsible: "Uso responsável" }[view] || "Plataforma";
       }
@@ -1500,7 +1511,7 @@
       }
 
       function disciplinesView() {
-        var scoped = app.role === "aluno" ? disciplines.filter(function (item) { return item.id !== "d6"; }) : app.role === "professor" ? disciplines.filter(function (item) { return item.id === "d1" || item.id === "d2"; }) : disciplines;
+        var scoped = disciplineScope();
         var filtered = scoped.filter(function (item) {
           var text = (item.name + " " + item.code + " " + item.teacher).toLocaleLowerCase("pt-BR");
           var matchesText = text.indexOf(app.search.toLocaleLowerCase("pt-BR")) >= 0;
@@ -1521,21 +1532,67 @@
       }
 
       function openDisciplineDetails(id) {
-        var item = disciplines.find(function (discipline) { return discipline.id === id; });
-        if (!item) return;
+        var item = disciplineScope().find(function (discipline) { return discipline.id === id; });
+        if (!item) { toast("Disciplina não disponível para este perfil."); return; }
         var policies = item.policies.length ? item.policies.map(function (policy) {
           return '<article class="policy-detail"><div class="policy-detail-head"><div><h3>' + esc(policy.activity) + '</h3><small>' + esc(policy.type) + '</small></div><span class="tag ' + policy.status + '">' + esc(statusLabel(policy.status)) + '</span></div><p>' + esc(policy.conditions) + '</p><div class="policy-source">' + svgIcon("book") + '<span>Fonte: ' + esc(policy.source || "Não informada") + '</span></div></article>';
         }).join("") : '<div class="auth-message">Esta disciplina ainda não possui política publicada.</div>';
         var manage = app.role === "aluno" ? "" : '<button class="btn primary" type="button" data-detail-manage="' + esc(item.id) + '">Adicionar política</button>';
-        openSimpleModal(item.name, '<div class="discipline-detail-head"><div><span class="tag">' + esc(item.code) + '</span><p>' + esc(item.teacher) + ' · última revisão: ' + esc(item.updated) + '</p></div><span class="tag ' + (item.policies.length ? "approved" : "prohibited") + '">' + item.policies.length + ' política(s)</span></div><div class="policy-detail-list">' + policies + '</div><div class="modal-actions"><button class="btn" type="button" data-copy-guidance>Copiar resumo</button>' + manage + '<button class="btn" type="button" data-modal-cancel>Fechar</button></div>');
+        var edit = app.role === "admin" ? '<button class="btn" type="button" data-edit-discipline>Editar dados</button>' : "";
+        openSimpleModal(item.name, '<div class="discipline-detail-head"><div><span class="tag">' + esc(item.code) + '</span><p>' + esc(item.teacher) + ' · última revisão: ' + esc(item.updated) + '</p></div><span class="tag ' + (item.policies.length ? "approved" : "prohibited") + '">' + item.policies.length + ' política(s)</span></div><div class="policy-detail-list">' + policies + '</div><div class="modal-actions"><button class="btn" type="button" data-copy-guidance>Copiar resumo</button>' + edit + manage + '<button class="btn" type="button" data-modal-cancel>Fechar</button></div>');
         var manageButton = modalBody.querySelector("[data-detail-manage]");
         if (manageButton) manageButton.addEventListener("click", function () { closeModal(); openPolicyModal(item.id); });
+        var editButton = modalBody.querySelector("[data-edit-discipline]");
+        if (editButton) editButton.addEventListener("click", function () { closeModal(); openDisciplineForm(item.id); });
         modalBody.querySelector("[data-copy-guidance]").addEventListener("click", function () { toast("Resumo da orientação copiado na demonstração."); });
+      }
+
+      function openDisciplineForm(id) {
+        if (app.role !== "admin") { toast("Somente administradores podem cadastrar ou editar disciplinas."); return; }
+        var item = id ? disciplines.find(function (entry) { return entry.id === id; }) : null;
+        var professors = users.filter(function (user) { return user.roleKey === "professor" && user.status === "active"; });
+        var currentUser = item ? professors.find(function (user) { return item.teacher.indexOf(user.name) >= 0; }) : null;
+        var options = "";
+        if (item && !currentUser) options += '<option value="current" selected>' + esc(item.teacher) + ' · responsável atual</option>';
+        options += professors.map(function (user) { return '<option value="' + esc(user.id) + '"' + (currentUser && currentUser.id === user.id ? " selected" : "") + '>' + esc(user.name) + '</option>'; }).join("");
+        openSimpleModal(item ? "Editar disciplina" : "Nova disciplina", '<div class="form-grid"><div class="field"><label for="discipline-name">Nome</label><input id="discipline-name" value="' + esc(item ? item.name : "") + '" placeholder="Ex.: Banco de Dados"></div><div class="field"><label for="discipline-code">Código</label><input id="discipline-code" value="' + esc(item ? item.code : "") + '" placeholder="Ex.: BD-210"></div></div><div class="field"><label for="discipline-teacher">Professor responsável</label><select id="discipline-teacher">' + options + '</select></div>' + (item ? '<div class="governance-note"><strong>Preservação das políticas</strong><p>Editar nome, código ou responsável não altera as ' + item.policies.length + ' política(s) já cadastrada(s).</p></div>' : '<div class="governance-note"><strong>Próxima etapa</strong><p>A nova disciplina será criada sem políticas. Depois, use o fluxo guiado para cadastrar as orientações.</p></div>') + '<div id="discipline-form-message" aria-live="polite"></div><div class="modal-actions"><button class="btn" type="button" data-modal-cancel>Cancelar</button><button class="btn primary" type="button" data-discipline-save>' + (item ? "Salvar alterações" : "Criar disciplina") + '</button></div>');
+        modalBody.querySelector("[data-discipline-save]").addEventListener("click", function () {
+          var name = document.getElementById("discipline-name").value.trim();
+          var code = document.getElementById("discipline-code").value.trim().toUpperCase();
+          var teacherValue = document.getElementById("discipline-teacher").value;
+          var selectedProfessor = professors.find(function (user) { return user.id === teacherValue; });
+          var duplicate = disciplines.some(function (entry) { return entry.id !== (item && item.id) && normalize(entry.code) === normalize(code); });
+          if (name.length < 3 || !/^[A-Z]{2,5}-\d{3}$/.test(code) || duplicate || (!selectedProfessor && teacherValue !== "current")) {
+            document.getElementById("discipline-form-message").innerHTML = '<div class="auth-message" role="alert" style="margin-top:12px">Informe um nome, um código único no formato ABC-123 e um professor ativo.</div>';
+            return;
+          }
+          if (!item) {
+            item = { id: "d" + Date.now(), name: name, code: code, teacher: "Prof. " + selectedProfessor.name, updated: "Sem revisão", policies: [] };
+            disciplines.push(item);
+          } else {
+            item.name = name;
+            item.code = code;
+            if (selectedProfessor) item.teacher = "Prof. " + selectedProfessor.name;
+          }
+          if (selectedProfessor) {
+            users.filter(function (user) { return user.roleKey === "professor"; }).forEach(function (user) {
+              user.disciplineIds = user.disciplineIds.filter(function (disciplineId) { return disciplineId !== item.id; });
+            });
+            if (selectedProfessor.disciplineIds.indexOf(item.id) < 0) selectedProfessor.disciplineIds.push(item.id);
+          }
+          recordHistory("discipline", item.id, id ? "Disciplina atualizada" : "Disciplina criada", item.code + " · " + item.name, "Ana Martins", "Administrador");
+          app.search = "";
+          app.statusFilter = "all";
+          closeModal();
+          render();
+          toast(id ? "Disciplina atualizada." : "Disciplina criada na demonstração.");
+        });
       }
 
       function classScope() {
         if (app.role === "admin") return academicClasses;
-        return academicClasses.filter(function (item) { return item.disciplineIds.indexOf("d1") >= 0 || item.disciplineIds.indexOf("d2") >= 0; });
+        var ids = professorDisciplineIds();
+        return academicClasses.filter(function (item) { return item.disciplineIds.some(function (id) { return ids.indexOf(id) >= 0; }); });
       }
 
       function classesView() {
@@ -1586,8 +1643,9 @@
       }
 
       function classDisciplineMarkup(selectedIds, restrictToProfessorScope) {
+        var professorIds = professorDisciplineIds();
         return '<div class="assignment-grid">' + disciplines.map(function (discipline) {
-          var authorized = !restrictToProfessorScope || discipline.id === "d1" || discipline.id === "d2";
+          var authorized = !restrictToProfessorScope || professorIds.indexOf(discipline.id) >= 0;
           return '<label class="check-option"><input type="checkbox" data-class-discipline="' + esc(discipline.id) + '"' + (selectedIds.indexOf(discipline.id) >= 0 ? " checked" : "") + (authorized ? "" : " disabled") + '><span><strong>' + esc(discipline.code) + '</strong><br>' + esc(discipline.name) + (authorized ? "" : " · somente leitura") + '</span></label>';
         }).join("") + '</div>';
       }
@@ -1596,8 +1654,9 @@
         var item = classScope().find(function (entry) { return entry.id === id; });
         if (!item) { toast("Turma não disponível para este perfil."); return; }
         var occupancy = Math.min(100, Math.round((item.students / Math.max(item.capacity, 1)) * 100));
+        var authorizedCodes = disciplineScope().map(function (discipline) { return discipline.code; }).join(", ");
         var toggle = app.role === "admin" ? '<button class="btn" type="button" data-class-toggle>' + (item.active ? "Encerrar turma" : "Reativar turma") + '</button>' : "";
-        openSimpleModal(item.name, '<div class="policy-preview"><div class="policy-preview-head"><div><span class="tag">' + esc(item.term) + '</span><h3 style="margin-top:10px">' + esc(item.name) + '</h3><p>' + esc(item.shift) + ' · responsável: ' + esc(item.coordinator) + '</p></div><span class="tag ' + (item.active ? "approved" : "refused") + '">' + (item.active ? "Ativa" : "Encerrada") + '</span></div><dl><dt>Estudantes</dt><dd>' + item.students + '</dd><dt>Capacidade</dt><dd>' + item.capacity + ' vagas</dd><dt>Ocupação</dt><dd>' + occupancy + '%</dd></dl></div><h3>Disciplinas vinculadas</h3><p style="color:var(--muted)">' + (app.role === "professor" ? "Você pode alterar apenas MET-201 e WEB-302; os demais vínculos são somente leitura." : "Selecione as disciplinas que fazem parte desta turma.") + '</p>' + classDisciplineMarkup(item.disciplineIds, app.role === "professor") + '<div id="class-details-message" aria-live="polite"></div><div class="modal-actions">' + toggle + '<button class="btn" type="button" data-modal-cancel>Cancelar</button><button class="btn primary" type="button" data-class-save>Salvar vínculos</button></div>');
+        openSimpleModal(item.name, '<div class="policy-preview"><div class="policy-preview-head"><div><span class="tag">' + esc(item.term) + '</span><h3 style="margin-top:10px">' + esc(item.name) + '</h3><p>' + esc(item.shift) + ' · responsável: ' + esc(item.coordinator) + '</p></div><span class="tag ' + (item.active ? "approved" : "refused") + '">' + (item.active ? "Ativa" : "Encerrada") + '</span></div><dl><dt>Estudantes</dt><dd>' + item.students + '</dd><dt>Capacidade</dt><dd>' + item.capacity + ' vagas</dd><dt>Ocupação</dt><dd>' + occupancy + '%</dd></dl></div><h3>Disciplinas vinculadas</h3><p style="color:var(--muted)">' + (app.role === "professor" ? "Você pode alterar apenas " + esc(authorizedCodes || "as disciplinas do seu escopo") + "; os demais vínculos são somente leitura." : "Selecione as disciplinas que fazem parte desta turma.") + '</p>' + classDisciplineMarkup(item.disciplineIds, app.role === "professor") + '<div id="class-details-message" aria-live="polite"></div><div class="modal-actions">' + toggle + '<button class="btn" type="button" data-modal-cancel>Cancelar</button><button class="btn primary" type="button" data-class-save>Salvar vínculos</button></div>');
         modalBody.querySelector("[data-class-save]").addEventListener("click", function () {
           var selected = Array.from(modalBody.querySelectorAll("[data-class-discipline]:checked")).map(function (node) { return node.getAttribute("data-class-discipline"); });
           if (!selected.length) {
@@ -1858,7 +1917,8 @@
 
       function historyScope() {
         if (app.role === "admin") return historyItems;
-        return historyItems.filter(function (item) { return item.scope === "d1" || item.scope === "d2" || item.author === "Bruno Lima"; });
+        var ids = professorDisciplineIds();
+        return historyItems.filter(function (item) { return ids.indexOf(item.scope) >= 0 || item.author === "Bruno Lima"; });
       }
 
       function filteredHistoryItems() {
@@ -1916,7 +1976,7 @@
       }
 
       function policyAudit() {
-        var scoped = app.role === "professor" ? disciplines.filter(function (item) { return item.id === "d1" || item.id === "d2"; }) : disciplines;
+        var scoped = app.role === "professor" ? disciplineScope() : disciplines;
         var policies = [];
         scoped.forEach(function (discipline) {
           discipline.policies.forEach(function (policy) { policies.push({ discipline: discipline, policy: policy }); });
@@ -2229,7 +2289,7 @@
         else if (action === "clear-announcement-filters") { app.announcementFilter = "active"; app.announcementSearch = ""; render(); }
         else if (action === "clear-history-filters") { app.historyCategory = "all"; app.historySearch = ""; render(); }
         else if (action === "clear-user-filters") { app.userRoleFilter = "all"; app.userSearch = ""; render(); }
-        else if (action === "new-discipline") openSimpleModal("Nova disciplina", '<div class="field"><label for="discipline-name">Nome</label><input id="discipline-name" placeholder="Ex.: Banco de Dados"></div><div class="form-grid"><div class="field"><label for="discipline-code">Código</label><input id="discipline-code" placeholder="BD-210"></div><div class="field"><label for="discipline-teacher">Responsável</label><input id="discipline-teacher" placeholder="Nome do docente"></div></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Disciplina preparada no protótipo.">Salvar</button></div>');
+        else if (action === "new-discipline") openDisciplineForm();
         else if (action === "new-class") openNewClassForm();
         else if (action === "new-user") openNewProfessorForm();
         else if (action === "compare-policies") openSimpleModal("Comparar versões · Novo", '<p>Esta proposta destaca alterações em condições, detalhes e fonte antes da publicação.</p><div class="check-row"><span class="tag prohibited">Antes</span><span><strong>Uso proibido</strong><small>Sem justificativa informada</small></span></div><div class="check-row" style="margin-top:10px"><span class="tag restricted">Agora</span><span><strong>Permitido com restrições</strong><small>Exige declaração e verificação das fontes</small></span></div><div class="modal-actions"><button class="btn primary" data-modal-cancel>Entendi</button></div>');
@@ -2246,7 +2306,7 @@
           toast("O perfil de aluno pode consultar políticas, mas não pode alterá-las.");
           return;
         }
-        var allowedDisciplines = app.role === "professor" ? disciplines.filter(function (item) { return item.id === "d1" || item.id === "d2"; }) : disciplines;
+        var allowedDisciplines = app.role === "professor" ? disciplineScope() : disciplines;
         var selected = allowedDisciplines.find(function (item) { return item.id === prefillId; }) || allowedDisciplines[0];
         policyWizard = {
           step: 1,
@@ -2451,9 +2511,7 @@
       }
 
       function assistantDisciplineScope() {
-        if (app.role === "aluno") return disciplines.filter(function (item) { return item.id !== "d6"; });
-        if (app.role === "professor") return disciplines.filter(function (item) { return item.id === "d1" || item.id === "d2"; });
-        return disciplines;
+        return disciplineScope();
       }
 
       function disciplineMentioned(text) {
