@@ -617,6 +617,16 @@
     }
     .decision-summary .person-avatar { width: 42px; height: 42px; }
     .decision-summary p { margin: 3px 0 0; color: var(--muted); font-size: .84rem; }
+    .academic-section-tabs { margin-bottom: 18px; }
+    .class-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .class-card { padding: 20px; }
+    .class-card h2 { margin: 8px 0 4px; }
+    .class-card > p { color: var(--muted); }
+    .class-progress { height: 8px; margin: 15px 0 7px; overflow: hidden; border-radius: 999px; background: #e8eef4; }
+    .class-progress span { display: block; height: 100%; border-radius: inherit; background: var(--brand); }
+    .class-capacity { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .78rem; }
+    .class-disciplines { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0; }
+    .class-card-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
 
     .announcement { display: grid; grid-template-columns: 45px 1fr auto; gap: 15px; align-items: start; padding: 19px; }
     .announcement + .announcement { margin-top: 12px; }
@@ -855,6 +865,7 @@
       .timeline-item { grid-template-columns: 34px 1fr; }
       .timeline-item > .btn { grid-column: 2; justify-self: start; }
       .assignment-grid { grid-template-columns: 1fr; }
+      .class-grid { grid-template-columns: 1fr; }
       .state-toolbar { display: none; }
       .assistant-toggle span:last-child { display: none; }
       .assistant-toggle { width: 56px; padding: 8px; }
@@ -1115,6 +1126,7 @@
         search: "",
         statusFilter: "all",
         disciplineLayout: "cards",
+        classSection: "classes",
         enrollmentFilter: "all",
         selectedEnrollments: [],
         announcementFilter: "active",
@@ -1152,6 +1164,11 @@
           { activity: "Revisão bibliográfica", type: "Pesquisa", status: "restricted", conditions: "Não aceite referências sem verificar a fonte original.", source: "Manual de TCC 2026" }
         ]},
         { id: "d6", name: "Design de Interfaces", code: "UX-220", teacher: "Prof. Diego Ramos", updated: "Sem revisão", policies: [] }
+      ];
+
+      var academicClasses = [
+        { id: "c1", name: "ADS 4º A", term: "2026.2", shift: "Noite", capacity: 40, students: 32, coordinator: "Bruno Lima", disciplineIds: ["d1", "d2", "d3", "d6"], active: true },
+        { id: "c2", name: "SI 6º B", term: "2026.2", shift: "Noite", capacity: 35, students: 28, coordinator: "Lívia Rocha", disciplineIds: ["d1", "d2", "d4", "d5", "d6"], active: true }
       ];
 
       var enrollments = [
@@ -1516,47 +1533,115 @@
         modalBody.querySelector("[data-copy-guidance]").addEventListener("click", function () { toast("Resumo da orientação copiado na demonstração."); });
       }
 
+      function classScope() {
+        if (app.role === "admin") return academicClasses;
+        return academicClasses.filter(function (item) { return item.disciplineIds.indexOf("d1") >= 0 || item.disciplineIds.indexOf("d2") >= 0; });
+      }
+
       function classesView() {
+        var pendingCount = enrollments.filter(function (item) { return item.status === "pending"; }).length;
+        var sectionTabs = '<div class="enrollment-tabs academic-section-tabs" aria-label="Escolher área de gestão"><button class="enrollment-tab ' + (app.classSection === "classes" ? "active" : "") + '" type="button" data-class-section="classes" aria-pressed="' + (app.classSection === "classes") + '">Turmas <span class="tag">' + classScope().length + '</span></button><button class="enrollment-tab ' + (app.classSection === "enrollments" ? "active" : "") + '" type="button" data-class-section="enrollments" aria-pressed="' + (app.classSection === "enrollments") + '">Matrículas <span class="tag pending">' + pendingCount + '</span></button></div>';
+        var actions = app.classSection === "classes" && app.role === "admin" ? button("Nova turma", "new-class", "primary") : "";
+        var head = pageHead("Gestão acadêmica", "Turmas e matrículas", app.classSection === "classes" ? "Acompanhe capacidade, responsáveis e disciplinas vinculadas em cada turma." : "Analise solicitações e acompanhe os vínculos dos estudantes com segurança.", actions) + sectionTabs;
+        if (app.classSection === "classes") {
+          var scopedClasses = classScope();
+          var students = scopedClasses.reduce(function (total, item) { return total + item.students; }, 0);
+          var linked = new Set();
+          scopedClasses.forEach(function (item) { item.disciplineIds.forEach(function (id) { linked.add(id); }); });
+          var cards = scopedClasses.map(function (item) {
+            var occupancy = Math.min(100, Math.round((item.students / Math.max(item.capacity, 1)) * 100));
+            var disciplineTags = item.disciplineIds.map(function (id) { var discipline = disciplines.find(function (entry) { return entry.id === id; }); return discipline ? '<span class="tag">' + esc(discipline.code) + '</span>' : ""; }).join("");
+            return '<article class="card class-card"><div class="section-head"><div><span class="tag">' + esc(item.term) + '</span><h2>' + esc(item.name) + '</h2></div><span class="tag ' + (item.active ? "approved" : "refused") + '">' + (item.active ? "Ativa" : "Encerrada") + '</span></div><p>' + esc(item.shift) + ' · responsável: ' + esc(item.coordinator) + '</p><div class="class-progress" aria-label="' + occupancy + '% das vagas ocupadas"><span style="width:' + occupancy + '%"></span></div><div class="class-capacity"><span>' + item.students + ' estudantes</span><span>' + item.capacity + ' vagas</span></div><div class="class-disciplines">' + disciplineTags + '</div><div class="class-card-actions"><button class="btn small" type="button" data-class-details="' + esc(item.id) + '">Ver vínculos</button></div></article>';
+          }).join("");
+          if (!cards) cards = '<div class="empty-state card"><strong>Nenhuma turma no seu escopo</strong><p>Um administrador precisa vincular uma disciplina autorizada ao seu perfil.</p></div>';
+          return head + '<section class="quality-kpis communication-summary" aria-label="Resumo das turmas"><div class="quality-kpi"><strong>' + scopedClasses.length + '</strong><span>Turmas ativas</span></div><div class="quality-kpi"><strong>' + students + '</strong><span>Estudantes</span></div><div class="quality-kpi"><strong>' + linked.size + '</strong><span>Disciplinas vinculadas</span></div></section><section class="grid class-grid">' + cards + '</section>';
+        }
         var counts = {
           all: enrollments.length,
-          pending: enrollments.filter(function (item) { return item.status === "pending"; }).length,
+          pending: pendingCount,
           approved: enrollments.filter(function (item) { return item.status === "approved"; }).length,
           refused: enrollments.filter(function (item) { return item.status === "refused"; }).length
         };
         var rows = enrollments.filter(function (item) { return app.enrollmentFilter === "all" || item.status === app.enrollmentFilter; });
         var pendingVisible = rows.filter(function (item) { return item.status === "pending"; });
-        var tabs = [
-          { value: "all", label: "Todas" },
-          { value: "pending", label: "Pendentes" },
-          { value: "approved", label: "Aprovadas" },
-          { value: "refused", label: "Recusadas" }
-        ].map(function (tab) {
+        var tabs = [{ value: "all", label: "Todas" }, { value: "pending", label: "Pendentes" }, { value: "approved", label: "Aprovadas" }, { value: "refused", label: "Recusadas" }].map(function (tab) {
           return '<button class="enrollment-tab ' + (app.enrollmentFilter === tab.value ? "active" : "") + '" type="button" data-enrollment-tab="' + tab.value + '" aria-pressed="' + (app.enrollmentFilter === tab.value) + '">' + tab.label + '<span class="tag">' + counts[tab.value] + '</span></button>';
         }).join("");
         var bulkBar = app.selectedEnrollments.length ? '<div class="bulk-bar"><strong>' + app.selectedEnrollments.length + ' solicitação(ões) selecionada(s)</strong><div class="bulk-actions"><button class="btn small primary" type="button" data-bulk-action="approve">Aprovar selecionadas</button><button class="btn small danger" type="button" data-bulk-action="refuse">Recusar selecionadas</button><button class="btn small" type="button" data-bulk-action="clear">Limpar seleção</button></div></div>' : "";
         var empty = '<section class="demo-state"><div class="state-box"><span class="state-illustration" aria-hidden="true">◇</span><h2>Nenhuma solicitação nesta situação</h2><p>Use outra aba para consultar as demais matrículas.</p></div></section>';
-        var table = rows.length ? '<div class="table-wrap enrollment-table"><table><thead><tr><th><input class="selection-checkbox" id="select-visible-enrollments" type="checkbox" aria-label="Selecionar solicitações pendentes visíveis"' + (pendingVisible.length && pendingVisible.every(function (item) { return app.selectedEnrollments.indexOf(item.id) >= 0; }) ? " checked" : "") + (pendingVisible.length ? "" : " disabled") + '></th><th>Estudante</th><th>Turma</th><th>Solicitada em</th><th>Status</th><th>Ações</th></tr></thead><tbody>' +
-          rows.map(function (item) {
-            var selectable = item.status === "pending";
-            var checked = app.selectedEnrollments.indexOf(item.id) >= 0;
-            var actions = item.status === "pending" ? '<button class="btn small primary" type="button" data-enrollment-action="approve" data-id="' + item.id + '">Aprovar</button><button class="btn small danger" type="button" data-enrollment-action="refuse" data-id="' + item.id + '">Recusar</button>' : "";
-            actions += '<button class="btn small" type="button" data-enrollment-action="details" data-id="' + item.id + '">Detalhes</button>';
-            return '<tr><td><input class="selection-checkbox" type="checkbox" data-select-enrollment="' + item.id + '" aria-label="Selecionar matrícula de ' + esc(item.name) + '"' + (checked ? " checked" : "") + (selectable ? "" : " disabled") + '></td><td><div class="person"><span class="person-avatar">' + esc(initials(item.name)) + '</span><span><strong>' + esc(item.name) + '</strong><small>' + esc(item.email) + '</small></span></div></td><td>' + esc(item.className) + '</td><td>' + esc(item.date) + '</td><td><span class="tag ' + item.status + '">' + esc(statusLabel(item.status)) + '</span></td><td><div class="row-actions">' + actions + '</div></td></tr>';
-          }).join("") + '</tbody></table></div>' : empty;
+        var table = rows.length ? '<div class="table-wrap enrollment-table"><table><thead><tr><th><input class="selection-checkbox" id="select-visible-enrollments" type="checkbox" aria-label="Selecionar solicitações pendentes visíveis"' + (pendingVisible.length && pendingVisible.every(function (item) { return app.selectedEnrollments.indexOf(item.id) >= 0; }) ? " checked" : "") + (pendingVisible.length ? "" : " disabled") + '></th><th>Estudante</th><th>Turma</th><th>Solicitada em</th><th>Status</th><th>Ações</th></tr></thead><tbody>' + rows.map(function (item) {
+          var selectable = item.status === "pending";
+          var checked = app.selectedEnrollments.indexOf(item.id) >= 0;
+          var rowActions = item.status === "pending" ? '<button class="btn small primary" type="button" data-enrollment-action="approve" data-id="' + item.id + '">Aprovar</button><button class="btn small danger" type="button" data-enrollment-action="refuse" data-id="' + item.id + '">Recusar</button>' : "";
+          rowActions += '<button class="btn small" type="button" data-enrollment-action="details" data-id="' + item.id + '">Detalhes</button>';
+          return '<tr><td><input class="selection-checkbox" type="checkbox" data-select-enrollment="' + item.id + '" aria-label="Selecionar matrícula de ' + esc(item.name) + '"' + (checked ? " checked" : "") + (selectable ? "" : " disabled") + '></td><td><div class="person"><span class="person-avatar">' + esc(initials(item.name)) + '</span><span><strong>' + esc(item.name) + '</strong><small>' + esc(item.email) + '</small></span></div></td><td>' + esc(item.className) + '</td><td>' + esc(item.date) + '</td><td><span class="tag ' + item.status + '">' + esc(statusLabel(item.status)) + '</span></td><td><div class="row-actions">' + rowActions + '</div></td></tr>';
+        }).join("") + '</tbody></table></div>' : empty;
         var cards = rows.length ? '<div class="mobile-records">' + rows.map(function (item) {
           var checked = app.selectedEnrollments.indexOf(item.id) >= 0;
-          var actions = item.status === "pending" ? '<button class="btn small primary" type="button" data-enrollment-action="approve" data-id="' + item.id + '">Aprovar</button><button class="btn small danger" type="button" data-enrollment-action="refuse" data-id="' + item.id + '">Recusar</button>' : "";
-          actions += '<button class="btn small" type="button" data-enrollment-action="details" data-id="' + item.id + '">Detalhes</button>';
-          return '<article class="card enrollment-card"><div class="enrollment-card-head"><div class="person"><span class="person-avatar">' + esc(initials(item.name)) + '</span><span><strong>' + esc(item.name) + '</strong><small>' + esc(item.email) + '</small></span></div><span class="tag ' + item.status + '">' + esc(statusLabel(item.status)) + '</span></div><dl><dt>Turma</dt><dd>' + esc(item.className) + '</dd><dt>Solicitada</dt><dd>' + esc(item.date) + '</dd></dl>' + (item.status === "pending" ? '<label class="check-option"><input class="selection-checkbox" type="checkbox" data-select-enrollment="' + item.id + '"' + (checked ? " checked" : "") + '><span>Selecionar para ação em lote</span></label>' : "") + '<div class="enrollment-card-actions">' + actions + '</div></article>';
+          var cardActions = item.status === "pending" ? '<button class="btn small primary" type="button" data-enrollment-action="approve" data-id="' + item.id + '">Aprovar</button><button class="btn small danger" type="button" data-enrollment-action="refuse" data-id="' + item.id + '">Recusar</button>' : "";
+          cardActions += '<button class="btn small" type="button" data-enrollment-action="details" data-id="' + item.id + '">Detalhes</button>';
+          return '<article class="card enrollment-card"><div class="enrollment-card-head"><div class="person"><span class="person-avatar">' + esc(initials(item.name)) + '</span><span><strong>' + esc(item.name) + '</strong><small>' + esc(item.email) + '</small></span></div><span class="tag ' + item.status + '">' + esc(statusLabel(item.status)) + '</span></div><dl><dt>Turma</dt><dd>' + esc(item.className) + '</dd><dt>Solicitada</dt><dd>' + esc(item.date) + '</dd></dl>' + (item.status === "pending" ? '<label class="check-option"><input class="selection-checkbox" type="checkbox" data-select-enrollment="' + item.id + '"' + (checked ? " checked" : "") + '><span>Selecionar para ação em lote</span></label>' : "") + '<div class="enrollment-card-actions">' + cardActions + '</div></article>';
         }).join("") + '</div>' : "";
-        return pageHead("Gestão acadêmica", "Turmas e matrículas", "Analise solicitações e acompanhe os vínculos dos estudantes com segurança.", button("Nova turma", "new-class", "primary")) +
-          '<section class="grid three-col" style="margin-bottom:18px">' +
-            '<article class="card card-pad"><span class="stat-label">ADS 4º A</span><strong class="stat-value">32</strong><span class="stat-note">4 disciplinas vinculadas</span></article>' +
-            '<article class="card card-pad"><span class="stat-label">SI 6º B</span><strong class="stat-value">28</strong><span class="stat-note">5 disciplinas vinculadas</span></article>' +
-            '<article class="card card-pad"><span class="stat-label">Pendências</span><strong class="stat-value">' + counts.pending + '</strong><span class="stat-note">Aguardando análise</span></article>' +
-          '</section>' +
-          '<div class="enrollment-tabs" aria-label="Filtrar matrículas por situação">' + tabs + '</div>' +
-          bulkBar + table + cards;
+        return head + '<section class="quality-kpis communication-summary" aria-label="Resumo das matrículas"><div class="quality-kpi"><strong>' + counts.pending + '</strong><span>Pendentes</span></div><div class="quality-kpi"><strong>' + counts.approved + '</strong><span>Aprovadas</span></div><div class="quality-kpi"><strong>' + counts.refused + '</strong><span>Recusadas</span></div></section><div class="enrollment-tabs" aria-label="Filtrar matrículas por situação">' + tabs + '</div>' + bulkBar + table + cards;
+      }
+
+      function classDisciplineMarkup(selectedIds, restrictToProfessorScope) {
+        return '<div class="assignment-grid">' + disciplines.map(function (discipline) {
+          var authorized = !restrictToProfessorScope || discipline.id === "d1" || discipline.id === "d2";
+          return '<label class="check-option"><input type="checkbox" data-class-discipline="' + esc(discipline.id) + '"' + (selectedIds.indexOf(discipline.id) >= 0 ? " checked" : "") + (authorized ? "" : " disabled") + '><span><strong>' + esc(discipline.code) + '</strong><br>' + esc(discipline.name) + (authorized ? "" : " · somente leitura") + '</span></label>';
+        }).join("") + '</div>';
+      }
+
+      function openClassDetails(id) {
+        var item = classScope().find(function (entry) { return entry.id === id; });
+        if (!item) { toast("Turma não disponível para este perfil."); return; }
+        var occupancy = Math.min(100, Math.round((item.students / Math.max(item.capacity, 1)) * 100));
+        var toggle = app.role === "admin" ? '<button class="btn" type="button" data-class-toggle>' + (item.active ? "Encerrar turma" : "Reativar turma") + '</button>' : "";
+        openSimpleModal(item.name, '<div class="policy-preview"><div class="policy-preview-head"><div><span class="tag">' + esc(item.term) + '</span><h3 style="margin-top:10px">' + esc(item.name) + '</h3><p>' + esc(item.shift) + ' · responsável: ' + esc(item.coordinator) + '</p></div><span class="tag ' + (item.active ? "approved" : "refused") + '">' + (item.active ? "Ativa" : "Encerrada") + '</span></div><dl><dt>Estudantes</dt><dd>' + item.students + '</dd><dt>Capacidade</dt><dd>' + item.capacity + ' vagas</dd><dt>Ocupação</dt><dd>' + occupancy + '%</dd></dl></div><h3>Disciplinas vinculadas</h3><p style="color:var(--muted)">' + (app.role === "professor" ? "Você pode alterar apenas MET-201 e WEB-302; os demais vínculos são somente leitura." : "Selecione as disciplinas que fazem parte desta turma.") + '</p>' + classDisciplineMarkup(item.disciplineIds, app.role === "professor") + '<div id="class-details-message" aria-live="polite"></div><div class="modal-actions">' + toggle + '<button class="btn" type="button" data-modal-cancel>Cancelar</button><button class="btn primary" type="button" data-class-save>Salvar vínculos</button></div>');
+        modalBody.querySelector("[data-class-save]").addEventListener("click", function () {
+          var selected = Array.from(modalBody.querySelectorAll("[data-class-discipline]:checked")).map(function (node) { return node.getAttribute("data-class-discipline"); });
+          if (!selected.length) {
+            document.getElementById("class-details-message").innerHTML = '<div class="auth-message" role="alert" style="margin-top:12px">Mantenha ao menos uma disciplina vinculada.</div>';
+            return;
+          }
+          item.disciplineIds = selected;
+          recordHistory("discipline", selected[0], "Vínculos da turma atualizados", item.name + " · " + selected.length + " disciplina(s)", app.role === "admin" ? "Ana Martins" : "Bruno Lima", roleName());
+          closeModal();
+          render();
+          toast("Vínculos da turma atualizados.");
+        });
+        var toggleButton = modalBody.querySelector("[data-class-toggle]");
+        if (toggleButton) toggleButton.addEventListener("click", function () {
+          item.active = !item.active;
+          recordHistory("discipline", item.disciplineIds[0] || "global", item.active ? "Turma reativada" : "Turma encerrada", item.name + " · " + item.term, "Ana Martins", "Administrador");
+          closeModal();
+          render();
+          toast(item.active ? "Turma reativada." : "Turma encerrada.");
+        });
+      }
+
+      function openNewClassForm() {
+        if (app.role !== "admin") { toast("Somente administradores podem criar turmas."); return; }
+        var professors = users.filter(function (user) { return user.roleKey === "professor" && user.status === "active"; });
+        var options = professors.map(function (user) { return '<option>' + esc(user.name) + '</option>'; }).join("");
+        openSimpleModal("Nova turma", '<div class="form-grid"><div class="field"><label for="class-name">Nome da turma</label><input id="class-name" placeholder="Ex.: ADS 2º A"></div><div class="field"><label for="class-term">Período</label><input id="class-term" value="2027.1"></div><div class="field"><label for="class-shift">Turno</label><select id="class-shift"><option>Manhã</option><option>Tarde</option><option selected>Noite</option></select></div><div class="field"><label for="class-capacity">Capacidade</label><input id="class-capacity" type="number" min="1" max="200" value="40"></div></div><div class="field"><label for="class-coordinator">Responsável principal</label><select id="class-coordinator">' + options + '</select></div><h3>Disciplinas iniciais</h3>' + classDisciplineMarkup([], false) + '<div id="class-form-message" aria-live="polite"></div><div class="modal-actions"><button class="btn" type="button" data-modal-cancel>Cancelar</button><button class="btn primary" type="button" data-class-create>Criar turma</button></div>');
+        modalBody.querySelector("[data-class-create]").addEventListener("click", function () {
+          var name = document.getElementById("class-name").value.trim();
+          var term = document.getElementById("class-term").value.trim();
+          var capacity = Number(document.getElementById("class-capacity").value);
+          var selected = Array.from(modalBody.querySelectorAll("[data-class-discipline]:checked")).map(function (node) { return node.getAttribute("data-class-discipline"); });
+          var duplicate = academicClasses.some(function (item) { return normalize(item.name + item.term) === normalize(name + term); });
+          if (name.length < 3 || term.length < 4 || capacity < 1 || capacity > 200 || !selected.length || duplicate) {
+            document.getElementById("class-form-message").innerHTML = '<div class="auth-message" role="alert" style="margin-top:12px">Informe nome e período válidos, capacidade entre 1 e 200, ao menos uma disciplina e evite turmas duplicadas.</div>';
+            return;
+          }
+          var item = { id: "c" + Date.now(), name: name, term: term, shift: document.getElementById("class-shift").value, capacity: capacity, students: 0, coordinator: document.getElementById("class-coordinator").value, disciplineIds: selected, active: true };
+          academicClasses.push(item);
+          recordHistory("discipline", selected[0], "Turma criada", item.name + " · " + item.term, "Ana Martins", "Administrador");
+          closeModal();
+          render();
+          toast("Turma criada na demonstração.");
+        });
       }
 
       function openEnrollmentDetails(id) {
@@ -2026,6 +2111,16 @@
             render();
           });
         });
+        root.querySelectorAll("[data-class-section]").forEach(function (node) {
+          node.addEventListener("click", function () {
+            app.classSection = node.getAttribute("data-class-section");
+            app.selectedEnrollments = [];
+            render();
+          });
+        });
+        root.querySelectorAll("[data-class-details]").forEach(function (node) {
+          node.addEventListener("click", function () { openClassDetails(node.getAttribute("data-class-details")); });
+        });
         root.querySelectorAll("[data-select-enrollment]").forEach(function (node) {
           node.addEventListener("change", function () {
             var id = node.getAttribute("data-select-enrollment");
@@ -2135,7 +2230,7 @@
         else if (action === "clear-history-filters") { app.historyCategory = "all"; app.historySearch = ""; render(); }
         else if (action === "clear-user-filters") { app.userRoleFilter = "all"; app.userSearch = ""; render(); }
         else if (action === "new-discipline") openSimpleModal("Nova disciplina", '<div class="field"><label for="discipline-name">Nome</label><input id="discipline-name" placeholder="Ex.: Banco de Dados"></div><div class="form-grid"><div class="field"><label for="discipline-code">Código</label><input id="discipline-code" placeholder="BD-210"></div><div class="field"><label for="discipline-teacher">Responsável</label><input id="discipline-teacher" placeholder="Nome do docente"></div></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Disciplina preparada no protótipo.">Salvar</button></div>');
-        else if (action === "new-class") openSimpleModal("Nova turma", '<div class="field"><label for="class-name">Nome da turma</label><input id="class-name" placeholder="Ex.: ADS 2º A"></div><div class="field"><label for="class-term">Período</label><input id="class-term" value="2027.1"></div><div class="modal-actions"><button class="btn" data-modal-cancel>Cancelar</button><button class="btn primary" data-save="Turma preparada no protótipo.">Salvar</button></div>');
+        else if (action === "new-class") openNewClassForm();
         else if (action === "new-user") openNewProfessorForm();
         else if (action === "compare-policies") openSimpleModal("Comparar versões · Novo", '<p>Esta proposta destaca alterações em condições, detalhes e fonte antes da publicação.</p><div class="check-row"><span class="tag prohibited">Antes</span><span><strong>Uso proibido</strong><small>Sem justificativa informada</small></span></div><div class="check-row" style="margin-top:10px"><span class="tag restricted">Agora</span><span><strong>Permitido com restrições</strong><small>Exige declaração e verificação das fontes</small></span></div><div class="modal-actions"><button class="btn primary" data-modal-cancel>Entendi</button></div>');
         else if (action === "show-auth-plan") openSimpleModal("Plano de autenticação institucional", '<ol><li>Usar e-mail ou identificador acadêmico único.</li><li>Integrar SSO via OIDC/SAML quando houver provedor institucional.</li><li>Adicionar recuperação de conta com fluxo auditável.</li><li>Exigir segundo fator para administradores.</li><li>Manter autorização por perfil e disciplina no servidor.</li></ol><div class="modal-actions"><button class="btn primary" data-modal-cancel>Fechar</button></div>');
@@ -2414,7 +2509,7 @@
             response = "Há " + pendingCount + " solicitações aguardando análise. Abri a lista para você aprovar, recusar ou consultar os detalhes.";
             source = "Solicitações de matrícula da demonstração";
             actionLabel = "Matrículas pendentes abertas";
-            action = function () { app.enrollmentFilter = "pending"; navigate("classes"); };
+            action = function () { app.classSection = "enrollments"; app.enrollmentFilter = "pending"; navigate("classes"); };
           }
         } else if (/comunicado|aviso|publicar mensagem/.test(text)) {
           var activeAnnouncements = announcementScope().filter(function (item) { return item.active; }).length;
