@@ -11,7 +11,9 @@
 
 # IaTellect
 
-## Uso de IA com regras claras e responsabilidade
+## Políticas acadêmicas de uso de IA
+
+**Uso de IA com regras claras e responsabilidade.**
 
 <p align="center">
   <img src="https://img.shields.io/badge/status-experimental-d98218?style=for-the-badge" alt="Status: experimental">
@@ -24,9 +26,14 @@ Protótipo de uma plataforma para organizar e consultar políticas acadêmicas s
 > [!WARNING]
 > **Status:** projeto experimental/em desenvolvimento. Não foi comprovada publicação institucional. Não utilize com dados reais de estudantes nem disponibilize publicamente como serviço sem revisar autenticação, privacidade, segurança, hospedagem e backups.
 
+> [!NOTE]
+> Este é um protótipo demonstrativo. Seus resultados ainda precisam ser avaliados em testes com usuários.
+
 ## Navegação rápida
 
 - [O que o sistema faz](#o-que-o-sistema-faz)
+- [Fluxo em três passos](#fluxo-de-consulta-em-três-passos)
+- [Estados de política](#estados-de-política)
 - [Versão recomendada](#versão-recomendada-para-experimentar)
 - [Como executar](#como-executar-localmente)
 - [Perfis de acesso](#perfis-de-acesso)
@@ -37,6 +44,7 @@ Protótipo de uma plataforma para organizar e consultar políticas acadêmicas s
 - [Acessibilidade](#acessibilidade)
 - [Próximos passos](#próximos-passos-recomendados)
 - [Licença](#licença)
+- [Guia de identidade visual](docs/guia-identidade-visual.md)
 
 <p align="center">
   <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
@@ -57,6 +65,23 @@ Protótipo de uma plataforma para organizar e consultar políticas acadêmicas s
 - Oferece gestão de comunicados e histórico de operações.
 
 - Possui controles de acesso por perfil e por disciplina no servidor, além de testes automatizados de permissões.
+
+### Fluxo de consulta em três passos
+
+| 1. Selecionar disciplina | 2. Consultar regras | 3. Verificar o nível |
+| :---: | :---: | :---: |
+| Escolha a disciplina e o tipo de atividade acadêmica. | Consulte as políticas, condições, detalhes e fontes cadastradas. | Confirme se o uso de IA está permitido, permitido com restrições ou proibido. |
+
+### Estados de política
+
+| Estado | Identificação visual | Significado |
+| --- | :---: | --- |
+| **Permitido** | ![Estado permitido em verde](https://img.shields.io/badge/Permitido-3e9c6a?style=flat-square) | Atividade em que o uso de IA é aceito. |
+| **Permitido com restrições** | ![Estado permitido com restrições em amarelo](https://img.shields.io/badge/Com_restri%C3%A7%C3%B5es-e0a13e?style=flat-square) | Uso aceito com condições, detalhes e fonte da política registrados. |
+| **Proibido** | ![Estado proibido em vermelho](https://img.shields.io/badge/Proibido-ce5365?style=flat-square) | Atividade em que o uso de IA não é permitido. |
+
+> [!IMPORTANT]
+> As cores ajudam a reconhecer os estados, mas não substituem seus rótulos. Verde, amarelo e vermelho não devem ser usados como decoração.
 
 <p align="center">
   <img src="docs/assets/readme/policy-states.png" alt="Representação dos três estados de política: permitido, permitido com restrições e proibido" width="1200">
@@ -264,3 +289,8 @@ Os testes criam um banco temporário e não devem alterar o banco de desenvolvim
 
 > [!WARNING]
 > Nenhuma licença de distribuição foi identificada nos arquivos analisados. Defina e inclua uma licença antes de autorizar reutilização, modificação ou redistribuição do código.
+
+<p align="center">
+  <strong>IaTellect — Políticas acadêmicas de uso de IA</strong><br>
+  Projeto acadêmico — CESAR School
+</p>
