@@ -1,8 +1,46 @@
-# Protótipo-SI-IA
+<p align="center">
+  <img src="docs/assets/readme/banner.png" alt="Banner do IaTellect com a identidade visual da plataforma e uma prévia do painel acadêmico" width="1200">
+</p>
+
+<p align="center">
+  <picture>
+    <source srcset="docs/assets/readme/logo.svg" type="image/svg+xml">
+    <img src="docs/assets/readme/logo.png" alt="Ícone da marca IaTellect" width="72">
+  </picture>
+</p>
+
+# IaTellect
+
+## Uso de IA com regras claras e responsabilidade
+
+<p align="center">
+  <img src="https://img.shields.io/badge/status-experimental-d98218?style=for-the-badge" alt="Status: experimental">
+  <img src="https://img.shields.io/badge/Python-3-08758a?style=for-the-badge&amp;logo=python&amp;logoColor=white" alt="Python 3">
+  <img src="https://img.shields.io/badge/SQLite-local-46bdc9?style=for-the-badge&amp;logo=sqlite&amp;logoColor=10243b" alt="SQLite local">
+</p>
 
 Protótipo de uma plataforma para organizar e consultar políticas acadêmicas sobre o uso de inteligência artificial (IA) em atividades de disciplinas. O sistema permite registrar regras por atividade e apoiar a comunicação entre administração, docentes e estudantes.
 
+> [!WARNING]
 > **Status:** projeto experimental/em desenvolvimento. Não foi comprovada publicação institucional. Não utilize com dados reais de estudantes nem disponibilize publicamente como serviço sem revisar autenticação, privacidade, segurança, hospedagem e backups.
+
+## Navegação rápida
+
+- [O que o sistema faz](#o-que-o-sistema-faz)
+- [Versão recomendada](#versão-recomendada-para-experimentar)
+- [Como executar](#como-executar-localmente)
+- [Perfis de acesso](#perfis-de-acesso)
+- [Galeria de telas](#galeria-de-telas)
+- [Estrutura do repositório](#estrutura-do-repositório)
+- [Testes](#testes)
+- [Dados, privacidade e publicação](#dados-e-publicação-no-github)
+- [Acessibilidade](#acessibilidade)
+- [Próximos passos](#próximos-passos-recomendados)
+- [Licença](#licença)
+
+<p align="center">
+  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+</p>
 
 ## O que o sistema faz
 
@@ -19,6 +57,14 @@ Protótipo de uma plataforma para organizar e consultar políticas acadêmicas s
 - Oferece gestão de comunicados e histórico de operações.
 
 - Possui controles de acesso por perfil e por disciplina no servidor, além de testes automatizados de permissões.
+
+<p align="center">
+  <img src="docs/assets/readme/policy-states.png" alt="Representação dos três estados de política: permitido, permitido com restrições e proibido" width="1200">
+</p>
+
+<p align="center">
+  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+</p>
 
 ## Versão recomendada para experimentar
 
@@ -41,6 +87,16 @@ Essa pasta é uma cópia isolada derivada da versão 3.0 de testes. Ela utiliza 
 O servidor usa módulos da biblioteca padrão do Python, incluindo `sqlite3`; não é necessário instalar um servidor de banco de dados separado.
 
 ## Como executar localmente
+
+> [!IMPORTANT]
+> **Antes da primeira execução**, configure uma senha forte para o administrador. Substitua o texto de exemplo por uma senha própria e não a inclua em arquivos versionados:
+>
+> ```
+> set "ADMIN_PASSWORD=SUBSTITUA_POR_UMA_SENHA_FORTE"
+> ```
+
+<details>
+<summary><strong>Ver instruções de execução local</strong></summary>
 
 1. Abra o Prompt de Comando.
 
@@ -68,7 +124,14 @@ O servidor usa módulos da biblioteca padrão do Python, incluindo `sqlite3`; n�
    http://localhost:3005
    ```
 
-O iniciador exibe informações de execução no terminal. Se `ADMIN_PASSWORD` não estiver configurada, o arquivo de inicialização utiliza uma credencial de demonstração. **Não use a configuração padrão fora de um teste local.** A variável deve ser definida antes da criação inicial do banco; mudar a variável depois não necessariamente altera a senha de uma conta já existente.
+</details>
+
+> [!WARNING]
+> O iniciador exibe informações de execução no terminal. Se `ADMIN_PASSWORD` não estiver configurada, o arquivo de inicialização utiliza uma credencial de demonstração. **Não use a configuração padrão fora de um teste local.** A variável deve ser definida antes da criação inicial do banco; mudar a variável depois não necessariamente altera a senha de uma conta já existente.
+
+<p align="center">
+  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+</p>
 
 ## Perfis de acesso
 
@@ -78,11 +141,47 @@ O iniciador exibe informações de execução no terminal. Se `ADMIN_PASSWORD` n
 
 - **Aluno:** solicita matrícula em uma turma. Depois da aprovação, pode consultar as disciplinas correspondentes e suas políticas.
 
+<p align="center">
+  <img src="docs/assets/readme/profiles.png" alt="Descrição visual dos perfis de acesso administrador, professor e aluno" width="1200">
+</p>
+
 ### Limitação importante do login de estudante
 
-No protótipo atual, o estudante entra usando o nome completo, sem senha. Portanto, o nome não comprova a identidade da pessoa: alguém que conheça o nome de outro estudante pode tentar se passar por ele. Essa limitação torna a versão inadequada para uso com dados reais ou para publicação institucional sem alteração do mecanismo de autenticação.
+> [!WARNING]
+> No protótipo atual, o estudante entra usando o nome completo, sem senha. Portanto, o nome não comprova a identidade da pessoa: alguém que conheça o nome de outro estudante pode tentar se passar por ele. Essa limitação torna a versão inadequada para uso com dados reais ou para publicação institucional sem alteração do mecanismo de autenticação.
+
+<p align="center">
+  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+</p>
+
+## Galeria de telas
+
+> [!NOTE]
+> As capturas de tela apresentam dados fictícios de demonstração.
+
+| Acesso à plataforma | Visão geral administrativa |
+| :---: | :---: |
+| <img src="docs/assets/readme/screen-login.png" alt="Tela de login do IaTellect com acesso por perfil" width="600"> | <img src="docs/assets/readme/screen-dashboard.png" alt="Painel administrativo do IaTellect com indicadores e pontos de atenção" width="600"> |
+| **Login e seleção do perfil de demonstração.** | **Indicadores acadêmicos e ações prioritárias.** |
+
+| Disciplinas e políticas | Clareza das políticas |
+| :---: | :---: |
+| <img src="docs/assets/readme/screen-disciplinas.png" alt="Tela de disciplinas e políticas com filtros e cartões de disciplinas" width="600"> | <img src="docs/assets/readme/screen-clareza.png" alt="Tela de clareza das políticas com índice e pontos de atenção" width="600"> |
+| **Consulta das regras por disciplina e atividade.** | **Acompanhamento de cobertura, fontes e detalhamento.** |
+
+| Área do estudante | Plano de uso responsável |
+| :---: | :---: |
+| <img src="docs/assets/readme/screen-aluno.png" alt="Área do estudante com matrícula, disciplinas e políticas disponíveis" width="600"> | <img src="docs/assets/readme/screen-uso-responsavel.png" alt="Plano de uso responsável com checklist e rascunho de declaração" width="600"> |
+| **Disciplinas liberadas para a matrícula aprovada.** | **Jornada guiada de autorreflexão.** |
+
+<p align="center">
+  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+</p>
 
 ## Estrutura do repositório
+
+<details>
+<summary><strong>Ver estrutura de pastas documentada</strong></summary>
 
 ```
 BackLogs/                                      Planejamento e backlog do projeto
@@ -97,7 +196,12 @@ Referências para o projeto/                     Pesquisa e referências do proj
 
 Cada versão pode ter seu próprio servidor e armazenamento. O banco SQLite da versão isolada fica em `Desenvolvimento da Plataforma/Assistente de uso de IA - Protótipo/data/`; os bancos e arquivos de dados locais não são sincronizados automaticamente entre versões.
 
+</details>
+
 ## Testes
+
+<details>
+<summary><strong>Ver comando e informações da suíte de testes</strong></summary>
 
 A pasta da implementação isolada contém testes automatizados de autenticação, permissões, turmas e matrículas, visibilidade de dados e outras regras do servidor. Para executá-los, use:
 
@@ -108,9 +212,19 @@ python test_permissoes.py
 
 Os testes criam um banco temporário e não devem alterar o banco de desenvolvimento. Na revisão documental de 7 de novembro de 2026, a suíte existente terminou com sucesso (`Tudo certo`). Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
 
+</details>
+
+> [!IMPORTANT]
+> Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
+
+<p align="center">
+  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+</p>
+
 ## Dados e publicação no GitHub
 
-O sistema guarda dados no arquivo SQLite local. Antes de enviar o repositório ao GitHub:
+> [!WARNING]
+> O sistema guarda dados no arquivo SQLite local. Antes de enviar o repositório ao GitHub:
 
 - Não inclua bancos de dados com dados reais, respostas de estudantes, anotações, senhas, tokens ou outros segredos.
 
@@ -120,11 +234,17 @@ O sistema guarda dados no arquivo SQLite local. Antes de enviar o repositório a
 
 - Não coloque `ADMIN_PASSWORD` nem outras credenciais no código, no histórico de commits, em screenshots ou neste README.
 
-O assistente registra respostas de autorreflexão localmente. Essas respostas são declarações dos próprios estudantes: não comprovam fatos, autoria ou uso de IA e não devem ser tratadas como decisões disciplinares automáticas. Antes de qualquer piloto com estudantes, é necessário definir finalidade, aviso de privacidade, controle de acesso, retenção e descarte dos dados.
+> [!IMPORTANT]
+> O assistente registra respostas de autorreflexão localmente. Essas respostas são declarações dos próprios estudantes: não comprovam fatos, autoria ou uso de IA e não devem ser tratadas como decisões disciplinares automáticas. Antes de qualquer piloto com estudantes, é necessário definir finalidade, aviso de privacidade, controle de acesso, retenção e descarte dos dados.
 
 ## Acessibilidade
 
-O repositório inclui um componente separado de preferências de apresentação, com opções como tema, tamanho da fonte, espaçamento, sublinhado de links, redução de movimento e alto contraste. Há referências de projeto a WCAG 2.2 e eMAG; a existência dessas opções e referências **não significa que o sistema esteja certificado ou que sua conformidade tenha sido validada**. São necessários testes automáticos e manuais, incluindo teclado, leitores de tela, contraste e avaliação com pessoas com deficiência.
+> [!NOTE]
+> O repositório inclui um componente separado de preferências de apresentação, com opções como tema, tamanho da fonte, espaçamento, sublinhado de links, redução de movimento e alto contraste. Há referências de projeto a WCAG 2.2 e eMAG; a existência dessas opções e referências **não significa que o sistema esteja certificado ou que sua conformidade tenha sido validada**. São necessários testes automáticos e manuais, incluindo teclado, leitores de tela, contraste e avaliação com pessoas com deficiência.
+
+<p align="center">
+  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+</p>
 
 ## Próximos passos recomendados
 
@@ -142,4 +262,5 @@ O repositório inclui um componente separado de preferências de apresentação,
 
 ## Licença
 
-Nenhuma licença de distribuição foi identificada nos arquivos analisados. Defina e inclua uma licença antes de autorizar reutilização, modificação ou redistribuição do código.
+> [!WARNING]
+> Nenhuma licença de distribuição foi identificada nos arquivos analisados. Defina e inclua uma licença antes de autorizar reutilização, modificação ou redistribuição do código.
