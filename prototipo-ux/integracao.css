@@ -1,0 +1,206 @@
+:root {
+  --text: var(--ink);
+  --surface2: var(--surface-subtle);
+  --link: var(--brand);
+  --field-border: var(--line-strong);
+  --focus-ring: var(--brand);
+  --lime-dark: var(--brand-soft);
+  --modal-shadow: rgb(18 37 61 / 0.18);
+}
+.accessibility-toggle,
+.accessibility-menu {
+  left: 18px;
+  right: auto;
+  z-index: 45;
+}
+dialog.modal {
+  border: 1px solid var(--line);
+  padding: 0;
+  color: var(--ink);
+  background: var(--surface);
+}
+dialog::backdrop {
+  background: rgb(7 17 31 / 0.58);
+}
+.modal .form,
+.modal .tgroup {
+  display: grid;
+  gap: 12px;
+}
+.modal .form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 12px;
+}
+.modal .form-actions,
+.modal .row-actions,
+.modal .manage-head,
+.modal .tg-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 12px;
+}
+.modal .ctx,
+.modal .result,
+.modal .tgroup,
+.modal .cat {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-block: 12px;
+}
+.modal .ctx > *,
+.modal .meta {
+  display: block;
+}
+.modal .mini,
+.modal .close {
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  padding: 0.45em 0.8em;
+  border-radius: 8px;
+}
+.modal .danger,
+.notice.error {
+  color: var(--danger);
+}
+.modal .search {
+  max-width: 100%;
+}
+.modal textarea {
+  width: 100%;
+}
+.modal .slist {
+  list-style: none;
+  padding: 0;
+}
+.modal .pill {
+  font-weight: 700;
+}
+.modal .pill.red {
+  color: var(--danger);
+}
+.modal .pill.yellow {
+  color: var(--warning);
+}
+.modal .pill.green {
+  color: var(--success);
+}
+.message,
+.declaration-preview,
+.card p,
+.card small {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.dashboard-section {
+  margin-top: 1rem;
+}
+#login-message:not(:empty),
+#register-message:not(:empty) {
+  padding: 0.6rem;
+  border-left: 3px solid var(--brand);
+}
+html[data-font="grande"] {
+  font-size: 115%;
+}
+html[data-font="maior"] {
+  font-size: 130%;
+}
+html[data-lines="medio"] body * {
+  line-height: 1.65;
+}
+html[data-lines="grande"] body * {
+  line-height: 1.85;
+}
+html[data-letters="medio"] {
+  letter-spacing: 0.035em;
+  word-spacing: 0.07em;
+}
+html[data-letters="grande"] {
+  letter-spacing: 0.07em;
+  word-spacing: 0.14em;
+}
+html[data-underline="sim"] a {
+  text-decoration: underline;
+}
+html[data-motion="reduzido"] *,
+html[data-motion="reduzido"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+html[data-theme="escuro"] {
+  color-scheme: dark;
+  --ink: #eef5fb;
+  --ink-soft: #d5e1eb;
+  --muted: #b7c7d6;
+  --canvas: #101c2b;
+  --surface: #182a3c;
+  --surface-subtle: #203348;
+  --line: #3c5065;
+  --line-strong: #70859a;
+  --danger: #ff9da9;
+  --warning: #ffd28c;
+  --success: #8ddcaa;
+}
+html[data-theme="escuro"]
+  :is(
+    .auth-entry,
+    .topbar,
+    .card,
+    .btn:not(.primary),
+    .auth-tab.active,
+    .modal-head,
+    .field label,
+    .field input,
+    .field select,
+    .field textarea,
+    .table-wrap,
+    th,
+    .icon-btn,
+    .chat-log,
+    .message:not(.user),
+    .chat-footer,
+    .check-row,
+    .dashboard-banner,
+    .toolbar,
+    .declaration-preview
+  ) {
+  background: var(--surface);
+  color: var(--ink);
+}
+html[data-theme="escuro"]
+  :is(.dashboard-banner p, .auth-card-head p, .stat-label, .stat-note) {
+  color: var(--muted);
+}
+html[data-contrast="alto"] {
+  --muted: var(--ink);
+  --line: var(--ink);
+  --line-strong: var(--ink);
+}
+html[data-contrast="alto"] :is(button, input, select, textarea, .card) {
+  outline: 1px solid currentColor;
+}
+@media (max-width: 700px) {
+  .topbar {
+    flex-wrap: wrap;
+    height: auto;
+    gap: 6px;
+  }
+  .top-actions {
+    gap: 5px;
+  }
+  .topbar-title {
+    flex: 1;
+  }
+  .topbar-title span {
+    overflow-wrap: anywhere;
+  }
+  dialog.modal {
+    width: calc(100% - 16px);
+  }
+}

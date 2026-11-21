@@ -21,7 +21,7 @@ O cadastro dá a mesma resposta quando recebe um pedido ou encontra um conflito 
 | `server.py` | Entrada da aplicação. |
 | `app/` | Configuração, banco, autenticação, permissões, auditoria e servidor HTTP. |
 | `app/routes/` | Rotas da API por domínio. |
-| `frontend/` | HTML do acesso e do painel. |
+| [prototipo-ux](../prototipo-ux/) | HTML único do acesso e do painel, estilos e navegação. A execução local requer esta pasta ao lado da pasta da v4. |
 | `frontend/assets/css/` e `frontend/assets/js/` | Estilos, comportamento das telas e acessibilidade compartilhada. |
 | `sql/schema.sql` | Modelo do banco usado na inicialização. |
 | `test_permissoes.py` | Suíte de integração com SQLite temporário. |
