@@ -93,13 +93,8 @@ Protótipo de uma plataforma para organizar e consultar políticas acadêmicas s
 
 ## Versão recomendada para experimentar
 
-A implementação mais recente descrita neste repositório está em:
-
-```
-Desenvolvimento da Plataforma/Assistente de uso de IA - Protótipo/
-```
-
-Essa pasta é uma cópia isolada derivada da versão 3.0 de testes. Ela utiliza um banco SQLite e uma porta próprios; não compartilha automaticamente os dados com a pasta `Plataforma v3.0 - Testes` nem com o protótipo de terminal.
+- **Executar a plataforma:** a [Plataforma v4.0 Final](Plataforma%20v4.0%20Final/README.md) usa Python e SQLite local para login, turmas e políticas.
+- **Experimentar o novo visual:** abra `prototipo-ux/index.html` no navegador após baixar o repositório. A [pasta do protótipo](prototipo-ux/) contém a demonstração das telas da galeria.
 
 ## Requisitos
 
@@ -113,46 +108,16 @@ O servidor usa módulos da biblioteca padrão do Python, incluindo `sqlite3`; n�
 
 ## Como executar localmente
 
-> [!IMPORTANT]
-> **Antes da primeira execução**, configure uma senha forte para o administrador. Substitua o texto de exemplo por uma senha própria e não a inclua em arquivos versionados:
->
-> ```
-> set "ADMIN_PASSWORD=SUBSTITUA_POR_UMA_SENHA_FORTE"
-> ```
+No Windows, a partir da raiz do repositório:
 
-<details>
-<summary><strong>Ver instruções de execução local</strong></summary>
+```powershell
+cd "Plataforma v4.0 Final"
+.\iniciar.bat
+```
 
-1. Abra o Prompt de Comando.
+Abra [a tela de acesso](http://127.0.0.1:3002/acesso.html). Também é possível iniciar com `python server.py` dentro da pasta da v4.
 
-1. Entre na pasta do protótipo isolado:
-
-   ```
-   cd "Desenvolvimento da Plataforma\Assistente de uso de IA - Protótipo"
-   ```
-
-1. **Antes da primeira execução**, configure uma senha forte para o administrador. Substitua o texto de exemplo por uma senha própria e não a inclua em arquivos versionados:
-
-   ```
-   set "ADMIN_PASSWORD=SUBSTITUA_POR_UMA_SENHA_FORTE"
-   ```
-
-1. Inicie o servidor:
-
-   ```
-   iniciar.bat
-   ```
-
-1. Abra no navegador:
-
-   ```
-   http://localhost:3005
-   ```
-
-</details>
-
-> [!WARNING]
-> O iniciador exibe informações de execução no terminal. Se `ADMIN_PASSWORD` não estiver configurada, o arquivo de inicialização utiliza uma credencial de demonstração. **Não use a configuração padrão fora de um teste local.** A variável deve ser definida antes da criação inicial do banco; mudar a variável depois não necessariamente altera a senha de uma conta já existente.
+Na primeira execução, o administrador usa a senha de `ADMIN_PASSWORD` ou a senha gerada no arquivo local `data/senha_admin_inicial.txt`. Depois de entrar, altere a senha e apague esse arquivo.
 
 <p align="center">
   <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
@@ -170,16 +135,17 @@ O servidor usa módulos da biblioteca padrão do Python, incluindo `sqlite3`; n�
   <img src="docs/assets/readme/profiles.png" alt="Descrição visual dos perfis de acesso administrador, professor e aluno" width="1200">
 </p>
 
-### Limitação importante do login de estudante
+### Login de estudante
 
-> [!WARNING]
-> No protótipo atual, o estudante entra usando o nome completo, sem senha. Portanto, o nome não comprova a identidade da pessoa: alguém que conheça o nome de outro estudante pode tentar se passar por ele. Essa limitação torna a versão inadequada para uso com dados reais ou para publicação institucional sem alteração do mecanismo de autenticação.
+Na v4, o aluno entra com nome completo e senha. A aprovação da matrícula libera as disciplinas da turma. Para contas antigas sem senha, o administrador ou um professor autorizado pode usar **Definir senha**.
 
 <p align="center">
   <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
 </p>
 
 ## Galeria de telas
+
+As imagens mostram o [protótipo visual](prototipo-ux/).
 
 > [!NOTE]
 > As capturas de tela apresentam dados fictícios de demonstração.
@@ -209,9 +175,11 @@ O servidor usa módulos da biblioteca padrão do Python, incluindo `sqlite3`; n�
 <summary><strong>Ver estrutura de pastas documentada</strong></summary>
 
 ```
+Plataforma v4.0 Final/                         Plataforma funcional com Python e SQLite
+prototipo-ux/                                  Demonstração visual em HTML
 BackLogs/                                      Planejamento e backlog do projeto
 Desenvolvimento da Plataforma/
-  Assistente de uso de IA - Protótipo/          Cópia isolada recomendada para teste
+  Assistente de uso de IA - Protótipo/          Protótipo anterior
   Testes da Plataforma/                         Histórico dos protótipos v0.0 a v3.0
   Tela de Login/                                Experimentos visuais de login
   menu-acessibilidade/                          Componente de preferências de acessibilidade
@@ -219,7 +187,7 @@ Desenvolvimento da Plataforma/
 Referências para o projeto/                     Pesquisa e referências do projeto
 ```
 
-Cada versão pode ter seu próprio servidor e armazenamento. O banco SQLite da versão isolada fica em `Desenvolvimento da Plataforma/Assistente de uso de IA - Protótipo/data/`; os bancos e arquivos de dados locais não são sincronizados automaticamente entre versões.
+Na v4, o banco fica em `Plataforma v4.0 Final/data/`. As versões anteriores têm armazenamento próprio.
 
 </details>
 
@@ -228,14 +196,14 @@ Cada versão pode ter seu próprio servidor e armazenamento. O banco SQLite da v
 <details>
 <summary><strong>Ver comando e informações da suíte de testes</strong></summary>
 
-A pasta da implementação isolada contém testes automatizados de autenticação, permissões, turmas e matrículas, visibilidade de dados e outras regras do servidor. Para executá-los, use:
+A pasta da v4 contém testes automatizados de autenticação, permissões, turmas e matrículas, visibilidade de dados e outras regras do servidor. Para executá-los, use:
 
 ```
-cd "Desenvolvimento da Plataforma\Assistente de uso de IA - Protótipo"
+cd "Plataforma v4.0 Final"
 python test_permissoes.py
 ```
 
-Os testes criam um banco temporário e não devem alterar o banco de desenvolvimento. Na revisão documental de 7 de novembro de 2026, a suíte existente terminou com sucesso (`Tudo certo`). Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
+Os testes criam um banco temporário e não devem alterar o banco de desenvolvimento. A suíte da v4 inclui 108 verificações. Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
 
 </details>
 
@@ -273,7 +241,7 @@ Os testes criam um banco temporário e não devem alterar o banco de desenvolvim
 
 ## Próximos passos recomendados
 
-1. Substituir o login de estudantes baseado somente em nome por autenticação adequada ao contexto.
+1. Validar os fluxos de cadastro e recuperação de acesso com estudantes e professores.
 
 1. Definir e documentar regras de privacidade, retenção e descarte das respostas e anotações.
 
