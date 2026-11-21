@@ -28,6 +28,6 @@ jobs:
           node-version: '22'
       - run: npm ci
         working-directory: backend/tests
-      - run: npx --no-install playwright-core install --with-deps chromium
-        working-directory: backend/tests
       - run: python backend/tests/executar_navegador.py
+        env:
+          BROWSER_CHANNEL: chrome
