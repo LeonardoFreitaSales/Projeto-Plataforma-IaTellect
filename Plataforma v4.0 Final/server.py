@@ -25,20 +25,19 @@ Comandos:
   python server.py                 inicia o servidor
   python server.py --reset-admin   redefine a senha do administrador
 """
-from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, unquote, urlsplit
+from urllib.parse import unquote, urlsplit
 import json
-import secrets
 import sqlite3
 import sys
 
 from app.audit import log
 from app.config import (
-    ALLOWED_ORIGINS, COOKIE_NAME, COOKIE_SECURE, DATA_DIR, DB_FILE, HISTORY_LIMIT,
+    ALLOWED_ORIGINS, COOKIE_SECURE, DATA_DIR, DB_FILE, HISTORY_LIMIT,
     HOST, MATRICULA_STATUS, MAX_BODY, MIME_TYPES, PORT, ROOT,
-    SECURITY_HEADERS, SESSION_DAYS, STATUSES, TEST_MODE, TRUST_PROXY, TYPES,
+    SECURITY_HEADERS, STATUSES, TEST_MODE, TYPES,
 )
+from app.context import Ctx, public_user
 from app.db import DB_LOCK, connect, init_database, reset_admin_password
 from app.permissions import (
     can_edit, can_manage_turma, get_discipline, get_turma, require_edit, require_manage_turma,
@@ -46,78 +45,12 @@ from app.permissions import (
 )
 from app.ratelimit import LOGIN_BY_IP, LOGIN_BY_NAME, REGISTER_BY_IP
 from app.security import (
-    DUMMY_HASH, check_new_password, hash_password, session_cookie, token_digest, verify_password,
+    DUMMY_HASH, check_new_password, hash_password, session_cookie, verify_password,
 )
-from app.utils import HTTPError, bad, iso_in, key_of, new_id, norm_name, now_iso, pick, text
+from app.utils import HTTPError, bad, key_of, new_id, norm_name, now_iso, pick, text
 
 REGISTER_NOTICE = ("Se o cadastro puder ser concluído, a solicitação seguirá para análise do professor. "
                    "Se não avançar, confira as informações ou fale com o professor.")
-
-
-# ----------------------------------------------------------------------
-# Contexto da requisicao
-# ----------------------------------------------------------------------
-class Ctx:
-    def __init__(self, conn, handler, method, parts, query, raw_body):
-        self.conn, self.handler, self.method = conn, handler, method
-        self.parts, self.query, self.raw_body = parts, query, raw_body
-        self.cookies = []
-        self.user = None
-        self._body = None
-        cookie = SimpleCookie()
-        try:
-            cookie.load(handler.headers.get("Cookie") or "")
-        except Exception:
-            cookie = SimpleCookie()
-        morsel = cookie.get(COOKIE_NAME)
-        self.token = morsel.value if morsel else None
-        self.token_hash = token_digest(self.token) if self.token else None
-
-    @property
-    def ip(self):
-        if TRUST_PROXY:
-            forwarded = (self.handler.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
-            if forwarded:
-                return forwarded
-        return self.handler.client_address[0]
-
-    @property
-    def body(self):
-        if self._body is None:
-            if not self.raw_body:
-                self._body = {}
-            else:
-                try:
-                    parsed = json.loads(self.raw_body.decode("utf-8"))
-                except (ValueError, UnicodeDecodeError):
-                    raise bad("JSON inválido.")
-                if not isinstance(parsed, dict):
-                    raise bad("JSON inválido.")
-                self._body = parsed
-        return self._body
-
-    def q(self, name):
-        values = parse_qs(self.query, keep_blank_values=True).get(name)
-        return values[0] if values else None
-
-    def authenticate(self):
-        if not self.token_hash:
-            return None
-        return self.conn.execute(
-            "SELECT u.* FROM sessions s JOIN users u ON u.id = s.userId WHERE s.tokenHash = ? AND s.expiresAt > ? AND u.passwordHash IS NOT NULL AND u.passwordHash != ''",
-            (self.token_hash, now_iso())).fetchone()
-
-    def open_session(self, user_id):
-        token = secrets.token_urlsafe(32)
-        self.conn.execute("DELETE FROM sessions WHERE expiresAt < ?", (now_iso(),))
-        self.conn.execute(
-            "INSERT INTO sessions (tokenHash, userId, createdAt, expiresAt) VALUES (?,?,?,?)",
-            (token_digest(token), user_id, now_iso(), iso_in(SESSION_DAYS)))
-        self.cookies.append(session_cookie(token, SESSION_DAYS * 86400))
-
-
-def public_user(row):
-    return {"id": row["id"], "name": row["name"], "role": row["role"]}
 
 
 # ----------------------------------------------------------------------
