@@ -53,3 +53,6 @@ def text(value, name, maximum=5000, required=True):
 def pick(data, key, fallback):
     value = data.get(key)
     return fallback if value is None else value
+
+
+NOT_FOUND = HTTPError(404, "Rota de API não encontrada.")
