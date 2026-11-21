@@ -1,3 +1,4 @@
+import { mostrarAviso } from "./mensagens.js";
 import { request as api, escapeHtml as esc } from "./api.js";
 const modal = document.querySelector("#app-modal");
 const title = document.querySelector("#modal-title");
@@ -46,10 +47,7 @@ async function aiCheck() {
       body.querySelector("#check-result").innerHTML =
         `<div class="result ${esc(r.decision)}"><b>${esc(labels[r.decision])}</b><p>${r.policies.length ? `${r.policies.length} regra(s) encontrada(s).` : esc(r.message)}</p>${r.policies.map((p) => `<p><b>${esc(p.activityName)}</b> — ${esc(p.conditions || p.details || labels[p.status])}</p>`).join("")}</div>`;
     } catch (err) {
-      body.querySelector("#check-result").innerHTML = notice(
-        err.message,
-        "error",
-      );
+      mostrarAviso(body.querySelector("#check-result"), err.message, "error");
     }
   };
 }
@@ -67,7 +65,7 @@ async function announcements() {
         await api("/api/announcements/" + item.id, {method:"PATCH", body:JSON.stringify({active:!item.active})});
         await announcements();
       } catch (error) {
-        body.querySelector("#list-message").innerHTML = notice(error.message, "error");
+        mostrarAviso(body.querySelector("#list-message"), error.message, "error");
       }
     };
   });
@@ -81,10 +79,7 @@ async function announcements() {
 
           await announcements();
         } catch (e) {
-          body.querySelector("#list-message").innerHTML = notice(
-            e.message,
-            "error",
-          );
+          mostrarAviso(body.querySelector("#list-message"), e.message, "error");
         }
       }),
   );
@@ -107,10 +102,7 @@ function announcementForm() {
 
       await announcements();
     } catch (err) {
-      body.querySelector(".form-message").innerHTML = notice(
-        err.message,
-        "error",
-      );
+      mostrarAviso(body.querySelector(".form-message"), err.message, "error");
     }
   };
 }
@@ -229,10 +221,7 @@ function confirmView(t, msg, label, ok, back) {
     try {
       await ok();
     } catch (e) {
-      body.querySelector("#confirm-message").innerHTML = notice(
-        e.message,
-        "error",
-      );
+      mostrarAviso(body.querySelector("#confirm-message"), e.message, "error");
     }
   };
 }
@@ -302,10 +291,7 @@ function manageDisciplineForm(item = {}) {
         ? manageDiscipline(item.id, "Disciplina atualizada.")
         : manageDisciplines());
     } catch (err) {
-      body.querySelector(".form-message").innerHTML = notice(
-        err.message,
-        "error",
-      );
+      mostrarAviso(body.querySelector(".form-message"), err.message, "error");
     }
   };
 }
@@ -381,10 +367,7 @@ async function managePolicyForm(item, did) {
         item.id ? "Política atualizada." : "Política adicionada.",
       );
     } catch (err) {
-      body.querySelector(".form-message").innerHTML = notice(
-        err.message,
-        "error",
-      );
+      mostrarAviso(body.querySelector(".form-message"), err.message, "error");
     }
   };
 }
