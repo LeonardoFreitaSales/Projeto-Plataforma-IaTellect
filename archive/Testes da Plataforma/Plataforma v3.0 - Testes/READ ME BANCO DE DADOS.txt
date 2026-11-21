@@ -1,0 +1,71 @@
+PLATAFORMA V3.0 - TESTES (SQLITE)
+
+Esta versao armazena todos os dados exclusivamente no SQLite:
+  data\Banco de Dados SQLite.db
+
+O servidor (server.py) cria e atualiza as tabelas pelo modelo
+schema_Banco_de_Dados_SQLite.sql a cada inicializacao e le/grava tudo no banco.
+
+COMO INICIAR
+  1. Execute iniciar.bat
+  2. Acesse http://localhost:3002
+  Requer Python 3. A biblioteca SQLite ja faz parte do Python (nada a instalar).
+
+PRIMEIRO ACESSO
+  Na primeira execucao o servidor cria o administrador.
+  - Pelo iniciar.bat: usuario "admin", senha "admin1234" (somente para testes).
+  - Fora dele: use a variavel ADMIN_PASSWORD (minimo 8 caracteres). Se nao for
+    definida, uma senha aleatoria e mostrada no console e gravada em
+    data\senha_admin_inicial.txt (apague o arquivo depois de anotar a senha).
+  Esqueceu a senha do admin?  python server.py --reset-admin
+
+PERFIS
+  admin      Tudo: comunicados, cadastro de professores, dono de cada materia,
+             todas as turmas, historico.
+  professor  Altera so as materias de que e dono (outras: erro 403). Cria
+             turmas, aprova/recusa matriculas, ve o historico e faz anotacoes
+             privadas sobre alunos (so ele ve as proprias).
+  aluno      Cadastro com nome completo + turma; entra so com o nome.
+             Ve apenas as materias das turmas com matricula APROVADA.
+
+TABELAS
+  users, sessions            usuarios (senha com hash PBKDF2) e sessoes de login
+  disciplines, policies      materias (com dono) e politicas de uso de IA
+  announcements              comunicados
+  turmas, turma_disciplines  turmas e as materias de cada uma
+  matriculas                 pendente / aprovada / recusada
+  notas_privadas             anotacoes de cada professor sobre alunos
+  history                    trilha de auditoria (autor, perfil e o que mudou)
+
+BANCO EXISTENTE (V2)
+  Nao precisa converter nada: ao iniciar, o servidor mantem os dados ja
+  importados e acrescenta as tabelas e colunas novas. As materias antigas ficam
+  sem dono (so o admin altera) ate que o admin escolha o dono de cada uma em
+  "Usuarios e donos das materias". Registros antigos do historico aparecem como
+  "Nao registrado" no autor.
+  FACA UMA COPIA do arquivo .db antes de iniciar a V3 pela primeira vez.
+
+ARQUIVOS
+  index.html                         interface
+  server.py                          servidor (API + login + permissoes)
+  schema_Banco_de_Dados_SQLite.sql   modelo das tabelas
+  iniciar.bat                        inicia o servidor para testes locais
+  data\modelo_vazio_v3.db            banco vazio de referencia (opcional; o
+                                     servidor cria o proprio banco sozinho)
+  test_permissoes.py                 testes de permissao (python test_permissoes.py)
+  READ_ME_HOSPEDAGEM.txt             passos para publicar o site
+
+BACKUP
+  Copie o arquivo data\Banco de Dados SQLite.db com o servidor parado (ou copie
+  tambem os arquivos .db-wal e .db-shm se existirem).
+
+OBSERVACOES DE SEGURANCA
+  - Aluno entra so com o nome completo (regra do projeto): quem souber o nome de
+    um colega consegue entrar como ele. Por isso o aluno so consulta, nunca altera.
+  - O banco e o server.py nao sao servidos pelo site; so index.html e a pasta
+    assets (se existir).
+ISOLAMENTO DESTA VERSÃO
+O servidor desta pasta usa somente: data\Banco de Dados SQLite.db.
+Ele ignora uma variável externa DATA_DIR e recusa atalhos para outro banco.
+O cookie de login desta versão também é exclusivo, para evitar conflito com outros sites locais.
+
