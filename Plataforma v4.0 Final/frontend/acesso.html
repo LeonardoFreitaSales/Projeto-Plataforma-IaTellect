@@ -5,12 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
 <script src="/assets/js/preferencias-iniciais.js"></script>
-<title>Acesso ao painel</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+<title>Acesso | IaTellect</title>
 <link rel="stylesheet" href="/assets/css/acessibilidade.css">
 <link rel="stylesheet" href="/assets/css/acesso.css">
+<link rel="stylesheet" href="/assets/css/iatellect.css">
 </head>
 <body>
 <svg width="0" height="0" aria-hidden="true" focusable="false" class="sprite-icons">
@@ -20,31 +18,29 @@
   <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/></symbol>
 </svg>
 
-<header class="header">
-  <div class="header-in">
-    <span class="brand">
-      <span class="logo" aria-hidden="true"><svg viewBox="0 0 100 100" focusable="false"><circle cx="50" cy="50" r="47" stroke-width="2"/><path d="M50 29V18M42 36H29M43 43H36l-6 6v8M57 43h7l6 6v8M58 36h13M44 30h-4l-3-4M56 30h4l3-4"/><circle class="no" cx="50" cy="14.5" r="2.6"/><circle class="no" cx="26" cy="36" r="2.6"/><circle class="no" cx="74" cy="36" r="2.6"/><circle class="no" cx="30" cy="60" r="2.6"/><circle class="no" cx="70" cy="60" r="2.6"/><circle class="no" cx="36" cy="23.5" r="2.6"/><circle class="no" cx="64" cy="23.5" r="2.6"/><circle class="sol" cx="50" cy="36" r="9" stroke-dasharray="6 2.2" stroke-width="1.8"/><circle class="sol-fill" cx="50" cy="36" r="5.5"/><path d="M46 48v6M50 48v6M54 48v6M38 56h24M43 60v14M50 60v14M57 60v14"/><path d="M49 84Q38 75 25 76M49 79Q40 71 28 71.5M51 84Q62 75 75 76M51 79Q60 71 72 71.5M44 86Q50 90 56 86"/></svg></span>
-      <span class="brand-name">Intellecta AI</span>
-    </span>
-    <nav class="nav" aria-label="Principal">
-      <a href="#como-funciona">Como funciona</a>
-      <a href="#faq">FAQ</a>
-    </nav>
-  </div>
-</header>
-
-<main>
-  <div class="intro">
-    <p class="eyebrow">Registro de políticas · Uso de IA em atividades acadêmicas</p>
-    <h1>Acesso ao painel</h1>
-    <p class="lead">Consulte o que é permitido, proibido ou permitido com restrição em cada disciplina e tipo de atividade.</p>
-  </div>
-
-  <div class="stage"><div class="card">
+<main class="auth-screen">
+    <div class="auth-story">
+      <div class="auth-brand">
+        <img class="iatellect-logo" src="/assets/img/iatellect.svg" width="44" height="44" alt="">
+        <div><strong>IaTellect</strong><small>Políticas acadêmicas de IA</small></div>
+      </div>
+      <div class="auth-copy">
+        <span class="eyebrow">Orientação antes da decisão</span>
+        <h1 id="auth-title">Uso de IA com regras claras e responsabilidade.</h1>
+        <p>Consulte as políticas de cada atividade, acompanhe sua turma e registre decisões acadêmicas com transparência.</p>
+        <ul class="auth-benefits">
+          <li><span class="auth-check" aria-hidden="true">✓</span><span>Políticas organizadas por disciplina e atividade.</span></li>
+          <li><span class="auth-check" aria-hidden="true">✓</span><span>Acesso separado para estudantes, professores e administradores.</span></li>
+        </ul>
+      </div>
+      <p class="auth-story-footer">IaTellect · Políticas acadêmicas de uso de IA</p>
+    </div>
+  <div class="auth-entry"><div class="card auth-card">
     <div class="aviso" id="aviso" role="status" hidden></div>
 
+    <nav class="auth-tabs" aria-label="Opções de acesso"><button type="button" id="voltar-login" aria-pressed="true">Entrar</button><button type="button" id="ir-cadastro" aria-pressed="false">Novo estudante</button></nav>
     <div id="vista-login">
-      <h2 class="card-title" id="titulo-login" tabindex="-1">Escolha seu perfil</h2>
+      <h2 class="card-title" id="titulo-login" tabindex="-1">Acesse sua conta</h2>
       <p class="sub">Selecione como você vai acessar o painel.</p>
       <form class="form" id="form" novalidate>
         <fieldset class="profiles" id="perfis">
@@ -73,7 +69,6 @@
 
         <p class="err" id="form-erro" role="alert" hidden></p>
         <button class="btn" type="submit" id="entrar">Entrar</button>
-        <button class="link-btn" type="button" id="ir-cadastro">Sou aluno e ainda não tenho cadastro</button>
       </form>
     </div>
 
@@ -104,7 +99,6 @@
         </div>
         <p class="err" id="c-form-erro" role="alert" hidden></p>
         <button class="btn" type="submit" id="cadastrar">Cadastrar</button>
-        <button class="link-btn" type="button" id="voltar-login">Voltar para o acesso</button>
       </form>
     </div>
 

@@ -194,6 +194,8 @@
   }
   function vista(qual) {
     const cad = qual === "cadastro";
+    $("#voltar-login").setAttribute("aria-pressed", String(!cad));
+    $("#ir-cadastro").setAttribute("aria-pressed", String(cad));
     $("#vista-login").hidden = cad;
     $("#vista-cadastro").hidden = !cad;
     $(cad ? "#titulo-cadastro" : "#titulo-login").focus();

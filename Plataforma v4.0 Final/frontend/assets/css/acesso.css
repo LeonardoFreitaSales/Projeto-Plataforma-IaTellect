@@ -210,9 +210,7 @@ main {
 h1 {
   margin: 0;
   font:
-    700 clamp(2.25rem, 4.6vw, 3.25rem) / 1.1 "Playfair Display",
-    Georgia,
-    serif;
+    700 clamp(2.25rem, 4.6vw, 3.25rem) / 1.1 var(--ui-font);
   letter-spacing: -0.025em;
 }
 .lead {
@@ -224,9 +222,7 @@ h1 {
 .card-title {
   margin: 0 0 6px;
   font:
-    600 1.5rem/1.2 "Playfair Display",
-    Georgia,
-    serif;
+    600 1.5rem/1.2 var(--ui-font);
 }
 .sub {
   margin: 0 0 20px;
@@ -383,8 +379,7 @@ input[aria-invalid="true"] {
   background: none;
   color: var(--lime);
   font:
-    600 0.875rem "DM Sans",
-    sans-serif;
+    600 0.875rem var(--ui-font);
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -420,8 +415,7 @@ input[aria-invalid="true"] {
   background: var(--lime-fill);
   color: var(--lime-ink);
   font:
-    700 0.9375rem "DM Sans",
-    sans-serif;
+    700 0.9375rem var(--ui-font);
   text-decoration: none;
   cursor: pointer;
   transition:
@@ -456,9 +450,7 @@ input[aria-invalid="true"] {
 .welcome h2 {
   margin: 0;
   font:
-    600 1.5rem/1.2 "Playfair Display",
-    Georgia,
-    serif;
+    600 1.5rem/1.2 var(--ui-font);
   overflow-wrap: anywhere;
 }
 .welcome h2:focus {
@@ -479,9 +471,7 @@ input[aria-invalid="true"] {
 .info h2 {
   margin: 0 0 12px;
   font:
-    600 1.25rem "Playfair Display",
-    Georgia,
-    serif;
+    600 1.25rem var(--ui-font);
 }
 .steps {
   margin: 0;
@@ -663,8 +653,7 @@ main {
 }
 .accessibility-menu h2 {
   font:
-    600 1.25rem "Playfair Display",
-    serif;
+    600 1.25rem var(--ui-font);
   margin: 0 0 16px;
   color: var(--text);
 }
@@ -782,8 +771,7 @@ select[aria-invalid="true"] {
   border: 0;
   color: var(--lime);
   font:
-    600 0.9375rem "DM Sans",
-    sans-serif;
+    600 0.9375rem var(--ui-font);
   text-decoration: underline;
   text-underline-offset: 3px;
   text-align: center;

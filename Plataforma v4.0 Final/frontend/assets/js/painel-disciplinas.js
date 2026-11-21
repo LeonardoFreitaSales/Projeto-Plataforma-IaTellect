@@ -786,8 +786,11 @@
           .slice(0, 2)
           .join("")
           .toUpperCase(),
-        av = $(".avatar");
-      if (av) av.textContent = ini;
+        avatar = esc(ini);
+      document.querySelector("#dashboard-title").textContent = {
+        admin: "Painel administrativo", professor: "Painel do professor", aluno: "Área do estudante"
+      }[u.role];
+
       $(".sidebar-bottom").insertAdjacentHTML(
         "beforeend",
         `<div class="who"><span><b>${esc(u.name)}</b> · ${esc(u.role)}</span><button class="mini" type="button" id="logout">Sair</button></div>`,
@@ -801,7 +804,7 @@
       };
       $("#logout").onclick = doLogout;
       const ub = $("#userbar");
-      ub.innerHTML = `<span class="ub-name"><b>${esc(u.name)}</b> · ${esc(u.role)}</span><button class="mini" type="button" id="pwd-btn">Alterar senha</button><button class="mini pri" type="button" id="logout-top">Sair</button>`;
+      ub.innerHTML = `<span class="profile-avatar" aria-hidden="true">${avatar}</span><span class="ub-name"><b>${esc(u.name)}</b> · ${esc(u.role)}</span><button class="mini" type="button" id="pwd-btn">Alterar senha</button><button class="mini pri" type="button" id="logout-top">Sair</button>`;
       ub.hidden = false;
       $("#pwd-btn").onclick = minhaSenha;
       $("#logout-top").onclick = doLogout;

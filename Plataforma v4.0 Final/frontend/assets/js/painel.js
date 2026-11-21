@@ -39,8 +39,8 @@
       document.querySelector("#dash-error").innerHTML = "";
       document.querySelector("#discipline-count").textContent = d.disciplines;
       document.querySelector("#policy-count").textContent = d.policies;
-      document.querySelector("#changed-count").textContent =
-        d.changedSinceLastVisit;
+      document.querySelector("#restricted-total").textContent = d.distribution.restricao;
+      document.querySelector("#forbidden-total").textContent = d.distribution.proibido;
       const x = d.distribution,
         total = x.proibido + x.restricao + x.permitido;
       [
