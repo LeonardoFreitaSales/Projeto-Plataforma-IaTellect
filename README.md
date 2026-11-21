@@ -94,7 +94,7 @@ Protótipo de uma plataforma para organizar e consultar políticas acadêmicas s
 ## Versão recomendada para experimentar
 
 - **Executar a plataforma:** a [Plataforma v4.0 Final](Plataforma%20v4.0%20Final/README.md) usa Python e SQLite local para login, turmas e políticas.
-- **Experimentar o novo visual:** abra `prototipo-ux/index.html` no navegador após baixar o repositório. A [pasta do protótipo](prototipo-ux/) contém a demonstração das telas da galeria.
+A v4 serve o próprio [HTML do protótipo UX](prototipo-ux/index.html). Inicie o servidor para entrar, solicitar matrícula e consultar os dados do SQLite.
 
 ## Requisitos
 
@@ -145,7 +145,7 @@ Na v4, o aluno entra com nome completo e senha. A aprovação da matrícula libe
 
 ## Galeria de telas
 
-As imagens mostram o [protótipo visual](prototipo-ux/).
+As imagens registram o desenho original da [interface](prototipo-ux/) com dados de demonstração.
 
 > [!NOTE]
 > As capturas de tela apresentam dados fictícios de demonstração.
@@ -176,7 +176,7 @@ As imagens mostram o [protótipo visual](prototipo-ux/).
 
 ```
 Plataforma v4.0 Final/                         Plataforma funcional com Python e SQLite
-prototipo-ux/                                  Demonstração visual em HTML
+prototipo-ux/                                  Interface da v4 servida pelo backend
 BackLogs/                                      Planejamento e backlog do projeto
 Desenvolvimento da Plataforma/
   Assistente de uso de IA - Protótipo/          Protótipo anterior

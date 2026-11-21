@@ -10,7 +10,13 @@ from app.utils import HTTPError
 
 
 FRONTEND_DIR = ROOT / "frontend"
-STATIC_FILES = {"/": "index.html", "/index.html": "index.html", "/acesso.html": "acesso.html"}
+UX_DIR = ROOT.parent / "prototipo-ux"
+STATIC_FILES = {
+    "/": UX_DIR / "index.html",
+    "/index.html": UX_DIR / "index.html",
+    "/acesso.html": UX_DIR / "index.html",
+    **{"/" + name: UX_DIR / name for name in ("plataforma.css", "integracao.css", "plataforma.js", "vistas.js")},
+}
 
 
 class PanelHandler(BaseHTTPRequestHandler):
@@ -96,7 +102,7 @@ class PanelHandler(BaseHTTPRequestHandler):
             return
         target = None
         if path in STATIC_FILES:
-            target = FRONTEND_DIR / STATIC_FILES[path]
+            target = STATIC_FILES[path]
         elif path.startswith("/assets/"):
             candidate = (FRONTEND_DIR / "assets" / unquote(path[len("/assets/"):])).resolve()
             try:

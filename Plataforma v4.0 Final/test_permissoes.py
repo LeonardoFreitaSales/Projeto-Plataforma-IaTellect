@@ -180,6 +180,13 @@ def main():
         # --- Integração do login: tela de acesso e matriz de permissões ---
         s, pagina = anon.req("GET", "/acesso.html")
         checa("tela de acesso e servida sem login -> 200", s, 200)
+        html_ux = (ROOT.parent / "prototipo-ux" / "index.html").read_text(encoding="utf-8")
+        for caminho in ("/", "/index.html", "/acesso.html"):
+            status, pagina_ux = anon.req("GET", caminho)
+            checa("HTML do prototipo em " + caminho, (status, pagina_ux.replace("\r\n", "\n")) == (200, html_ux), True)
+        for recurso in ("/plataforma.css", "/integracao.css", "/plataforma.js", "/vistas.js", "/assets/js/api.js"):
+            checa("recurso da interface " + recurso, anon.req("GET", recurso)[0], 200)
+        checa("fontes internas fora das rotas estaticas", anon.req("GET", "/app/config.py")[0], 404)
         checa("tela de acesso nao traz senha fixa", isinstance(pagina, str) and "modoprofessor" not in pagina, True)
         checa("professor sem senha -> 401", Cliente("sem-senha").req("POST", "/api/auth/login", {"name": "Professor A"})[0], 401)
         checa("aluno nao lista usuarios -> 403", al.req("GET", "/api/users")[0], 403)
