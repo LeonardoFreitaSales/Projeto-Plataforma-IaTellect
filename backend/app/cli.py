@@ -41,7 +41,7 @@ def main():
     local = HOST in ("127.0.0.1", "localhost", "::1")
     if not local and not COOKIE_SECURE:
         print("Aviso: se o site usa HTTPS, defina COOKIE_SECURE=1.", file=sys.stderr)
-    expected_data = (ROOT / "data").resolve()
+    expected_data = (ROOT.parent / "data").resolve()
     if not TEST_MODE and DATA_DIR.resolve() != expected_data:
         print("A pasta de dados não corresponde a esta versão da plataforma.", file=sys.stderr)
         raise SystemExit(1)

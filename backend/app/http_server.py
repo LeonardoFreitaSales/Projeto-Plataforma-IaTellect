@@ -2,21 +2,15 @@ import json
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlsplit
-from app.config import ALLOWED_ORIGINS, MAX_BODY, MIME_TYPES, ROOT, SECURITY_HEADERS
+from app.config import ALLOWED_ORIGINS, MAX_BODY, MIME_TYPES, FRONTEND_DIR, SECURITY_HEADERS
 from app.context import Ctx
 from app.db import DB_LOCK, connect
 from app.routes import api
 from app.utils import HTTPError
 
 
-FRONTEND_DIR = ROOT / "frontend"
-UX_DIR = ROOT.parent / "prototipo-ux"
-STATIC_FILES = {
-    "/": UX_DIR / "index.html",
-    "/index.html": UX_DIR / "index.html",
-    "/acesso.html": UX_DIR / "index.html",
-    **{"/" + name: UX_DIR / name for name in ("plataforma.css", "integracao.css", "plataforma.js", "vistas.js")},
-}
+STATIC_FILES = {path: FRONTEND_DIR / "index.html" for path in ("/", "/index.html", "/acesso.html")}
+PUBLIC_DIRS = {"css", "js", "img"}
 
 
 class PanelHandler(BaseHTTPRequestHandler):
@@ -103,13 +97,13 @@ class PanelHandler(BaseHTTPRequestHandler):
         target = None
         if path in STATIC_FILES:
             target = STATIC_FILES[path]
-        elif path.startswith("/assets/"):
-            candidate = (FRONTEND_DIR / "assets" / unquote(path[len("/assets/"):])).resolve()
-            try:
-                candidate.relative_to((FRONTEND_DIR / "assets").resolve())
-                target = candidate
-            except ValueError:
-                target = None
+        else:
+            parts = unquote(path).split("/")
+            if len(parts) == 3 and parts[1] in PUBLIC_DIRS:
+                directory = FRONTEND_DIR / parts[1]
+                candidate = (directory / parts[2]).resolve()
+                if candidate.parent == directory.resolve() and candidate.suffix.lower() in MIME_TYPES:
+                    target = candidate
         if target is None or not target.is_file():
             self._send_json(404, {"error": "Arquivo não encontrado."})
             return

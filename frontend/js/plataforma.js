@@ -1,6 +1,6 @@
-import { request, escapeHtml as e } from "/assets/js/api.js";
-import { newPolicy } from "/assets/js/nova-politica.js";
-import { enableAuth } from "/assets/js/acesso.js";
+import { request, escapeHtml as e } from "/js/api.js";
+import { newPolicy } from "/js/nova-politica.js";
+import { enableAuth } from "/js/acesso.js";
 import {
   aiCheck,
   auditHistory,
@@ -8,14 +8,14 @@ import {
   manageDisciplineForm,
   manageDiscipline,
   show,
-} from "/assets/js/painel.js";
+} from "/js/painel.js";
 import {
   configure,
   turmas,
   usuarios,
   minhaSenha,
   notify,
-} from "/assets/js/painel-disciplinas.js";
+} from "/js/painel-disciplinas.js";
 import {
   roles,
   levels,

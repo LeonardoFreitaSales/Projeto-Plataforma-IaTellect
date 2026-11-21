@@ -3,8 +3,9 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+FRONTEND_DIR = ROOT.parent / "frontend"
 TEST_MODE = os.environ.get("TEST_MODE") == "1"
-DATA_DIR = Path(os.environ["TEST_DATA_DIR"]).resolve() if TEST_MODE and os.environ.get("TEST_DATA_DIR") else ROOT / "data"
+DATA_DIR = Path(os.environ["TEST_DATA_DIR"]).resolve() if TEST_MODE and os.environ.get("TEST_DATA_DIR") else ROOT.parent / "data"
 DB_FILE = DATA_DIR / "Banco de Dados SQLite.db"
 SCHEMA_FILE = ROOT / "sql" / "schema.sql"
 HOST = os.environ.get("HOST") or "0.0.0.0"
@@ -13,7 +14,7 @@ COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "").lower() in ("1", "true", "si
 TRUST_PROXY = os.environ.get("TRUST_PROXY", "").lower() in ("1", "true", "sim", "yes")
 ALLOWED_ORIGINS = {o.strip().lower() for o in (os.environ.get("ALLOWED_ORIGINS") or "").split(",") if o.strip()}
 
-COOKIE_NAME = "plataforma_v4_sessao"
+COOKIE_NAME = "iatellect_sessao"
 SESSION_DAYS = 7
 PBKDF2_ITERATIONS = 310_000
 MAX_BODY = 1_000_000

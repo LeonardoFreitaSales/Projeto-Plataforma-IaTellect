@@ -1,6 +1,6 @@
 """Testes de permissao da Plataforma v4.0.
 
-Uso:  python test_permissoes.py
+Uso:  python backend/tests/test_permissoes.py
 Sobe um servidor temporario (banco novo em pasta temporaria, nao mexe no seu
 banco real), roda as verificacoes e encerra.
 """
@@ -15,10 +15,12 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from app.config import SCHEMA_FILE
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from app.config import FRONTEND_DIR, SCHEMA_FILE
 from server import HTTPError, require_role
 
-ROOT = Path(__file__).resolve().parent
 PORT = 3999
 BASE = f"http://127.0.0.1:{PORT}"
 FALHAS = []
@@ -180,11 +182,11 @@ def main():
         # --- Integração do login: tela de acesso e matriz de permissões ---
         s, pagina = anon.req("GET", "/acesso.html")
         checa("tela de acesso e servida sem login -> 200", s, 200)
-        html_ux = (ROOT.parent / "prototipo-ux" / "index.html").read_text(encoding="utf-8")
+        html_ux = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
         for caminho in ("/", "/index.html", "/acesso.html"):
             status, pagina_ux = anon.req("GET", caminho)
             checa("HTML do prototipo em " + caminho, (status, pagina_ux.replace("\r\n", "\n")) == (200, html_ux), True)
-        for recurso in ("/plataforma.css", "/integracao.css", "/plataforma.js", "/vistas.js", "/assets/js/api.js"):
+        for recurso in ("/css/plataforma.css", "/css/integracao.css", "/js/plataforma.js", "/js/vistas.js", "/js/api.js"):
             checa("recurso da interface " + recurso, anon.req("GET", recurso)[0], 200)
         checa("fontes internas fora das rotas estaticas", anon.req("GET", "/app/config.py")[0], 404)
         checa("tela de acesso nao traz senha fixa", isinstance(pagina, str) and "modoprofessor" not in pagina, True)
