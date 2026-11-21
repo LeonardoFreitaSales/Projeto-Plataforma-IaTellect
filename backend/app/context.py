@@ -1,8 +1,9 @@
 import json
 import secrets
+from ipaddress import ip_address
 from http.cookies import SimpleCookie
 from urllib.parse import parse_qs
-from app.config import COOKIE_NAME, SESSION_DAYS, TRUST_PROXY
+from app.config import COOKIE_NAME, SESSION_DAYS, TRUST_PROXY, TRUSTED_PROXY_IPS
 from app.security import session_cookie, token_digest
 from app.utils import bad, iso_in, now_iso
 
@@ -25,11 +26,19 @@ class Ctx:
 
     @property
     def ip(self):
-        if TRUST_PROXY:
-            forwarded = (self.handler.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
-            if forwarded:
-                return forwarded
-        return self.handler.client_address[0]
+        peer = self.handler.client_address[0]
+        if not TRUST_PROXY or ip_address(peer) not in TRUSTED_PROXY_IPS:
+            return peer
+        forwarded = self.handler.headers.get_all("X-Forwarded-For") or []
+        current = ip_address(peer)
+        for value in reversed(",".join(forwarded).split(",")):
+            if current not in TRUSTED_PROXY_IPS:
+                break
+            try:
+                current = ip_address(value.strip())
+            except ValueError:
+                return peer
+        return str(current)
 
     @property
     def body(self):

@@ -17,9 +17,14 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+from email.message import Message
+from ipaddress import ip_address
+from types import SimpleNamespace
+from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from app.context import Ctx
 from app.config import FRONTEND_DIR, SCHEMA_FILE
 from server import HTTPError, require_role
 
@@ -37,6 +42,8 @@ class Cliente:
         r.add_header("Content-Type", "application/json")
         if self.cookie:
             r.add_header("Cookie", self.cookie)
+        if origem is None and metodo not in ('GET', 'HEAD'):
+            origem = BASE
         if origem:
             r.add_header("Origin", origem)
         try:
@@ -87,6 +94,14 @@ def servidor_de_teste(tmp):
 
 
 def main():
+    headers = Message()
+    headers["X-Forwarded-For"] = "192.0.2.1, 192.0.2.2"
+    handler = SimpleNamespace(client_address=("127.0.0.1", 1234), headers=headers)
+    ctx = Ctx(None, handler, "GET", [], "", b"")
+    with patch("app.context.TRUST_PROXY", True), patch("app.context.TRUSTED_PROXY_IPS", {ip_address("127.0.0.1")}):
+        checa("proxy autorizado identifica o salto anterior", ctx.ip, "192.0.2.2")
+        handler.client_address = ("192.0.2.3", 1234)
+        checa("conexão direta preserva IP de origem", ctx.ip, "192.0.2.3")
     # Uma linha sem papel nao pode obter permissao; a regra CHECK continua
     # impedindo que esse estado seja gravado no SQLite.
     try:
@@ -121,6 +136,8 @@ def main():
         checa("login admin", adm.req("POST", "/api/auth/login", {"name": "admin", "password": "admin-teste-123"})[0], 200)
         checa("cookie de origem estranha -> 403", adm.req("POST", "/api/turmas", {"name": "X"}, origem="http://evil.example")[0], 403)
 
+        for origem in ("", "null", BASE.replace("http://", "https://")):
+            checa(f"origem ausente ou incompatível {origem!r}", adm.req("POST", "/api/turmas", {"name": "X"}, origem=origem)[0], 403)
         s, a = adm.req("POST", "/api/users", {"name": "Professor A", "password": "senha-prof-a1"})
         s, b = adm.req("POST", "/api/users", {"name": "Professor B", "password": "senha-prof-b1"})
         checa("senha curta -> 400", adm.req("POST", "/api/users", {"name": "Prof C", "password": "123"})[0], 400)

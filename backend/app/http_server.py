@@ -2,7 +2,7 @@ import json
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlsplit
-from app.config import ALLOWED_ORIGINS, MAX_BODY, MIME_TYPES, FRONTEND_DIR, SECURITY_HEADERS
+from app.config import ALLOWED_ORIGINS, COOKIE_SECURE, MAX_BODY, MIME_TYPES, FRONTEND_DIR, SECURITY_HEADERS
 from app.context import Ctx
 from app.db import DB_LOCK, connect
 from app.routes import api
@@ -49,11 +49,11 @@ class PanelHandler(BaseHTTPRequestHandler):
     def _check_origin(self):
         if self.command in ("GET", "HEAD"):
             return
-        origin = self.headers.get("Origin")
-        if not origin:
-            return
-        allowed = {(self.headers.get("Host") or "").lower()} | ALLOWED_ORIGINS
-        if urlsplit(origin).netloc.lower() not in allowed and origin.lower() not in allowed:
+        origins = self.headers.get_all("Origin") or []
+        scheme = "https" if COOKIE_SECURE else "http"
+        host = self.headers.get("Host", "").lower()
+        allowed = ALLOWED_ORIGINS | {f"{scheme}://{host}"}
+        if len(origins) != 1 or origins[0].lower() not in allowed:
             raise HTTPError(403, "Origem não permitida.")
 
     def _handle_api(self, parsed, raw):
