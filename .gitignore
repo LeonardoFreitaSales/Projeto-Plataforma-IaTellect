@@ -41,3 +41,15 @@ node_modules/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+**/data/database.json
+**/data/database_origem.json
+/Pacote_Banco_de_Dados_SQLite.zip
+/Plataforma v3.0 - Testes.zip
+/Documentacao_Projeto_Plataforma.pdf
+/Banco de Dados SQLite/
+/Plataforma v3.0 - Testes/
+/tmp/
+/output/
+/data/*
+!/data/.gitkeep

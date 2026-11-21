@@ -1,6 +1,6 @@
 # SQLite local
 
-O arquivo de dados fica em `data/Banco de Dados SQLite.db`, relativo à pasta da plataforma. O módulo `app/db.py` aplica o schema de `sql/schema.sql` e as migrações ao iniciar. A execução local normal ignora uma variável externa `DATA_DIR` e verifica se os caminhos do banco e da pasta de dados são atalhos.
+O arquivo de dados fica em `data/Banco de Dados SQLite.db`, relativo à raiz do repositório. O módulo `backend/app/db.py` aplica o schema de `backend/sql/schema.sql` e as migrações ao iniciar. A execução local normal ignora uma variável externa `DATA_DIR` e verifica se os caminhos do banco e da pasta de dados são atalhos.
 
 ## Tabelas
 

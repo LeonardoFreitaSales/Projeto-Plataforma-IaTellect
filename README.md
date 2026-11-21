@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="docs/assets/readme/banner.png" alt="Banner do IaTellect com a identidade visual da plataforma e uma prévia do painel acadêmico" width="1200">
+  <img src="docs/identidade-visual/assets/readme/banner.png" alt="Banner do IaTellect com a identidade visual da plataforma e uma prévia do painel acadêmico" width="1200">
 </p>
 
 <p align="center">
   <picture>
-    <source srcset="docs/assets/readme/logo.svg" type="image/svg+xml">
-    <img src="docs/assets/readme/logo.png" alt="Ícone da marca IaTellect" width="72">
+    <source srcset="docs/identidade-visual/assets/readme/logo.svg" type="image/svg+xml">
+    <img src="docs/identidade-visual/assets/readme/logo.png" alt="Ícone da marca IaTellect" width="72">
   </picture>
 </p>
 
@@ -44,10 +44,10 @@ Protótipo de uma plataforma para organizar e consultar políticas acadêmicas s
 - [Acessibilidade](#acessibilidade)
 - [Próximos passos](#próximos-passos-recomendados)
 - [Licença](#licença)
-- [Guia de identidade visual](docs/guia-identidade-visual.md)
+- [Guia de identidade visual](docs/identidade-visual/guia-identidade-visual.md)
 
 <p align="center">
-  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+  <img src="docs/identidade-visual/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
 </p>
 
 ## O que o sistema faz
@@ -84,17 +84,19 @@ Protótipo de uma plataforma para organizar e consultar políticas acadêmicas s
 > As cores ajudam a reconhecer os estados, mas não substituem seus rótulos. Verde, amarelo e vermelho não devem ser usados como decoração.
 
 <p align="center">
-  <img src="docs/assets/readme/policy-states.png" alt="Representação dos três estados de política: permitido, permitido com restrições e proibido" width="1200">
+  <img src="docs/identidade-visual/assets/readme/policy-states.png" alt="Representação dos três estados de política: permitido, permitido com restrições e proibido" width="1200">
 </p>
 
 <p align="center">
-  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+  <img src="docs/identidade-visual/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
 </p>
 
 ## Versão recomendada para experimentar
 
-- **Executar a plataforma:** a [Plataforma v4.0 Final](Plataforma%20v4.0%20Final/README.md) usa Python e SQLite local para login, turmas e políticas.
-A v4 serve o próprio [HTML do protótipo UX](prototipo-ux/index.html). Inicie o servidor para entrar, solicitar matrícula e consultar os dados do SQLite.
+- **Executar a plataforma:** a [plataforma](backend/) usa Python e SQLite local para login, turmas e políticas.
+A v4 serve o próprio [HTML do protótipo UX](frontend/index.html). Inicie o servidor para entrar, solicitar matrícula e consultar os dados do SQLite.
+
+O [changelog](CHANGELOG.md) registra o histórico do projeto. Para recuperar o acesso administrativo local, execute `python backend/server.py --reset-admin` a partir da raiz.
 
 ## Requisitos
 
@@ -111,16 +113,16 @@ O servidor usa módulos da biblioteca padrão do Python, incluindo `sqlite3`; n�
 No Windows, a partir da raiz do repositório:
 
 ```powershell
-cd "Plataforma v4.0 Final"
+cd backend
 .\iniciar.bat
 ```
 
-Abra [a tela de acesso](http://127.0.0.1:3002/acesso.html). Também é possível iniciar com `python server.py` dentro da pasta da v4.
+Abra [a tela de acesso](http://127.0.0.1:3002/acesso.html). Também é possível iniciar com `python server.py` dentro de `backend/`.
 
 Na primeira execução, o administrador usa a senha de `ADMIN_PASSWORD` ou a senha gerada no arquivo local `data/senha_admin_inicial.txt`. Depois de entrar, altere a senha e apague esse arquivo.
 
 <p align="center">
-  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+  <img src="docs/identidade-visual/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
 </p>
 
 ## Perfis de acesso
@@ -132,7 +134,7 @@ Na primeira execução, o administrador usa a senha de `ADMIN_PASSWORD` ou a sen
 - **Aluno:** solicita matrícula em uma turma. Depois da aprovação, pode consultar as disciplinas correspondentes e suas políticas.
 
 <p align="center">
-  <img src="docs/assets/readme/profiles.png" alt="Descrição visual dos perfis de acesso administrador, professor e aluno" width="1200">
+  <img src="docs/identidade-visual/assets/readme/profiles.png" alt="Descrição visual dos perfis de acesso administrador, professor e aluno" width="1200">
 </p>
 
 ### Login de estudante
@@ -140,33 +142,33 @@ Na primeira execução, o administrador usa a senha de `ADMIN_PASSWORD` ou a sen
 Na v4, o aluno entra com nome completo e senha. A aprovação da matrícula libera as disciplinas da turma. Para contas antigas sem senha, o administrador ou um professor autorizado pode usar **Definir senha**.
 
 <p align="center">
-  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+  <img src="docs/identidade-visual/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
 </p>
 
 ## Galeria de telas
 
-As imagens registram o desenho original da [interface](prototipo-ux/) com dados de demonstração.
+As imagens registram o desenho original da [interface](frontend/) com dados de demonstração.
 
 > [!NOTE]
 > As capturas de tela apresentam dados fictícios de demonstração.
 
 | Acesso à plataforma | Visão geral administrativa |
 | :---: | :---: |
-| <img src="docs/assets/readme/screen-login.png" alt="Tela de login do IaTellect com acesso por perfil" width="600"> | <img src="docs/assets/readme/screen-dashboard.png" alt="Painel administrativo do IaTellect com indicadores e pontos de atenção" width="600"> |
+| <img src="docs/identidade-visual/assets/readme/screen-login.png" alt="Tela de login do IaTellect com acesso por perfil" width="600"> | <img src="docs/identidade-visual/assets/readme/screen-dashboard.png" alt="Painel administrativo do IaTellect com indicadores e pontos de atenção" width="600"> |
 | **Login e seleção do perfil de demonstração.** | **Indicadores acadêmicos e ações prioritárias.** |
 
 | Disciplinas e políticas | Clareza das políticas |
 | :---: | :---: |
-| <img src="docs/assets/readme/screen-disciplinas.png" alt="Tela de disciplinas e políticas com filtros e cartões de disciplinas" width="600"> | <img src="docs/assets/readme/screen-clareza.png" alt="Tela de clareza das políticas com índice e pontos de atenção" width="600"> |
+| <img src="docs/identidade-visual/assets/readme/screen-disciplinas.png" alt="Tela de disciplinas e políticas com filtros e cartões de disciplinas" width="600"> | <img src="docs/identidade-visual/assets/readme/screen-clareza.png" alt="Tela de clareza das políticas com índice e pontos de atenção" width="600"> |
 | **Consulta das regras por disciplina e atividade.** | **Acompanhamento de cobertura, fontes e detalhamento.** |
 
 | Área do estudante | Plano de uso responsável |
 | :---: | :---: |
-| <img src="docs/assets/readme/screen-aluno.png" alt="Área do estudante com matrícula, disciplinas e políticas disponíveis" width="600"> | <img src="docs/assets/readme/screen-uso-responsavel.png" alt="Plano de uso responsável com checklist e rascunho de declaração" width="600"> |
+| <img src="docs/identidade-visual/assets/readme/screen-aluno.png" alt="Área do estudante com matrícula, disciplinas e políticas disponíveis" width="600"> | <img src="docs/identidade-visual/assets/readme/screen-uso-responsavel.png" alt="Plano de uso responsável com checklist e rascunho de declaração" width="600"> |
 | **Disciplinas liberadas para a matrícula aprovada.** | **Jornada guiada de autorreflexão.** |
 
 <p align="center">
-  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+  <img src="docs/identidade-visual/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
 </p>
 
 ## Estrutura do repositório
@@ -175,19 +177,16 @@ As imagens registram o desenho original da [interface](prototipo-ux/) com dados 
 <summary><strong>Ver estrutura de pastas documentada</strong></summary>
 
 ```
-Plataforma v4.0 Final/                         Plataforma funcional com Python e SQLite
-prototipo-ux/                                  Interface da v4 servida pelo backend
-BackLogs/                                      Planejamento e backlog do projeto
-Desenvolvimento da Plataforma/
-  Assistente de uso de IA - Protótipo/          Protótipo anterior
-  Testes da Plataforma/                         Histórico dos protótipos v0.0 a v3.0
-  Tela de Login/                                Experimentos visuais de login
-  menu-acessibilidade/                          Componente de preferências de acessibilidade
-  plataforma_terminal.py                        Protótipo de linha de comando
-Referências para o projeto/                     Pesquisa e referências do projeto
+backend/     Servidor Python, esquema SQLite e testes
+frontend/    Interface HTML, estilos, scripts e imagens
+docs/        Documentação técnica, identidade visual, backlog e referências
+data/        Banco local e senha inicial gerados na execução
+archive/     Versões históricas para consulta
 ```
 
-Na v4, o banco fica em `Plataforma v4.0 Final/data/`. As versões anteriores têm armazenamento próprio.
+Ao atualizar uma instalação existente, encerre o servidor e faça backup da pasta de dados antiga. Transfira seus arquivos para a pasta de dados da raiz antes da primeira execução. A mudança do cookie exige um novo login.
+
+Na v4, o banco fica em `data/`. As versões anteriores têm armazenamento próprio.
 
 </details>
 
@@ -199,11 +198,10 @@ Na v4, o banco fica em `Plataforma v4.0 Final/data/`. As versões anteriores tê
 A pasta da v4 contém testes automatizados de autenticação, permissões, turmas e matrículas, visibilidade de dados e outras regras do servidor. Para executá-los, use:
 
 ```
-cd "Plataforma v4.0 Final"
-python test_permissoes.py
+python backend/tests/test_permissoes.py
 ```
 
-Os testes criam um banco temporário e não devem alterar o banco de desenvolvimento. A suíte da v4 inclui 108 verificações. Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
+Os testes criam um banco temporário e não devem alterar o banco de desenvolvimento. A suíte da v4 inclui 117 verificações. Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
 
 </details>
 
@@ -211,7 +209,7 @@ Os testes criam um banco temporário e não devem alterar o banco de desenvolvim
 > Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
 
 <p align="center">
-  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+  <img src="docs/identidade-visual/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
 </p>
 
 ## Dados e publicação no GitHub
@@ -236,7 +234,7 @@ Os testes criam um banco temporário e não devem alterar o banco de desenvolvim
 > O repositório inclui um componente separado de preferências de apresentação, com opções como tema, tamanho da fonte, espaçamento, sublinhado de links, redução de movimento e alto contraste. Há referências de projeto a WCAG 2.2 e eMAG; a existência dessas opções e referências **não significa que o sistema esteja certificado ou que sua conformidade tenha sido validada**. São necessários testes automáticos e manuais, incluindo teclado, leitores de tela, contraste e avaliação com pessoas com deficiência.
 
 <p align="center">
-  <img src="docs/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
+  <img src="docs/identidade-visual/assets/readme/divider.svg" alt="Separador visual entre as seções do README" width="1200">
 </p>
 
 ## Próximos passos recomendados
@@ -256,7 +254,7 @@ Os testes criam um banco temporário e não devem alterar o banco de desenvolvim
 ## Licença
 
 > [!WARNING]
-> Nenhuma licença de distribuição foi identificada nos arquivos analisados. Defina e inclua uma licença antes de autorizar reutilização, modificação ou redistribuição do código.
+> A situação da licença de distribuição está registrada em [LICENSE](LICENSE).
 
 <p align="center">
   <strong>IaTellect — Políticas acadêmicas de uso de IA</strong><br>

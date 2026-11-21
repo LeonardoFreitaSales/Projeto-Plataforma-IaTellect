@@ -1,4 +1,4 @@
-import { escapeHtml as e } from "/assets/js/api.js";
+import { escapeHtml as e } from "/js/api.js";
 
 export const roles = {
   admin: "Administrador",
