@@ -1,37 +1,34 @@
-# Plataforma v4.0 final
+# Plataforma v4.0
 
-## Executar
+## Executar no computador
 
-Extraia toda a pasta e execute `iniciar.bat` no Windows, ou `python server.py` com Python 3.
-Abra http://127.0.0.1:3002/acesso.html. A plataforma usa Python e SQLite, sem dependencias extras.
+Na pasta desta versão, execute `iniciar.bat` no Windows ou `python server.py` com Python 3. Abra [a tela de acesso](http://127.0.0.1:3002/acesso.html). O iniciador do Windows usa o endereço local. A execução direta aceita as variáveis `HOST` e `PORT`.
 
-Na primeira execucao, o banco sera criado em `data/`. Se ADMIN_PASSWORD nao estiver definida,
-a senha inicial sera gerada e salva somente no arquivo local `data/senha_admin_inicial.txt`.
-Leia esse arquivo localmente, entre como admin, altere a senha e apague o arquivo de senha.
-O ZIP nao inclui banco, contas pessoais, senha inicial, logs ou dependencias geradas.
+No primeiro acesso, use o nome `admin` (ou o valor de `ADMIN_NAME`). A senha inicial vem de `ADMIN_PASSWORD` ou, na execução local, do arquivo gerado em `data/senha_admin_inicial.txt`. Depois de entrar, altere a senha e apague o arquivo. Para recuperar o acesso administrativo local, execute `python server.py --reset-admin`.
 
-## Contas e permissoes
+## Contas e matrículas
 
-Todos os perfis entram com nome e senha. Contas antigas sem senha e suas sessoes ficam bloqueadas.
-Um professor autorizado ou administrador pode usar Definir senha; contas e matriculas sao mantidas.
-Senhas esquecidas precisam desse atendimento. Alterar senha exige a senha atual e encerra outras sessoes.
-O minimo de oito caracteres nao garante uma senha forte: evite nomes, datas e sequencias previsiveis.
+- **Administrador** gerencia professores, responsáveis pelas disciplinas, comunicados e turmas.
+- **Professor** edita suas disciplinas, gerencia turmas autorizadas, analisa matrículas e mantém anotações privadas sobre os alunos.
+- **Aluno** se cadastra com nome completo, turma e senha. A aprovação da matrícula libera as disciplinas da turma.
 
-Alunos novos escolhem turma e senha. As materias sao liberadas apos aprovacao da matricula.
-Cadastro recebido e conflito de nome retornam a mesma resposta neutra, sem login automatico.
-Um conflito nao sobrescreve senha nem matricula de outra pessoa; procure o professor para conferir o cadastro.
-O teto de matriculas pendentes nao foi implementado, conforme solicitado.
+O cadastro dá a mesma resposta quando recebe um pedido ou encontra um conflito de nome. Um conflito preserva os dados existentes. Contas antigas sem senha precisam da opção **Definir senha**, disponível ao administrador ou ao professor autorizado. A troca de senha pelo usuário exige a senha atual e encerra suas outras sessões. O mínimo é de oito caracteres.
 
-## Migrar dados da v3.0
+## Onde trabalhar
 
-Pare os servidores e guarde um backup antes de copiar seu banco para `data/Banco de Dados SQLite.db`
-nesta pasta. O schema e atualizado ao iniciar. Nao compartilhe o mesmo arquivo entre versoes em execucao.
-A v4 usa um cookie proprio: faca login novamente. Contas sem senha precisam de atendimento do responsavel.
-A variavel DATA_DIR externa e ignorada; o banco normal fica sempre em data/ ao lado de server.py.
+| Caminho | Responsabilidade |
+|---|---|
+| `server.py` | Entrada da aplicação. |
+| `app/` | Configuração, banco, autenticação, permissões, auditoria e servidor HTTP. |
+| `app/routes/` | Rotas da API por domínio. |
+| `frontend/` | HTML do acesso e do painel. |
+| `frontend/assets/css/` e `frontend/assets/js/` | Estilos, comportamento das telas e acessibilidade compartilhada. |
+| `sql/schema.sql` | Modelo do banco usado na inicialização. |
+| `test_permissoes.py` | Suíte de integração com SQLite temporário. |
 
-## Escopo
+Execute `python test_permissoes.py` nesta pasta para verificar o fluxo local.
 
-Este pacote contem a plataforma Python ativa. O painel Node.js/JSON permanece um prototipo historico,
-sem autenticacao nem sincronizacao, no repositorio original; nao faz parte desta entrega executavel.
-Os prototipos anteriores foram preservados no computador. O ZIP original foi entregue antes da publicacao no GitHub.
-Consulte REVISAO.md para os resultados e limites dos testes.
+## Documentação técnica
+
+- [SQLite, backup e migração das versões anteriores](docs/banco-de-dados.md)
+- [Configuração da hospedagem existente](docs/hospedagem.md)
