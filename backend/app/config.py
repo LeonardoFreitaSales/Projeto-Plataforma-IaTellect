@@ -8,7 +8,7 @@ TEST_MODE = os.environ.get("TEST_MODE") == "1"
 DATA_DIR = Path(os.environ["TEST_DATA_DIR"]).resolve() if TEST_MODE and os.environ.get("TEST_DATA_DIR") else ROOT.parent / "data"
 DB_FILE = DATA_DIR / "Banco de Dados SQLite.db"
 SCHEMA_FILE = ROOT / "sql" / "schema.sql"
-HOST = os.environ.get("HOST") or "0.0.0.0"
+HOST = os.environ.get("HOST") or "127.0.0.1"
 PORT = int(os.environ.get("PORT") or "3002")
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "").lower() in ("1", "true", "sim", "yes")
 TRUST_PROXY = os.environ.get("TRUST_PROXY", "").lower() in ("1", "true", "sim", "yes")
