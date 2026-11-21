@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TEST_MODE = os.environ.get("TEST_MODE") == "1"
 DATA_DIR = Path(os.environ["TEST_DATA_DIR"]).resolve() if TEST_MODE and os.environ.get("TEST_DATA_DIR") else ROOT / "data"
 DB_FILE = DATA_DIR / "Banco de Dados SQLite.db"
-SCHEMA_FILE = ROOT / "schema_Banco_de_Dados_SQLite.sql"
+SCHEMA_FILE = ROOT / "sql" / "schema.sql"
 HOST = os.environ.get("HOST") or "0.0.0.0"
 PORT = int(os.environ.get("PORT") or "3002")
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "").lower() in ("1", "true", "sim", "yes")
@@ -35,8 +35,8 @@ SECURITY_HEADERS = {
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "same-origin",
     "Content-Security-Policy": (
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "default-src 'self'; script-src 'self'; "
+        "style-src 'self' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; "
         "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
     ),

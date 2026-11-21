@@ -9,6 +9,7 @@ from app.routes import api
 from app.utils import HTTPError
 
 
+FRONTEND_DIR = ROOT / "frontend"
 STATIC_FILES = {"/": "index.html", "/index.html": "index.html", "/acesso.html": "acesso.html"}
 
 
@@ -95,11 +96,11 @@ class PanelHandler(BaseHTTPRequestHandler):
             return
         target = None
         if path in STATIC_FILES:
-            target = ROOT / STATIC_FILES[path]
+            target = FRONTEND_DIR / STATIC_FILES[path]
         elif path.startswith("/assets/"):
-            candidate = (ROOT / "assets" / unquote(path[len("/assets/"):])).resolve()
+            candidate = (FRONTEND_DIR / "assets" / unquote(path[len("/assets/"):])).resolve()
             try:
-                candidate.relative_to((ROOT / "assets").resolve())
+                candidate.relative_to((FRONTEND_DIR / "assets").resolve())
                 target = candidate
             except ValueError:
                 target = None

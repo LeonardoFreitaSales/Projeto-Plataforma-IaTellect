@@ -15,6 +15,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+from app.config import SCHEMA_FILE
 from server import HTTPError, require_role
 
 ROOT = Path(__file__).resolve().parent
@@ -70,7 +71,7 @@ def main():
     except HTTPError as exc:
         checa("objeto sem chave role e negado", exc.status, 403)
     con_check = sqlite3.connect(":memory:")
-    con_check.executescript((ROOT / "schema_Banco_de_Dados_SQLite.sql").read_text(encoding="utf-8"))
+    con_check.executescript(SCHEMA_FILE.read_text(encoding="utf-8"))
     try:
         con_check.execute("INSERT INTO users (id,name,nameKey,role,createdAt,updatedAt) VALUES ('x','x','x',NULL,'a','a')")
         checa("NOT NULL rejeita papel ausente", False, True)
