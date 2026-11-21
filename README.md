@@ -203,6 +203,17 @@ python backend/tests/test_permissoes.py
 
 Os testes criam um banco temporário e não devem alterar o banco de desenvolvimento. A suíte da v4 inclui 117 verificações. Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
 
+Para validar a matrícula pelo navegador, instale Node.js 22 e execute, a partir da raiz, com Python no PATH:
+
+```bash
+cd backend/tests
+npm ci
+npx --no-install playwright-core install chromium
+python executar_navegador.py
+```
+
+O teste cria uma turma em um banco temporário, cadastra um estudante pela interface, aprova a matrícula em uma sessão de professor e consulta a política na sessão do estudante. Ele também verifica as requisições das telas de reflexão e disciplinas. O GitHub Actions executa esse fluxo no job `navegador` a cada pull request.
+
 </details>
 
 > [!IMPORTANT]

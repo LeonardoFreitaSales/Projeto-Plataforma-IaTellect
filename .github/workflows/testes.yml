@@ -14,3 +14,20 @@ jobs:
         with:
           python-version: '3.12'
       - run: python backend/tests/test_permissoes.py
+
+  navegador:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+        working-directory: backend/tests
+      - run: npx --no-install playwright-core install --with-deps chromium
+        working-directory: backend/tests
+      - run: python backend/tests/executar_navegador.py
