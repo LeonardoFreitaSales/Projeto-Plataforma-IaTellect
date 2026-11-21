@@ -116,6 +116,13 @@ async function section(view) {
   return `<header class="page-head"><h1>${title}</h1><div class="page-actions">${button}</div></header><section class="grid two-col">${items.map(([title, detail, meta]) => `<article class="card card-pad"><h2>${e(title)}</h2><p>${e(detail)}</p><small>${e(meta)}</small></article>`).join("") || '<p class="records-empty">Nenhum registro disponível.</p>'}</section>`;
 }
 
+const viewResources = {
+  home: ["dashboard", "disciplines", "turmas"],
+  disciplines: ["disciplines", "policies"],
+  reports: ["disciplines", "policies"],
+  classes: ["turmas"],
+};
+
 async function navigate(view) {
   if (!available(view)) return;
   current = view;
@@ -133,17 +140,16 @@ async function navigate(view) {
   });
   root.textContent = "Carregando…";
   try {
-    const [dashboard, disciplines, policies, classes] = await Promise.all(
-      ["dashboard", "disciplines", "policies", "turmas"].map((key) =>
-        request("/api/" + key),
-      ),
-    );
+    const resources = viewResources[view] || [];
+    const entries = await Promise.all(resources.map(async key => [key, await request("/api/" + key)]));
     if (revision !== ticket) return;
-    Object.assign(state, { dashboard, disciplines, policies, turmas: classes });
-    configure(state.user, disciplines);
-    const pending = classes.reduce((n, t) => n + (t.pendentes || 0), 0);
-    $("[data-pending-count]").textContent = pending;
-    $("[data-pending-count]").hidden = !pending;
+    Object.assign(state, Object.fromEntries(entries));
+    if (resources.includes("disciplines")) configure(state.user, state.disciplines);
+    if (resources.includes("turmas")) {
+      const pending = state.turmas.reduce((n, t) => n + (t.pendentes || 0), 0);
+      $("[data-pending-count]").textContent = pending;
+      $("[data-pending-count]").hidden = !pending;
+    }
     const markup = sections[view]
       ? await section(view)
       : { home, disciplines: disciplineView, reports, responsible: reflection }[
@@ -164,6 +170,7 @@ async function navigate(view) {
 }
 async function enter(user) {
   state.user = user;
+  configure(user, []);
   document.body.classList.add("authenticated");
   $("#auth-screen").hidden = true;
   $("#app-shell").hidden = false;

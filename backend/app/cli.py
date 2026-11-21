@@ -10,7 +10,7 @@ Perfis: admin, professor e aluno.
 
 Variaveis de ambiente (todas opcionais):
   PORT             porta HTTP (padrao 3002)
-  HOST             endereco de escuta (padrao 0.0.0.0)
+  HOST             endereco de escuta (padrao 127.0.0.1)
   ADMIN_NAME       nome do administrador criado na 1a execucao (padrao admin)
   ADMIN_PASSWORD   senha do administrador na 1a execucao (minimo 8 caracteres).
                    Se faltar, uma senha aleatoria e gerada e gravada em
@@ -47,7 +47,7 @@ def main():
         raise SystemExit(1)
     print(f"Banco {'temporário de teste' if TEST_MODE else 'desta versão'}: {DB_FILE}", flush=True)
     server = PanelServer((HOST, PORT), PanelHandler)
-    print(f"Painel disponível em http://localhost:{PORT}", flush=True)
+    print(f"Painel disponível em http://localhost:{server.server_port}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

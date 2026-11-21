@@ -8,6 +8,8 @@ import hashlib
 import json
 import sqlite3
 import os
+import re
+from contextlib import contextmanager
 import subprocess
 import sys
 import tempfile
@@ -21,8 +23,7 @@ sys.path.insert(0, str(ROOT))
 from app.config import FRONTEND_DIR, SCHEMA_FILE
 from server import HTTPError, require_role
 
-PORT = 3999
-BASE = f"http://127.0.0.1:{PORT}"
+BASE = None
 FALHAS = []
 
 
@@ -59,6 +60,32 @@ def checa(descricao, obtido, esperado):
         FALHAS.append(descricao)
 
 
+@contextmanager
+def servidor_de_teste(tmp):
+    env = dict(os.environ, PORT="0", HOST="127.0.0.1", TEST_MODE="1", TEST_DATA_DIR=tmp,
+               PYTHONIOENCODING="utf-8", ADMIN_PASSWORD="admin-teste-123")
+    log = Path(tmp) / "servidor.log"
+    with log.open("wb") as output:
+        proc = subprocess.Popen([sys.executable, str(ROOT / "server.py")], env=env,
+                                stdout=output, stderr=subprocess.STDOUT)
+        try:
+            deadline = time.monotonic() + 15
+            while time.monotonic() < deadline:
+                startup = log.read_bytes().decode("utf-8", errors="replace")
+                if proc.poll() is not None:
+                    raise RuntimeError("Servidor de teste encerrou durante a inicialização:\n" + startup)
+                ready = re.search(r"^Painel disponível em http://localhost:(\d+)\r?$", startup, re.MULTILINE)
+                if ready:
+                    yield f"http://127.0.0.1:{ready.group(1)}"
+                    return
+                time.sleep(0.05)
+            raise TimeoutError("O servidor de teste não informou sua porta em 15 segundos.")
+        finally:
+            if proc.poll() is None:
+                proc.terminate()
+            proc.wait()
+
+
 def main():
     # Uma linha sem papel nao pode obter permissao; a regra CHECK continua
     # impedindo que esse estado seja gravado no SQLite.
@@ -85,17 +112,8 @@ def main():
     except sqlite3.IntegrityError:
         checa("CHECK rejeita papel desconhecido", True, True)
     con_check.close()
-    tmp = tempfile.mkdtemp()
-    env = dict(os.environ, PORT=str(PORT), HOST="127.0.0.1", TEST_MODE="1", TEST_DATA_DIR=tmp,
-               ADMIN_PASSWORD="admin-teste-123")
-    proc = subprocess.Popen([sys.executable, str(ROOT / "server.py")], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-    try:
-        for _ in range(50):
-            try:
-                urllib.request.urlopen(BASE + "/api/health")
-                break
-            except Exception:
-                time.sleep(0.1)
+    global BASE
+    with tempfile.TemporaryDirectory() as tmp, servidor_de_teste(tmp) as BASE:
         anon, adm, pa, pb, al = (Cliente(n) for n in ("anon", "admin", "profA", "profB", "aluno"))
 
         checa("sem login -> 401", anon.req("GET", "/api/disciplines")[0], 401)
@@ -290,9 +308,6 @@ def main():
         spam = Cliente("spam")
         codigos = [spam.req("POST", "/api/auth/login", {"name": "Professor A", "password": "errada"})[0] for _ in range(7)]
         checa("bloqueio apos varias tentativas", codigos[-1], 429)
-    finally:
-        proc.terminate()
-        proc.wait()
     print("\nTudo certo." if not FALHAS else f"\n{len(FALHAS)} falha(s): {FALHAS}")
     sys.exit(1 if FALHAS else 0)
 
