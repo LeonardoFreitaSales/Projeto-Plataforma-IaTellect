@@ -121,3 +121,11 @@ A v4 serve `prototipo-ux/index.html` para login e painel. A interface consulta a
 ## Reorganização do repositório
 
 O servidor e os testes passaram para backend/, a interface para frontend/ e os dados locais para data/ na raiz. O cookie passou a se chamar iatellect_sessao. Entre novamente após atualizar. Com o servidor encerrado, instalações existentes devem transferir a pasta de dados anterior para data/ antes de iniciar a nova versão.
+
+## 21/11/2026 — Execução local, testes e navegação
+
+- `fc8e431` — O servidor passou a escutar em `127.0.0.1` por padrão e a informar a porta aberta na inicialização. A variável `HOST` permite escolher outro endereço.
+- `1e8b3e0` — Cada execução da suíte de permissões usa uma porta livre. O GitHub Actions passou a executar a suíte nos pull requests.
+- `65d6c6d` — A interface passou a buscar os dados necessários para cada tela. A tela de uso responsável abre sem fazer requisições à API.
+
+As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaSales/Projeto-Plataforma-IaTellect/pull/11), no commit `f34dcd8`.
