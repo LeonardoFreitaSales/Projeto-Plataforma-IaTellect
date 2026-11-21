@@ -31,4 +31,3 @@ Execute `python test_permissoes.py` nesta pasta para verificar o fluxo local.
 ## Documentação técnica
 
 - [SQLite, backup e migração das versões anteriores](docs/banco-de-dados.md)
-- [Configuração da hospedagem existente](docs/hospedagem.md)
