@@ -25,10 +25,8 @@ Comandos:
   python server.py                 inicia o servidor
   python server.py --reset-admin   redefine a senha do administrador
 """
-from datetime import datetime, timedelta, timezone
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlsplit
 import getpass
 import hashlib
@@ -40,104 +38,15 @@ import sqlite3
 import sys
 import threading
 import time
-import unicodedata
-import uuid
 
-ROOT = Path(__file__).resolve().parent
-TEST_MODE = os.environ.get("TEST_MODE") == "1"
-DATA_DIR = Path(os.environ["TEST_DATA_DIR"]).resolve() if TEST_MODE and os.environ.get("TEST_DATA_DIR") else ROOT / "data"
-DB_FILE = DATA_DIR / "Banco de Dados SQLite.db"
-SCHEMA_FILE = ROOT / "schema_Banco_de_Dados_SQLite.sql"
-HOST = os.environ.get("HOST") or "0.0.0.0"
-PORT = int(os.environ.get("PORT") or "3002")
-COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "").lower() in ("1", "true", "sim", "yes")
-TRUST_PROXY = os.environ.get("TRUST_PROXY", "").lower() in ("1", "true", "sim", "yes")
-ALLOWED_ORIGINS = {o.strip().lower() for o in (os.environ.get("ALLOWED_ORIGINS") or "").split(",") if o.strip()}
-
-COOKIE_NAME = "plataforma_v4_sessao"
-SESSION_DAYS = 7
-PBKDF2_ITERATIONS = 310_000
-MAX_BODY = 1_000_000
-HISTORY_LIMIT = 500
-
-STATUSES = ("proibido", "restricao", "permitido")
-TYPES = ("prova", "trabalho", "atividade", "pesquisa", "outro")
-MATRICULA_STATUS = ("pendente", "aprovada", "recusada")
-
-MIME_TYPES = {
-    ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8",
-    ".js": "text/javascript; charset=utf-8", ".json": "application/json; charset=utf-8",
-    ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg", ".webp": "image/webp", ".ico": "image/x-icon",
-    ".woff2": "font/woff2",
-}
-SECURITY_HEADERS = {
-    "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-    "Referrer-Policy": "same-origin",
-    "Content-Security-Policy": (
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-        "font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; "
-        "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-    ),
-}
+from app.config import (
+    ALLOWED_ORIGINS, COOKIE_NAME, COOKIE_SECURE, DATA_DIR, DB_FILE, HISTORY_LIMIT,
+    HOST, MATRICULA_STATUS, MAX_BODY, MIME_TYPES, PBKDF2_ITERATIONS, PORT, ROOT,
+    SCHEMA_FILE, SECURITY_HEADERS, SESSION_DAYS, STATUSES, TEST_MODE, TRUST_PROXY, TYPES,
+)
+from app.utils import HTTPError, bad, iso_in, key_of, new_id, norm_name, now_iso, pick, text
 
 DB_LOCK = threading.Lock()
-
-
-# ----------------------------------------------------------------------
-# Utilidades
-# ----------------------------------------------------------------------
-def now_iso():
-    return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
-
-
-def iso_in(days):
-    moment = datetime.now(timezone.utc) + timedelta(days=days)
-    return moment.isoformat(timespec="milliseconds").replace("+00:00", "Z")
-
-
-def new_id():
-    return str(uuid.uuid4())
-
-
-def norm_name(value):
-    """Nome sem espacos extras (mantem maiusculas e acentos)."""
-    return " ".join(unicodedata.normalize("NFC", value).split())
-
-
-def key_of(value):
-    """Chave de comparacao: sem diferenca de maiuscula/minuscula nem de espacos."""
-    return norm_name(value).casefold()
-
-
-class HTTPError(Exception):
-    def __init__(self, status, message):
-        super().__init__(message)
-        self.status = status
-
-
-def bad(message):
-    return HTTPError(400, message)
-
-
-def text(value, name, maximum=5000, required=True):
-    if value is None and not required:
-        return ""
-    if not isinstance(value, str):
-        raise bad(f"{name} deve ser texto.")
-    out = value.strip()
-    if required and not out:
-        raise bad(f"{name} é obrigatório.")
-    if len(out) > maximum:
-        raise bad(f"{name} excede {maximum} caracteres.")
-    return out
-
-
-def pick(data, key, fallback):
-    value = data.get(key)
-    return fallback if value is None else value
 
 
 class RateLimiter:
