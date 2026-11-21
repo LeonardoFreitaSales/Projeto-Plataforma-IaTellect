@@ -112,6 +112,16 @@ def main():
 
         pol = {"disciplineId": da["id"], "activityName": "Prova 1", "activityType": "prova", "status": "proibido"}
         checa("dono cria politica", pa.req("POST", "/api/policies", pol)[0], 201)
+        status, painel = pa.req("GET", "/api/dashboard")
+        checa("painel do dono inclui a politica proibida", (status, painel.get("distribution", {}).get("proibido")), (200, 1))
+        status, painel = pb.req("GET", "/api/dashboard")
+        checa("painel do outro professor exclui a politica", (status, painel.get("policies")), (200, 0))
+
+        consulta = {"disciplineId": da["id"], "activityType": "prova"}
+        status, resultado = pa.req("POST", "/api/ai-check", consulta)
+        checa("consulta aplica a politica da materia", (status, resultado.get("decision")), (200, "proibido"))
+        checa("consulta em materia alheia -> 404", pb.req("POST", "/api/ai-check", consulta)[0], 404)
+
         checa("outro professor cria politica na materia alheia -> 403", pb.req("POST", "/api/policies", pol)[0], 403)
         checa("outro professor nao ve a materia -> 404", pb.req("GET", f"/api/disciplines/{da['id']}")[0], 404)
         checa("outro professor nao edita a materia -> 404", pb.req("PUT", f"/api/disciplines/{da['id']}", {"name": "Hack"})[0], 404)
