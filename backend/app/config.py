@@ -1,6 +1,8 @@
 """Configuração da plataforma."""
 import os
+from ipaddress import ip_address
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_DIR = ROOT.parent / "frontend"
@@ -12,7 +14,14 @@ HOST = os.environ.get("HOST") or "127.0.0.1"
 PORT = int(os.environ.get("PORT") or "3002")
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "").lower() in ("1", "true", "sim", "yes")
 TRUST_PROXY = os.environ.get("TRUST_PROXY", "").lower() in ("1", "true", "sim", "yes")
+TRUSTED_PROXY_IPS = {ip_address(ip.strip()) for ip in os.environ.get("TRUSTED_PROXY_IPS", "").split(",") if ip.strip()}
 ALLOWED_ORIGINS = {o.strip().lower() for o in (os.environ.get("ALLOWED_ORIGINS") or "").split(",") if o.strip()}
+
+for origin in ALLOWED_ORIGINS:
+    parsed = urlsplit(origin)
+    if (parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username is not None
+            or origin != f"{parsed.scheme}://{parsed.netloc}"):
+        raise ValueError("ALLOWED_ORIGINS exige origens completas, por exemplo https://painel.exemplo.br")
 
 COOKIE_NAME = "iatellect_sessao"
 SESSION_DAYS = 7
@@ -34,6 +43,7 @@ MIME_TYPES = {
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Referrer-Policy": "same-origin",
     "Content-Security-Policy": (
         "default-src 'self'; script-src 'self'; "

@@ -201,7 +201,7 @@ A pasta da v4 contém testes automatizados de autenticação, permissões, turma
 python backend/tests/test_permissoes.py
 ```
 
-Os testes criam um banco temporário e não devem alterar o banco de desenvolvimento. A suíte da v4 inclui 117 verificações. Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
+Os testes criam um banco temporário e não devem alterar o banco de desenvolvimento. A suíte da v4 inclui 122 verificações. Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
 
 Para validar a matrícula pelo navegador, instale Node.js 22 e execute, a partir da raiz, com Python no PATH:
 
@@ -271,3 +271,13 @@ O teste cria uma turma em um banco temporário, cadastra um estudante pela inter
   <strong>IaTellect — Políticas acadêmicas de uso de IA</strong><br>
   Projeto acadêmico — CESAR School
 </p>
+
+## Configuração e distribuição
+
+Consulte [.env.example](.env.example) para conhecer as variáveis. Configure-as no ambiente do processo antes de executar o servidor. O Python lê essas variáveis diretamente.
+
+Para gerar um ZIP da versão registrada no commit atual, execute na raiz:
+
+    git archive --format=zip --prefix=Projeto-Plataforma-IaTellect/ --output=../IaTellect-distribuicao.zip HEAD
+
+Consulte as [orientações de segurança](SECURITY.md) e o [inventário de dados e retenção](docs/tecnica/privacidade.md) antes de configurar uma instalação compartilhada.

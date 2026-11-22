@@ -17,6 +17,7 @@ Variaveis de ambiente (todas opcionais):
                    data/senha_admin_inicial.txt
   COOKIE_SECURE    1 quando o site usa HTTPS (cookie so trafega por HTTPS)
   TRUST_PROXY      1 quando ha proxy reverso confiavel (usa X-Forwarded-For)
+  TRUSTED_PROXY_IPS  enderecos IP dos proxies autorizados, separados por virgula
   ALLOWED_ORIGINS  origens extras aceitas em requisicoes de escrita
                    (separadas por virgula), alem do proprio Host
 

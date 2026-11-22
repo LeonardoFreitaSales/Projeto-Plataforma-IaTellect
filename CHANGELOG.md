@@ -118,9 +118,15 @@ A v4 serve `prototipo-ux/index.html` para login e painel. A interface consulta a
 | 2026-11-21 | [fcc78bc](https://github.com/LeonardoFreitaSales/Projeto-Plataforma-IaTellect/commit/fcc78bc7f53eab6242294ed37d500a038c4f36ec) | Branch integrada | Passou a servir o próprio HTML de `prototipo-ux/` no acesso e no painel. Conectou os fluxos à API local, retirou as páginas substituídas e acrescentou verificações para as rotas da interface. |
 | 2026-11-21 | [2b6f929](https://github.com/LeonardoFreitaSales/Projeto-Plataforma-IaTellect/commit/2b6f929dfc6c9ddacbcde33454628db0125696d7) | Principal | Integrou o front-end UX conectado ao backend na main pelo PR #9. A árvore resultante corresponde ao commit de integração `fcc78bc`. |
 
-## Reorganização do repositório
+## [PR #10](https://github.com/LeonardoFreitaSales/Projeto-Plataforma-IaTellect/pull/10) — Reorganização do repositório
 
 O servidor e os testes passaram para backend/, a interface para frontend/ e os dados locais para data/ na raiz. O cookie passou a se chamar iatellect_sessao. Entre novamente após atualizar. Com o servidor encerrado, instalações existentes devem transferir a pasta de dados anterior para data/ antes de iniciar a nova versão.
+
+- `33c98b2` — Moveu o servidor, o esquema SQL e a suíte de testes para backend/.
+- `07712ae` — Reuniu a interface, seus módulos e imagens em frontend/.
+- `c09a515` — Organizou identidade visual, referências, backlog e documentação técnica em docs/.
+- `e3cda70` — Transferiu os experimentos anteriores para archive/ e documentou sua finalidade.
+- `12b7ae8` — Corrigiu os caminhos de execução, dos dados e dos arquivos estáticos e adotou o cookie de sessão neutro.
 
 ## 21/11/2026 — Execução local, testes e navegação
 
@@ -129,3 +135,20 @@ O servidor e os testes passaram para backend/, a interface para frontend/ e os d
 - `65d6c6d` — A interface passou a buscar os dados necessários para cada tela. A tela de uso responsável abre sem fazer requisições à API.
 
 As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaSales/Projeto-Plataforma-IaTellect/pull/11), no commit `f34dcd8`.
+
+## [PR #12](https://github.com/LeonardoFreitaSales/Projeto-Plataforma-IaTellect/pull/12) — Registro das mudanças do PR #11
+
+- `f187ecc` — Documentou a inicialização local, o isolamento dos testes por porta e o carregamento de dados por tela.
+
+## [PR #13](https://github.com/LeonardoFreitaSales/Projeto-Plataforma-IaTellect/pull/13) — Teste de matrícula no navegador
+
+- `e4b163e` — Automatizou o cadastro do aluno, a aprovação pelo professor e a consulta à política pelo aluno após a aprovação.
+- `6817a2e` — Incluiu o teste de navegador no GitHub Actions e documentou sua execução local.
+- `c29d165` — Ajustou o job para usar o Chrome disponível no runner do GitHub.
+
+## [PR #14](https://github.com/LeonardoFreitaSales/Projeto-Plataforma-IaTellect/pull/14) — Segurança do backend e distribuição
+
+- `624fee7` — Passou a exigir uma origem permitida nas escritas da API e a considerar o IP encaminhado apenas quando a conexão vem de um proxy autorizado. Acrescentou regras de permissões do navegador e testes para os novos controles.
+- `67952ed` — Passou a renderizar os avisos de sucesso e erro como texto, preservando a apresentação de caracteres especiais.
+- `dd7c5aa` — Documentou a configuração por variáveis de ambiente, a geração do ZIP, o relato de problemas de segurança e as decisões pendentes sobre retenção de dados.
+- `docs: exigir changelog em todos os pull requests` — Registrou as mudanças por commit e adicionou um lembrete no formulário de PR e uma verificação automática de atualização do changelog.

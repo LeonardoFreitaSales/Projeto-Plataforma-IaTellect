@@ -1,3 +1,4 @@
+import { mostrarAviso } from "./mensagens.js";
 import { request as j, escapeHtml as esc } from "./api.js";
 const $ = selector => document.querySelector(selector);
 const app = $("#app-modal"), mb = $("#modal-body");
@@ -6,8 +7,6 @@ export function configure(user, disciplines) {
   me = user;
   owners = Object.fromEntries(disciplines.map(d => [d.id, d.ownerId]));
 }
-const note = (t, k = "") =>
-  `<div class="notice ${k}" role="status">${esc(t)}</div>`;
 // diálogos acessíveis (substituem alert/prompt/confirm): foco preso e Esc pelo <dialog> nativo
 const mdl = $("#msg-modal");
 // Mantem Tab e Shift+Tab dentro do dialogo, inclusive nos limites do navegador.
@@ -264,18 +263,15 @@ function minhaSenha() {
     const f = Object.fromEntries(new FormData(e.target)),
       m = $("#pw-m");
     if (f.newPassword !== $("#pw-r").value) {
-      m.innerHTML = note("As senhas novas não são iguais.", "error");
+      mostrarAviso(m, "As senhas novas não são iguais.", "error");
       return;
     }
     try {
       await j("/api/me/password", { method: "PUT", body: JSON.stringify(f) });
-      m.innerHTML = note(
-        "Senha alterada. Suas outras sessões foram encerradas.",
-        "success",
-      );
+      mostrarAviso(m, "Senha alterada. Suas outras sessões foram encerradas.", "success");
       e.target.reset();
     } catch (x) {
-      m.innerHTML = note(x.message, "error");
+      mostrarAviso(m, x.message, "error");
     }
   };
 }
@@ -377,7 +373,7 @@ async function usuarios() {
       });
       usuarios();
     } catch (x) {
-      $("#nu-m").innerHTML = note(x.message, "error");
+      mostrarAviso($("#nu-m"), x.message, "error");
     }
   };
   mb.querySelectorAll("[data-pw]").forEach(

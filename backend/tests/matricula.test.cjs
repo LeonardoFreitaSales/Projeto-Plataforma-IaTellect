@@ -18,7 +18,7 @@ async function prepararTurma(api) {
   const turma = await post("/api/turmas", { name: "Turma piloto" });
   await api.put("/api/turmas/" + turma.id + "/disciplines/" + disciplina.id, { failOnStatusCode: true });
   await post("/api/policies", {
-    disciplineId: disciplina.id, activityName: "Avaliação final", activityType: "prova",
+    disciplineId: disciplina.id, activityName: "Avaliação <final>", activityType: "prova",
     status: "proibido", source: "Plano de ensino",
   });
 }
@@ -32,7 +32,7 @@ async function entrar(pagina, nome) {
 
 test("matrícula pendente, aprovação pelo professor e consulta à política", async (t) => {
   assert.ok(origem, "Execute o teste por executar_navegador.py");
-  const api = await request.newContext({ baseURL: origem });
+  const api = await request.newContext({ baseURL: origem, extraHTTPHeaders: { Origin: origem } });
   try {
     await prepararTurma(api);
   } finally {
@@ -71,7 +71,7 @@ test("matrícula pendente, aprovação pelo professor e consulta à política", 
   await aluno.locator('[data-view="disciplines"]').click();
   await aluno.getByRole("button", { name: "Ver detalhes" }).click();
   const detalhes = aluno.locator("#app-modal");
-  await detalhes.getByText("Avaliação final", { exact: true }).waitFor();
+  await detalhes.getByText("Avaliação <final>", { exact: true }).waitFor();
   await detalhes.getByText("Proibido", { exact: true }).waitFor();
   await detalhes.getByText(/Plano de ensino/).waitFor();
   assert.deepEqual(consultas.sort(), ["/api/disciplines", "/api/policies"]);
