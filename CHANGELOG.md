@@ -169,3 +169,7 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 ## Lia — acessibilidade e consultas acadêmicas
 
 - `feat: consolidar consultas acadêmicas e interface acessível da Lia` — Integra busca autorizada de matérias e turmas, contexto da disciplina, perguntas sugeridas, contraste, menu ajustável por teclado e arraste, gerenciamento de foco e estados de envio. Inclui os testes de regressão das quatro etapas.
+
+## Guia de acesso local
+
+- Documenta como abrir e atualizar cópias da main e do piloto fictício no Git Bash.
