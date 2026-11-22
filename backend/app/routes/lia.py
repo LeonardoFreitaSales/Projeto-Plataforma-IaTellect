@@ -31,6 +31,23 @@ CONTEXTO = r"\b(?:nessa|nesta|na mesma|dessa|desta) (?:mesma )?(?:materia|discip
 IGNORAR |= set("regra regras academica academicas vale pelo pela poderia utilizar plataforma iatellect gostaria saber se".split())
 VOCABULARIO = set("ia inteligencia artificial prova provas teste avaliacao trabalho tarefa pesquisa relatorio final parcial materia politica politicas professor permite permitido usar uso ferramenta ferramentas revisao consultar verificar vale aplicavel roteiro entrega orientacao autorizacao preciso conhecer existe pode tem sou aluno aluna estudar fazer devo seguir nesse nessa neste nesta minha meu meus nas dessa desta mesma mesmo deixa".split())
 VOCABULARIO |= IGNORAR | set().union(*TERMOS_STATUS.values())
+VOCABULARIO |= set("falta faltas presenca presencas frequencia frequencias limite".split())
+
+
+def pergunta_registro_frequencia(frase):
+    """Detecta pedidos de dados pessoais sem bloquear consultas a regras."""
+    if re.search(r"\b(?:politica|politicas|regra|regras|norma|normas)\b", frase):
+        return False
+    assunto = r"(?:faltas?|presencas?|frequencia)"
+    pessoal = r"(?:eu|meu|minha|meus|minhas)"
+    quantidade = r"(?:quantas?|quantos?|quanto|qual|quais)"
+    registro = r"(?:tenho|tive|possuo|estou|fiquei|registros?|historico)"
+    return bool(
+        re.search(rf"\b{quantidade}\b.*\b{assunto}\b", frase)
+        and (re.search(rf"\b{pessoal}\b", frase) or re.search(rf"\b{registro}\b", frase))
+        or re.search(rf"\b{pessoal}\b.*\b{assunto}\b", frase)
+        and re.search(rf"\b{registro}\b", frase)
+    )
 
 
 def pertence_ao_escopo(pergunta, politicas):
@@ -113,7 +130,7 @@ def consulta(ctx, user):
     pergunta = text(ctx.body.get("query"), "query", 500)
     frase = normalizar(pergunta)
     destino = consultar_materias(ctx, user, frase) or navegacao(frase, user["role"])
-    if not destino and re.search(r"\b(?:presencas?|frequencia|faltas)\b", frase):
+    if not destino and pergunta_registro_frequencia(frase):
         destino = {"message": "A plataforma não disponibiliza registros de frequência para esta consulta. Confirme a informação com o professor."}
     if destino:
         return {"policies": [], "total": 0, **destino}
