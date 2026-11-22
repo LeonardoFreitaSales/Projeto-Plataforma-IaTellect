@@ -60,7 +60,9 @@ Protótipo de uma plataforma para organizar e consultar políticas acadêmicas s
 
 - Apresenta ao estudante as disciplinas associadas às matrículas aprovadas e permite consultar as políticas cadastradas.
 
-- Inclui um **assistente guiado** de consulta e autorreflexão. A Lia consulta regras cadastradas, lembra a disciplina na conversa e orienta a navegação conforme o perfil. Experimente “Onde vejo minhas disciplinas?” ou “Como aprovo uma matrícula?”. Assuntos externos recebem uma orientação sobre o escopo da plataforma. Para habilitar a reformulação opcional com a Groq, configure `LIA_GROQ_ENABLED=1` e `GROQ_API_KEY` no ambiente do servidor antes de iniciá-lo. Quando a busca local não encontra resultados, um botão permite enviar apenas a pergunta selecionada. A pessoa revisa a sugestão antes de pesquisar novamente. A autorreflexão permanece local.
+- A Lia consulta matérias, turmas e políticas visíveis ao perfil. Pergunte “Qual é a minha turma?” ou “Localize a matéria História”. Ao encontrar uma única matéria, a Lia passa a usá-la como contexto para perguntas como “E na prova final?”. O chat também oferece perguntas sugeridas e atalhos para as telas da plataforma.
+
+- A reformulação com a Groq é opcional. Para habilitá-la, configure `LIA_GROQ_ENABLED=1` e `GROQ_API_KEY` no ambiente do servidor. Quando uma consulta de política elegível fica sem resultado, a pessoa pode enviar aquela pergunta à Groq, revisar os termos sugeridos e pesquisar novamente.
 
 - Oferece gestão de comunicados e histórico de operações.
 
@@ -203,7 +205,7 @@ A pasta da v4 contém testes automatizados de autenticação, permissões, turma
 python backend/tests/test_permissoes.py
 ```
 
-Os testes criam um banco temporário e não devem alterar o banco de desenvolvimento. A suíte da v4 inclui 122 verificações. Isso não substitui uma auditoria de segurança, testes de carga, validação de acessibilidade ou teste de implantação pública.
+Os testes criam um banco temporário e não devem alterar o banco de desenvolvimento. A suíte verifica também o contexto de acesso da Lia, a busca de matérias e o tratamento de falhas da reformulação.
 
 Para validar a matrícula pelo navegador, instale Node.js 22 e execute, a partir da raiz, com Python no PATH:
 
@@ -214,7 +216,7 @@ npx --no-install playwright-core install chromium
 python executar_navegador.py
 ```
 
-O teste cria uma turma em um banco temporário, cadastra um estudante pela interface, aprova a matrícula em uma sessão de professor e consulta a política na sessão do estudante. Ele também verifica as requisições das telas de reflexão e disciplinas. O GitHub Actions executa esse fluxo no job `navegador` a cada pull request.
+O teste cria uma turma em um banco temporário, cadastra um estudante pela interface, aprova a matrícula em uma sessão de professor e consulta a política na sessão do estudante. Também exercita a troca de disciplina na conversa, a navegação por perfil, a interação com o menu e os estados de envio do chat. O GitHub Actions executa as verificações `permissoes`, `navegador` e `changelog` nos pull requests.
 
 </details>
 
@@ -239,9 +241,11 @@ O teste cria uma turma em um banco temporário, cadastra um estudante pela inter
 - Não coloque `ADMIN_PASSWORD` nem outras credenciais no código, no histórico de commits, em screenshots ou neste README.
 
 > [!IMPORTANT]
-> O assistente registra respostas de autorreflexão localmente. Essas respostas são declarações dos próprios estudantes: não comprovam fatos, autoria ou uso de IA e não devem ser tratadas como decisões disciplinares automáticas. Antes de qualquer piloto com estudantes, é necessário definir finalidade, aviso de privacidade, controle de acesso, retenção e descarte dos dados.
+> Na tela de uso responsável, o rascunho fica em memória enquanto a página está aberta. Para guardar uma cópia, use **Baixar declaração** antes de recarregar ou fechar a página. Essas respostas são declarações dos próprios estudantes: não comprovam fatos, autoria ou uso de IA e não devem ser tratadas como decisões disciplinares automáticas. Antes de qualquer piloto com estudantes, é necessário definir finalidade, aviso de privacidade, controle de acesso, retenção e descarte dos dados.
 
 ## Acessibilidade
+
+No desktop, você pode recolher o menu ou ajustar sua largura arrastando a borda. Com o separador em foco, use as setas para a esquerda e a direita. O chat identifica o remetente e indica quando a Lia está preparando uma resposta.
 
 > [!NOTE]
 > O repositório inclui um componente separado de preferências de apresentação, com opções como tema, tamanho da fonte, espaçamento, sublinhado de links, redução de movimento e alto contraste. Há referências de projeto a WCAG 2.2 e eMAG; a existência dessas opções e referências **não significa que o sistema esteja certificado ou que sua conformidade tenha sido validada**. São necessários testes automáticos e manuais, incluindo teclado, leitores de tela, contraste e avaliação com pessoas com deficiência.
