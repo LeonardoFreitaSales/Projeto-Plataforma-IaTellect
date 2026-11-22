@@ -173,3 +173,4 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 - `Patch de correções visuais de acessibilidade, fontes, botões e bugs da plataforma` — Reorganiza a prévia, controles e cores e permite consultar as turmas do perfil.
 
 - `Patch de correções visuais de acessibilidade, fontes, botões e bugs da plataforma` — A consulta também aceita o nome da turma visível.
+- fix: distinguir turma ausente de perfil sem turmas.

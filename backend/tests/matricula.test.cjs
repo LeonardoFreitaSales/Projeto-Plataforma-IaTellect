@@ -131,6 +131,8 @@ test("matrícula pendente, aprovação pelo professor e consulta à política", 
   await aluno.getByText("Turmas do seu perfil: Turma piloto").waitFor();
   await perguntar("Localize a turma piloto");
   await aluno.getByText("Turmas do seu perfil: Turma piloto").nth(1).waitFor();
+  await perguntar("Localize a turma ausente");
+  await aluno.getByText(/Não encontrei essa turma/).waitFor();
   await aluno.locator("#assistant-close").click();
   await aluno.locator('[data-view="responsible"]').click();
   for (const largura of [390, 1280]) {
