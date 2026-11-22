@@ -114,11 +114,12 @@
   </section>
 
   <div class="app-shell" id="app-shell" hidden>
-    <aside class="sidebar" aria-label="Navegação principal">
+    <aside id="navigation-sidebar" class="sidebar" aria-label="Navegação principal">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"><svg class="icon"><use href="#icon-brand"/></svg></span>
         <div><strong>IaTellect</strong><small>Políticas acadêmicas</small></div>
       </div>
+      <button type="button" id="dismiss-menu" class="icon-btn" aria-label="Fechar menu">×</button>
       <span class="nav-label">Acompanhar</span>
       <ul class="nav-list">
         <li><button class="nav-button active" type="button" data-view="home"><span class="nav-icon" aria-hidden="true"><svg class="icon"><use href="#icon-home"/></svg></span>Visão geral</button></li>
@@ -139,9 +140,12 @@
       </div>
     </aside>
 
+    <div id="sidebar-resize" role="separator" tabindex="0" aria-label="Largura do menu lateral"
+      aria-controls="navigation-sidebar" aria-orientation="vertical" aria-valuemin="232" aria-valuemax="360" aria-valuenow="284"
+      title="Arraste ou use as setas para ajustar o menu"></div>
     <div class="workspace">
       <header class="topbar">
-        <button class="icon-btn mobile-menu" id="mobile-menu" type="button" aria-label="Abrir menu" aria-expanded="false"><svg class="icon" aria-hidden="true"><use href="#icon-menu"/></svg></button>
+        <button class="icon-btn mobile-menu" id="mobile-menu" aria-controls="navigation-sidebar" type="button" aria-label="Abrir menu" aria-expanded="false"><svg class="icon" aria-hidden="true"><use href="#icon-menu"/></svg></button>
         <div class="topbar-title">
           <div><strong>IaTellect</strong><span>Ambiente acadêmico</span></div>
         </div>
@@ -172,9 +176,15 @@
     </header>
     <div class="chat-log" id="chat-log" aria-live="polite" aria-relevant="additions">
       <p class="assistant-limit"><strong>Assistente local:</strong> consulta as políticas disponíveis para o seu perfil. Se disponível, você pode escolher enviar uma pergunta à Groq para reformulá-la.</p>
-      <div class="message">Olá! Digite o nome de uma disciplina ou atividade para consultar suas políticas.<small>agora</small></div>
+      <div class="message"><strong class="chat-sender"><svg class="icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>Lia</strong>Olá! Digite o nome de uma disciplina ou atividade para consultar suas políticas.<small>agora</small></div>
     </div>
     <footer class="chat-footer">
+      <div class="lia-sugestoes" aria-label="Perguntas sugeridas" role="group">
+        <button type="button">Quais são minhas matérias?</button>
+        <button type="button">Onde vejo minhas disciplinas?</button>
+        <button type="button">Onde vejo minhas turmas?</button>
+      </div>
+      <div id="typing-status" role="status" aria-live="polite"></div>
       <form class="chat-form" id="chat-form">
         <label class="sr-only" for="chat-input">Mensagem para Lia</label>
         <input id="chat-input" maxlength="500" autocomplete="off" placeholder="Ex.: filtre as políticas proibidas">

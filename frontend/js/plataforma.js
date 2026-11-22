@@ -128,7 +128,7 @@ async function navigate(view) {
   current = view;
   const ticket = ++revision;
   document.body.classList.remove("menu-open");
-  $("#mobile-menu").setAttribute("aria-expanded", "false");
+  atualizarMenu();
   document.querySelectorAll("[data-view]").forEach((b) => {
     const active = b.dataset.view === view;
     b.classList.toggle("active", active);
@@ -238,11 +238,53 @@ $("#logout-button").onclick = async () => {
 };
 $("#change-password").onclick = minhaSenha;
 $(".notification-button").onclick = () => navigate("announcements");
-$("#mobile-menu").onclick = () =>
-  $("#mobile-menu").setAttribute(
-    "aria-expanded",
-    String(document.body.classList.toggle("menu-open")),
-  );
+const compacto = matchMedia("(max-width: 820px)");
+function atualizarMenu() {
+  const aberto = compacto.matches ? document.body.classList.contains("menu-open") :
+    !document.body.classList.contains("menu-minimizado");
+  const controle = $("#mobile-menu");
+  controle.setAttribute("aria-expanded", String(aberto));
+  controle.setAttribute("aria-label", aberto ? "Minimizar menu" : "Expandir menu");
+  $("#navigation-sidebar").inert = !aberto;
+}
+$("#mobile-menu").onclick = () => {
+  document.body.classList.toggle(compacto.matches ? "menu-open" : "menu-minimizado");
+  atualizarMenu();
+  if (compacto.matches && document.body.classList.contains("menu-open")) $("#dismiss-menu").focus();
+};
+$("#dismiss-menu").onclick = () => {
+  document.body.classList.remove("menu-open");
+  atualizarMenu();
+  $("#mobile-menu").focus();
+};
+compacto.addEventListener("change", atualizarMenu);
+atualizarMenu();
+const separador = $("#sidebar-resize");
+function ajustarLargura(valor) {
+  const largura = Math.max(232, Math.min(360, Math.round(valor)));
+  $("#app-shell").style.setProperty("--sidebar-width", largura + "px");
+  separador.setAttribute("aria-valuenow", largura);
+  separador.setAttribute("aria-valuetext", largura + " pixels");
+}
+separador.onpointerdown = (event) => {
+  if (event.button !== 0) return;
+  separador.setPointerCapture(event.pointerId);
+  separador.focus();
+};
+separador.onpointermove = (event) => {
+  if (separador.hasPointerCapture(event.pointerId)) ajustarLargura(event.clientX);
+};
+separador.onkeydown = (event) => {
+  const atual = Number(separador.getAttribute("aria-valuenow"));
+  const valores = { ArrowLeft: atual - 8, ArrowRight: atual + 8, Home: 232, End: 360 };
+  if (Object.hasOwn(valores, event.key)) {
+    event.preventDefault();
+    ajustarLargura(valores[event.key]);
+  }
+};
+function digitando(ativo) {
+  $("#typing-status").textContent = ativo ? "Lia está digitando…" : "";
+}
 function chat(open) {
   $("#assistant-panel").hidden = !open;
   $("#assistant-toggle").setAttribute("aria-expanded", String(open));
@@ -255,19 +297,42 @@ let disciplinaDaConversa = null;
 let consultaAtual = 0;
 $("#assistant-clear").onclick = () => {
   consultaAtual++;
+  digitando(false);
   disciplinaDaConversa = null;
   escolhasAtuais = null;
-  $("#chat-log").replaceChildren();
+  const aviso = document.createElement("p");
+  aviso.textContent = "Conversa limpa.";
+  $("#chat-log").replaceChildren(aviso);
+  $(".send-button").disabled = false;
+  $(".send-button").textContent = "➤";
+  $(".send-button").setAttribute("aria-label", "Enviar mensagem");
+  $("#chat-input").focus();
+};
+$(".lia-sugestoes").onclick = (event) => {
+  const sugestao = event.target.closest("button");
+  if (sugestao) {
+    $("#chat-input").value = sugestao.textContent;
+    $("#chat-form").requestSubmit();
+  }
 };
 $("#chat-form").onsubmit = async (event) => {
   event.preventDefault();
   const input = $("#chat-input"),
     query = input.value.trim();
-  if (!query) return;
+  if (!query || $(".send-button").disabled) return;
   function message(value, user = false) {
     const el = document.createElement("div");
     el.className = user ? "message user" : "message";
-    el.textContent = value;
+    const remetente = document.createElement("strong");
+    remetente.className = "chat-sender";
+    const icone = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icone.setAttribute("class", "icon");
+    icone.setAttribute("aria-hidden", "true");
+    const desenho = document.createElementNS(icone.namespaceURI, "use");
+    desenho.setAttribute("href", user ? "#icon-users" : "#icon-sparkles");
+    icone.append(desenho);
+    remetente.append(icone, user ? "Você" : "Lia");
+    el.append(remetente, value);
     $("#chat-log").append(el);
     el.scrollIntoView({ block: "nearest" });
     return el;
@@ -282,9 +347,15 @@ $("#chat-form").onsubmit = async (event) => {
     return;
   }
   escolhasAtuais = null;
+  for (const anterior of document.querySelectorAll("#chat-log [data-reformular]")) anterior.disabled = true;
   const consulta = ++consultaAtual;
+  const enviar = $(".send-button");
+  enviar.disabled = true;
+  enviar.textContent = "…";
+  enviar.setAttribute("aria-label", "Enviando mensagem");
+  digitando(true);
   try {
-    const { policies, total, podeReformular, message: orientacao, view, label } = await request("/api/lia/consulta", {
+    const { policies, total, podeReformular, message: orientacao, view, label, disciplineId } = await request("/api/lia/consulta", {
       method: "POST",
       body: JSON.stringify({ query, disciplineContext: disciplinaDaConversa }),
     });
@@ -299,6 +370,7 @@ $("#chat-form").onsubmit = async (event) => {
     }
     if (total === 0) {
       if (orientacao) {
+        if (disciplineId) disciplinaDaConversa = disciplineId;
         const aviso = message(orientacao);
         if (view && available(view) && document.querySelector(`[data-view="${CSS.escape(view)}"]`)) {
           const abrir = document.createElement("button");
@@ -316,9 +388,12 @@ $("#chat-form").onsubmit = async (event) => {
       if (podeReformular) {
         const botao = document.createElement("button");
         botao.type = "button";
+        botao.dataset.reformular = "";
         botao.textContent = "Enviar esta pergunta à Groq para sugerir termos de busca";
         aviso.append(document.createElement("br"), botao);
         botao.onclick = async () => {
+          if (consulta !== consultaAtual) return;
+          digitando(true);
           botao.disabled = true;
           try {
             const sugestao = await request("/api/lia/reformular", {
@@ -332,7 +407,8 @@ $("#chat-form").onsubmit = async (event) => {
           } catch (erro) {
             if (consulta === consultaAtual) message(erro.message);
           } finally {
-            botao.disabled = false;
+            if (consulta === consultaAtual) digitando(false);
+            botao.disabled = consulta !== consultaAtual;
           }
         };
       }
@@ -352,13 +428,21 @@ $("#chat-form").onsubmit = async (event) => {
     }
   } catch (error) {
     if (consulta === consultaAtual) message(error.message);
+  } finally {
+    if (consulta === consultaAtual) {
+      enviar.disabled = false;
+      enviar.textContent = "➤";
+      enviar.setAttribute("aria-label", "Enviar mensagem");
+    }
+    if (consulta === consultaAtual) digitando(false);
   }
 };
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
-  if (!$("#assistant-panel").hidden) chat(false);
+  if (!$("#assistant-panel").hidden) { chat(false); return; }
+  if (compacto.matches && document.body.classList.contains("menu-open")) $("#mobile-menu").focus();
   document.body.classList.remove("menu-open");
-  $("#mobile-menu").setAttribute("aria-expanded", "false");
+  atualizarMenu();
 });
 enableAuth(enter);
 $("#login-message").textContent = new URLSearchParams(location.search).has(

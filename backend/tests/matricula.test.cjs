@@ -126,6 +126,96 @@ test("matrícula pendente, aprovação pelo professor e consulta à política", 
   await perguntar("Onde vejo minhas disciplinas?");
   await aluno.getByRole("button", { name: "Abrir Disciplinas e políticas" }).click();
   await aluno.locator("#discipline-list").waitFor();
+  await aluno.locator("#assistant-toggle").click();
+  await perguntar("Qual é a minha turma?");
+  await aluno.getByText("Turmas do seu perfil: Turma piloto").waitFor();
+  await perguntar("Localize a turma piloto");
+  await aluno.getByText("Turmas do seu perfil: Turma piloto").nth(1).waitFor();
+  await perguntar("Localize a turma ausente");
+  await aluno.getByText(/Não encontrei essa turma/).waitFor();
+  await aluno.locator("#assistant-close").click();
+  await aluno.locator('[data-view="responsible"]').click();
+  for (const largura of [390, 1280]) {
+    await aluno.setViewportSize({ width: largura, height: 900 });
+    for (const tema of ["claro", "escuro"]) {
+      await aluno.evaluate(t => { document.documentElement.dataset.theme = t; }, tema);
+      await aluno.locator("#purpose").fill("Reflexão ".repeat(35));
+      const previa = await aluno.locator("#preview").boundingBox();
+      const baixar = await aluno.locator('[data-action="download"]').boundingBox();
+      assert.ok(previa.y + previa.height <= baixar.y, "Prévia acima do botão");
+    }
+  }
+  await aluno.locator("#assistant-toggle").click();
+  await aluno.getByRole("button", { name: "Quais são minhas matérias?" }).click();
+  await aluno.getByText(/Matérias disponíveis:.*Estatística.*História/).waitFor();
+  await perguntar("Localize para mim e confirme se tem a matéria estatistica");
+  await aluno.getByText(/Matéria encontrada: Estatística.*Turma piloto/).waitFor();
+  await perguntar("Localize a matéria História");
+  await aluno.getByText(/Matéria encontrada: História/).waitFor();
+  const anteriores = await aluno.locator("#chat-log .message:not(.user)").count();
+  await perguntar("E na prova final?");
+  assert.match(await aluno.locator("#chat-log .message:not(.user)").nth(anteriores).innerText(), /História[\s\S]*Permitido/);
+  await perguntar("Localize a matéria música");
+  await aluno.getByText(/Nenhuma matéria correspondente/).waitFor();
+  await aluno.locator("#assistant-close").click();
+  const menu = aluno.locator("#mobile-menu");
+  await menu.click();
+  assert.equal(await menu.getAttribute("aria-expanded"), "false");
+  await menu.press("Enter");
+  assert.equal(await menu.getAttribute("aria-expanded"), "true");
+  await aluno.setViewportSize({width:390,height:850});
+  await menu.press("Enter");
+  await aluno.locator("#dismiss-menu").press("Escape");
+  assert.ok(await menu.evaluate(el => el === document.activeElement));
+  assert.equal(await menu.getAttribute("aria-expanded"), "false");
+  await aluno.setViewportSize({width:1280,height:850});
+  const separador = aluno.locator("#sidebar-resize");
+  await separador.press("Home");
+  assert.equal(await separador.getAttribute("aria-valuenow"), "232");
+  for (const tema of ["claro", "escuro"]) {
+    await aluno.evaluate(t => {
+      Object.assign(document.documentElement.dataset, {theme:t, motion:"reduzido", font:"maior"});
+    }, tema);
+    const caixa = await separador.boundingBox();
+    await aluno.mouse.move(caixa.x + 5, caixa.y + 85);
+    await aluno.mouse.down();
+    await aluno.mouse.move(400, caixa.y + 85);
+    await aluno.mouse.up();
+    assert.equal(await separador.getAttribute("aria-valuenow"), "360");
+    await separador.press("ArrowLeft");
+    assert.equal(await separador.getAttribute("aria-valuenow"), "352");
+  }
+  await aluno.setViewportSize({width:390,height:850});
+  assert.equal(await separador.isVisible(), false);
+  await aluno.setViewportSize({width:1280,height:850});
+  await aluno.locator("#assistant-toggle").click();
+  for (const falhar of [false,true]) {
+    let liberar;
+    const espera = new Promise(resolve => { liberar = resolve; });
+    await aluno.route("**/api/lia/consulta", async rota => {
+      await espera;
+      if (falhar) await rota.fulfill({status:503,json:{error:"Falha de teste"}});
+      else await rota.continue();
+    });
+    await perguntar("Estatística");
+    await aluno.getByText("Lia está digitando…").waitFor();
+    liberar();
+    await aluno.waitForFunction(() => !document.querySelector("#typing-status").textContent);
+    if (falhar) await aluno.getByText("Falha de teste").waitFor();
+    await aluno.unroute("**/api/lia/consulta");
+  }
+  assert.ok(await aluno.locator(".message.user .chat-sender").count());
+  await aluno.locator("#assistant-close").click();
+  await aluno.locator("#assistant-toggle").click();
+  await aluno.route("**/api/lia/consulta", rota => rota.fulfill({json:{policies:[],total:0,podeReformular:true}}));
+  await perguntar("primeira consulta");
+  const anterioresGroq = aluno.locator("[data-reformular]");
+  await anterioresGroq.first().waitFor();
+  await perguntar("segunda consulta");
+  await anterioresGroq.nth(1).waitFor();
+  assert.ok(await anterioresGroq.first().isDisabled());
+  await aluno.unroute("**/api/lia/consulta");
+  await aluno.locator("#assistant-close").click();
   const consultas = [];
   aluno.on("request", requisicao => {
     const rota = new URL(requisicao.url()).pathname;

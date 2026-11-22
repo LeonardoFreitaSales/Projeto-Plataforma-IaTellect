@@ -121,6 +121,12 @@ def testar_reformulacao():
             checa("Groq fora de escopo", erro.status, 400)
         checa("pergunta externa não chega ao provedor", conn.request.call_count, 1)
         ctx.body["query"] = pergunta
+        resposta.read.return_value = b'{"choices":[]}'
+        try:
+            reformular(ctx, {"id": "teste"})
+            checa("Groq rejeita resposta inesperada", 200, 503)
+        except HTTPError as erro:
+            checa("Groq rejeita resposta inesperada", erro.status, 503)
         resposta.status = 429
         try:
             reformular(ctx, {"id": "teste"})
@@ -193,6 +199,11 @@ def main():
         checa("painel do outro professor exclui a politica", (status, painel.get("policies")), (200, 0))
 
         rota_lia = "/api/lia/consulta"
+        _, extra = adm.req("POST", "/api/disciplines", {"name": "Matemática aplicada", "ownerId": a["id"]})
+        procura = {"query": "Localize a matéria matem"}
+        checa("Lia distingue nomes ambíguos sem exigir políticas", "mais de uma" in pa.req("POST", rota_lia, procura)[1]["message"], True)
+        checa("Lia oculta matérias de outro professor", "Nenhuma matéria" in pb.req("POST", rota_lia, procura)[1]["message"], True)
+        adm.req("DELETE", "/api/disciplines/" + extra["id"])
         pergunta = {"query": "Posso usar IA na prova 1 de matemática?"}
         checa("reformulação exige sessão", anon.req("POST", "/api/lia/reformular", pergunta)[0], 401)
         checa("Groq desligada preserva modo local", pa.req("POST", "/api/lia/reformular", pergunta)[0], 503)
