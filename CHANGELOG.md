@@ -165,3 +165,7 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 ## Revisão da documentação
 
 - `docs: corrigir link do guia e identificar referência visual` — Corrige o acesso ao README pelo guia do banco e dá um nome descritivo à ilustração da lâmpada sobre o livro.
+
+## Lia — acessibilidade e consultas acadêmicas
+
+- `feat: consolidar consultas acadêmicas e interface acessível da Lia` — Integra busca autorizada de matérias e turmas, contexto da disciplina, perguntas sugeridas, contraste, menu ajustável por teclado e arraste, gerenciamento de foco e estados de envio. Inclui os testes de regressão das quatro etapas.
