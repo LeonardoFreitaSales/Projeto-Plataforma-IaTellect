@@ -177,3 +177,6 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 
 - `Treinamento da Lia` — Adiciona consultas autorizadas de matérias, perguntas predefinidas e testes.
 - fix: atualizar contexto ao localizar uma matéria.
+
+- `Bug de animações e funcionalidades de alguns botões` — Alterna o menu por largura e informa envio, limpeza e foco no chat.
+- fix: devolver foco ao fechar menu com Escape.

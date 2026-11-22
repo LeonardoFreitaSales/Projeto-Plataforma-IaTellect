@@ -128,7 +128,7 @@ async function navigate(view) {
   current = view;
   const ticket = ++revision;
   document.body.classList.remove("menu-open");
-  $("#mobile-menu").setAttribute("aria-expanded", "false");
+  atualizarMenu();
   document.querySelectorAll("[data-view]").forEach((b) => {
     const active = b.dataset.view === view;
     b.classList.toggle("active", active);
@@ -238,11 +238,27 @@ $("#logout-button").onclick = async () => {
 };
 $("#change-password").onclick = minhaSenha;
 $(".notification-button").onclick = () => navigate("announcements");
-$("#mobile-menu").onclick = () =>
-  $("#mobile-menu").setAttribute(
-    "aria-expanded",
-    String(document.body.classList.toggle("menu-open")),
-  );
+const compacto = matchMedia("(max-width: 820px)");
+function atualizarMenu() {
+  const aberto = compacto.matches ? document.body.classList.contains("menu-open") :
+    !document.body.classList.contains("menu-minimizado");
+  const controle = $("#mobile-menu");
+  controle.setAttribute("aria-expanded", String(aberto));
+  controle.setAttribute("aria-label", aberto ? "Minimizar menu" : "Expandir menu");
+  $("#navigation-sidebar").inert = !aberto;
+}
+$("#mobile-menu").onclick = () => {
+  document.body.classList.toggle(compacto.matches ? "menu-open" : "menu-minimizado");
+  atualizarMenu();
+  if (compacto.matches && document.body.classList.contains("menu-open")) $("#dismiss-menu").focus();
+};
+$("#dismiss-menu").onclick = () => {
+  document.body.classList.remove("menu-open");
+  atualizarMenu();
+  $("#mobile-menu").focus();
+};
+compacto.addEventListener("change", atualizarMenu);
+atualizarMenu();
 function chat(open) {
   $("#assistant-panel").hidden = !open;
   $("#assistant-toggle").setAttribute("aria-expanded", String(open));
@@ -257,7 +273,13 @@ $("#assistant-clear").onclick = () => {
   consultaAtual++;
   disciplinaDaConversa = null;
   escolhasAtuais = null;
-  $("#chat-log").replaceChildren();
+  const aviso = document.createElement("p");
+  aviso.textContent = "Conversa limpa.";
+  $("#chat-log").replaceChildren(aviso);
+  $(".send-button").disabled = false;
+  $(".send-button").textContent = "➤";
+  $(".send-button").setAttribute("aria-label", "Enviar mensagem");
+  $("#chat-input").focus();
 };
 $(".lia-sugestoes").onclick = (event) => {
   const sugestao = event.target.closest("button");
@@ -270,7 +292,7 @@ $("#chat-form").onsubmit = async (event) => {
   event.preventDefault();
   const input = $("#chat-input"),
     query = input.value.trim();
-  if (!query) return;
+  if (!query || $(".send-button").disabled) return;
   function message(value, user = false) {
     const el = document.createElement("div");
     el.className = user ? "message user" : "message";
@@ -290,6 +312,10 @@ $("#chat-form").onsubmit = async (event) => {
   }
   escolhasAtuais = null;
   const consulta = ++consultaAtual;
+  const enviar = $(".send-button");
+  enviar.disabled = true;
+  enviar.textContent = "…";
+  enviar.setAttribute("aria-label", "Enviando mensagem");
   try {
     const { policies, total, podeReformular, message: orientacao, view, label, disciplineId } = await request("/api/lia/consulta", {
       method: "POST",
@@ -360,13 +386,20 @@ $("#chat-form").onsubmit = async (event) => {
     }
   } catch (error) {
     if (consulta === consultaAtual) message(error.message);
+  } finally {
+    if (consulta === consultaAtual) {
+      enviar.disabled = false;
+      enviar.textContent = "➤";
+      enviar.setAttribute("aria-label", "Enviar mensagem");
+    }
   }
 };
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
-  if (!$("#assistant-panel").hidden) chat(false);
+  if (!$("#assistant-panel").hidden) { chat(false); return; }
+  if (compacto.matches && document.body.classList.contains("menu-open")) $("#mobile-menu").focus();
   document.body.classList.remove("menu-open");
-  $("#mobile-menu").setAttribute("aria-expanded", "false");
+  atualizarMenu();
 });
 enableAuth(enter);
 $("#login-message").textContent = new URLSearchParams(location.search).has(

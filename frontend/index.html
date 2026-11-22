@@ -114,11 +114,12 @@
   </section>
 
   <div class="app-shell" id="app-shell" hidden>
-    <aside class="sidebar" aria-label="Navegação principal">
+    <aside id="navigation-sidebar" class="sidebar" aria-label="Navegação principal">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true"><svg class="icon"><use href="#icon-brand"/></svg></span>
         <div><strong>IaTellect</strong><small>Políticas acadêmicas</small></div>
       </div>
+      <button type="button" id="dismiss-menu" class="icon-btn" aria-label="Fechar menu">×</button>
       <span class="nav-label">Acompanhar</span>
       <ul class="nav-list">
         <li><button class="nav-button active" type="button" data-view="home"><span class="nav-icon" aria-hidden="true"><svg class="icon"><use href="#icon-home"/></svg></span>Visão geral</button></li>
@@ -141,7 +142,7 @@
 
     <div class="workspace">
       <header class="topbar">
-        <button class="icon-btn mobile-menu" id="mobile-menu" type="button" aria-label="Abrir menu" aria-expanded="false"><svg class="icon" aria-hidden="true"><use href="#icon-menu"/></svg></button>
+        <button class="icon-btn mobile-menu" id="mobile-menu" aria-controls="navigation-sidebar" type="button" aria-label="Abrir menu" aria-expanded="false"><svg class="icon" aria-hidden="true"><use href="#icon-menu"/></svg></button>
         <div class="topbar-title">
           <div><strong>IaTellect</strong><span>Ambiente acadêmico</span></div>
         </div>
