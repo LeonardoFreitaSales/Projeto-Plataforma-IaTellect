@@ -20,4 +20,4 @@ O arquivo de dados fica em `data/Banco de Dados SQLite.db`, relativo à raiz do 
 2. Para migrar da v3, coloque a cópia do banco encerrado em `data/Banco de Dados SQLite.db` na v4. Preserve o backup original.
 3. Inicie a v4 e confira as contas, disciplinas e matrículas. O cookie da v4 é próprio, por isso os usuários precisam entrar novamente.
 
-A inicialização acrescenta tabelas e colunas previstas para bancos legados da v2. Um administrador pode atribuir responsáveis a disciplinas antigas sem dono. Registros antigos de histórico podem aparecer sem autor. Para contas legadas sem senha, siga o procedimento de primeiro acesso no [guia da plataforma](../README.md).
+A inicialização acrescenta tabelas e colunas previstas para bancos legados da v2. Um administrador pode atribuir responsáveis a disciplinas antigas sem dono. Registros antigos de histórico podem aparecer sem autor. Para contas legadas sem senha, siga o procedimento de primeiro acesso no [guia da plataforma](../../README.md).

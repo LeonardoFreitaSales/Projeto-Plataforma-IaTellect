@@ -161,3 +161,7 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 - `feat: manter contexto da Lia e oferecer reformulação com Groq` — Continua uma busca na disciplina escolhida, descarta o contexto ao limpar o chat e permite solicitar termos de busca à Groq quando a consulta local não encontra políticas.
 - `feat: orientar a navegação da Lia e limitar o escopo` — Reconhece referências à mesma matéria, oferece atalhos conforme o perfil e delimita perguntas enviadas para reformulação.
 - O limite de reformulações por usuário também é aplicado entre requisições simultâneas.
+
+## Revisão da documentação
+
+- `docs: corrigir link do guia e identificar referência visual` — Corrige o acesso ao README pelo guia do banco e dá um nome descritivo à ilustração da lâmpada sobre o livro.
