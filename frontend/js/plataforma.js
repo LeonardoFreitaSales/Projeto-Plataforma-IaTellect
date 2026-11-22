@@ -259,6 +259,32 @@ $("#dismiss-menu").onclick = () => {
 };
 compacto.addEventListener("change", atualizarMenu);
 atualizarMenu();
+const separador = $("#sidebar-resize");
+function ajustarLargura(valor) {
+  const largura = Math.max(232, Math.min(360, Math.round(valor)));
+  $("#app-shell").style.setProperty("--sidebar-width", largura + "px");
+  separador.setAttribute("aria-valuenow", largura);
+  separador.setAttribute("aria-valuetext", largura + " pixels");
+}
+separador.onpointerdown = (event) => {
+  if (event.button !== 0) return;
+  separador.setPointerCapture(event.pointerId);
+  separador.focus();
+};
+separador.onpointermove = (event) => {
+  if (separador.hasPointerCapture(event.pointerId)) ajustarLargura(event.clientX);
+};
+separador.onkeydown = (event) => {
+  const atual = Number(separador.getAttribute("aria-valuenow"));
+  const valores = { ArrowLeft: atual - 8, ArrowRight: atual + 8, Home: 232, End: 360 };
+  if (Object.hasOwn(valores, event.key)) {
+    event.preventDefault();
+    ajustarLargura(valores[event.key]);
+  }
+};
+function digitando(ativo) {
+  $("#typing-status").textContent = ativo ? "Lia está digitando…" : "";
+}
 function chat(open) {
   $("#assistant-panel").hidden = !open;
   $("#assistant-toggle").setAttribute("aria-expanded", String(open));
@@ -271,6 +297,7 @@ let disciplinaDaConversa = null;
 let consultaAtual = 0;
 $("#assistant-clear").onclick = () => {
   consultaAtual++;
+  digitando(false);
   disciplinaDaConversa = null;
   escolhasAtuais = null;
   const aviso = document.createElement("p");
@@ -296,7 +323,16 @@ $("#chat-form").onsubmit = async (event) => {
   function message(value, user = false) {
     const el = document.createElement("div");
     el.className = user ? "message user" : "message";
-    el.textContent = value;
+    const remetente = document.createElement("strong");
+    remetente.className = "chat-sender";
+    const icone = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icone.setAttribute("class", "icon");
+    icone.setAttribute("aria-hidden", "true");
+    const desenho = document.createElementNS(icone.namespaceURI, "use");
+    desenho.setAttribute("href", user ? "#icon-users" : "#icon-sparkles");
+    icone.append(desenho);
+    remetente.append(icone, user ? "Você" : "Lia");
+    el.append(remetente, value);
     $("#chat-log").append(el);
     el.scrollIntoView({ block: "nearest" });
     return el;
@@ -311,11 +347,13 @@ $("#chat-form").onsubmit = async (event) => {
     return;
   }
   escolhasAtuais = null;
+  for (const anterior of document.querySelectorAll("#chat-log [data-reformular]")) anterior.disabled = true;
   const consulta = ++consultaAtual;
   const enviar = $(".send-button");
   enviar.disabled = true;
   enviar.textContent = "…";
   enviar.setAttribute("aria-label", "Enviando mensagem");
+  digitando(true);
   try {
     const { policies, total, podeReformular, message: orientacao, view, label, disciplineId } = await request("/api/lia/consulta", {
       method: "POST",
@@ -350,9 +388,12 @@ $("#chat-form").onsubmit = async (event) => {
       if (podeReformular) {
         const botao = document.createElement("button");
         botao.type = "button";
+        botao.dataset.reformular = "";
         botao.textContent = "Enviar esta pergunta à Groq para sugerir termos de busca";
         aviso.append(document.createElement("br"), botao);
         botao.onclick = async () => {
+          if (consulta !== consultaAtual) return;
+          digitando(true);
           botao.disabled = true;
           try {
             const sugestao = await request("/api/lia/reformular", {
@@ -366,7 +407,8 @@ $("#chat-form").onsubmit = async (event) => {
           } catch (erro) {
             if (consulta === consultaAtual) message(erro.message);
           } finally {
-            botao.disabled = false;
+            if (consulta === consultaAtual) digitando(false);
+            botao.disabled = consulta !== consultaAtual;
           }
         };
       }
@@ -392,6 +434,7 @@ $("#chat-form").onsubmit = async (event) => {
       enviar.textContent = "➤";
       enviar.setAttribute("aria-label", "Enviar mensagem");
     }
+    if (consulta === consultaAtual) digitando(false);
   }
 };
 document.addEventListener("keydown", (event) => {

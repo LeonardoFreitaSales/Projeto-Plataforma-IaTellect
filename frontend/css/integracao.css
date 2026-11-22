@@ -249,3 +249,27 @@ html[data-theme="escuro"] .a11y-option[aria-pressed="true"] {
 }
 .assistant-tools button:active, .send-button:active { filter: brightness(.82); }
 .send-button:disabled { cursor: progress; opacity: .72; }
+
+#sidebar-resize {
+  position: fixed; z-index: 31; inset-block: 0; left: calc(var(--sidebar-width) - 6px);
+  width: 12px; cursor: col-resize; touch-action: none;
+}
+#sidebar-resize::before {
+  content: ""; display: block; position: absolute; top: 45%; left: 2px;
+  height: 3rem; width: 4px; border-radius: 6px; background: #97b7cd;
+}
+#sidebar-resize:focus-visible::before, #sidebar-resize:hover::before { background: #54cfda; outline: 2px solid #11384c; }
+.sidebar .nav-label { padding-bottom: .45em; border-bottom: 1px solid #71879c; color: #b7cadd; }
+.sidebar .nav-button { overflow-wrap: anywhere; }
+.sidebar .nav-icon { flex-shrink: 0; }
+.chat-sender { display: flex; align-items: center; gap: .35em; font-size: .8em; margin-bottom: .2em; }
+.chat-sender svg { width: 1.1em; height: 1.1em; }
+#typing-status { min-height: 1.4em; font-size: .8rem; color: var(--ink-soft); }
+#typing-status:not(:empty)::before { content: "✦"; display: inline-block; margin-right: .4em; }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reduzido"]) #typing-status:not(:empty)::before { animation: lia-espera 1s ease-in-out infinite alternate; }
+}
+@keyframes lia-espera { to { transform: scale(.7); } }
+@media (max-width: 820px) { #sidebar-resize { display: none; } }
+
+.menu-minimizado #sidebar-resize { display: none; }

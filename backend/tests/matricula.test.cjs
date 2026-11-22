@@ -169,6 +169,53 @@ test("matrícula pendente, aprovação pelo professor e consulta à política", 
   assert.ok(await menu.evaluate(el => el === document.activeElement));
   assert.equal(await menu.getAttribute("aria-expanded"), "false");
   await aluno.setViewportSize({width:1280,height:850});
+  const separador = aluno.locator("#sidebar-resize");
+  await separador.press("Home");
+  assert.equal(await separador.getAttribute("aria-valuenow"), "232");
+  for (const tema of ["claro", "escuro"]) {
+    await aluno.evaluate(t => {
+      Object.assign(document.documentElement.dataset, {theme:t, motion:"reduzido", font:"maior"});
+    }, tema);
+    const caixa = await separador.boundingBox();
+    await aluno.mouse.move(caixa.x + 5, caixa.y + 85);
+    await aluno.mouse.down();
+    await aluno.mouse.move(400, caixa.y + 85);
+    await aluno.mouse.up();
+    assert.equal(await separador.getAttribute("aria-valuenow"), "360");
+    await separador.press("ArrowLeft");
+    assert.equal(await separador.getAttribute("aria-valuenow"), "352");
+  }
+  await aluno.setViewportSize({width:390,height:850});
+  assert.equal(await separador.isVisible(), false);
+  await aluno.setViewportSize({width:1280,height:850});
+  await aluno.locator("#assistant-toggle").click();
+  for (const falhar of [false,true]) {
+    let liberar;
+    const espera = new Promise(resolve => { liberar = resolve; });
+    await aluno.route("**/api/lia/consulta", async rota => {
+      await espera;
+      if (falhar) await rota.fulfill({status:503,json:{error:"Falha de teste"}});
+      else await rota.continue();
+    });
+    await perguntar("Estatística");
+    await aluno.getByText("Lia está digitando…").waitFor();
+    liberar();
+    await aluno.waitForFunction(() => !document.querySelector("#typing-status").textContent);
+    if (falhar) await aluno.getByText("Falha de teste").waitFor();
+    await aluno.unroute("**/api/lia/consulta");
+  }
+  assert.ok(await aluno.locator(".message.user .chat-sender").count());
+  await aluno.locator("#assistant-close").click();
+  await aluno.locator("#assistant-toggle").click();
+  await aluno.route("**/api/lia/consulta", rota => rota.fulfill({json:{policies:[],total:0,podeReformular:true}}));
+  await perguntar("primeira consulta");
+  const anterioresGroq = aluno.locator("[data-reformular]");
+  await anterioresGroq.first().waitFor();
+  await perguntar("segunda consulta");
+  await anterioresGroq.nth(1).waitFor();
+  assert.ok(await anterioresGroq.first().isDisabled());
+  await aluno.unroute("**/api/lia/consulta");
+  await aluno.locator("#assistant-close").click();
   const consultas = [];
   aluno.on("request", requisicao => {
     const rota = new URL(requisicao.url()).pathname;
