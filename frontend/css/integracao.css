@@ -226,3 +226,6 @@ html[data-theme="escuro"] {
 html[data-theme="escuro"] .a11y-option[aria-pressed="true"] {
   background: #a5e5ed; color: #102b35;
 }
+
+.lia-sugestoes { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .6rem; }
+.lia-sugestoes button { background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 1rem; padding: .35em .7em; }

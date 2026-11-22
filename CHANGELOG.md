@@ -174,3 +174,6 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 
 - `Patch de correções visuais de acessibilidade, fontes, botões e bugs da plataforma` — A consulta também aceita o nome da turma visível.
 - fix: distinguir turma ausente de perfil sem turmas.
+
+- `Treinamento da Lia` — Adiciona consultas autorizadas de matérias, perguntas predefinidas e testes.
+- fix: atualizar contexto ao localizar uma matéria.

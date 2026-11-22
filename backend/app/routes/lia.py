@@ -79,10 +79,42 @@ def navegacao(frase, role):
     return None
 
 
+def consultar_materias(ctx, user, frase):
+    from .disciplines import disciplinas_visiveis
+    from .turmas import turmas_list
+
+    listar = frase in {"quais sao minhas materias", "quais sao minhas disciplinas", "minhas materias", "minhas disciplinas"}
+    pedido = re.fullmatch(r"(?:(?:localize|procure|busque|encontre)(?: para mim)?(?: e confirme se tem)?|confirme se tem|tem|existe) (?:a |uma )?(?:materia|disciplina)(?: (.+))?", frase)
+    if not listar and not pedido:
+        return None
+    termo = pedido.group(1) if pedido else None
+    destino = {"view": "disciplines", "label": "Disciplinas e políticas"}
+    if pedido and not termo:
+        return {**destino, "message": "Qual é o nome da matéria? Envie, por exemplo, “Localize a matéria” seguido do nome."}
+    # A consulta do chat é POST. Use a mesma listagem autorizada da tela GET.
+    materias = disciplinas_visiveis(ctx.conn, user)
+    if termo:
+        exatas = [d for d in materias if normalizar(d["name"]) == termo]
+        materias = exatas or [d for d in materias if termo in normalizar(d["name"])]
+    if not materias:
+        return {**destino, "message": "Nenhuma matéria correspondente está disponível para o seu perfil. Confira o nome ou sua matrícula."}
+    nomes = ", ".join(d["name"] for d in materias)
+    if listar:
+        return {**destino, "message": "Matérias disponíveis: " + nomes}
+    if len(materias) > 1:
+        return {**destino, "message": "Encontrei mais de uma matéria: " + nomes + ". Consulte novamente usando o nome completo."}
+    materia = materias[0]
+    turmas = [t["name"] for t in turmas_list(ctx.conn, user) if any(d["id"] == materia["id"] for d in t["disciplines"])]
+    detalhe = " Turmas: " + ", ".join(turmas) + "." if turmas else " Nenhuma turma vinculada está visível para o seu perfil."
+    return {**destino, "disciplineId": materia["id"], "message": "Matéria encontrada: " + materia["name"] + "." + detalhe}
+
+
 def consulta(ctx, user):
     pergunta = text(ctx.body.get("query"), "query", 500)
     frase = normalizar(pergunta)
-    destino = navegacao(frase, user["role"])
+    destino = consultar_materias(ctx, user, frase) or navegacao(frase, user["role"])
+    if not destino and re.search(r"\b(?:presencas?|frequencia|faltas)\b", frase):
+        destino = {"message": "A plataforma não disponibiliza registros de frequência para esta consulta. Confirme a informação com o professor."}
     if destino:
         return {"policies": [], "total": 0, **destino}
     turma_nome = re.fullmatch(r"(?:localize |encontre |existe |tem )?(?:a )?(turma .+)", frase)
