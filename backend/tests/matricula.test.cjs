@@ -131,6 +131,11 @@ test("matrícula pendente, aprovação pelo professor e consulta à política", 
   await aluno.getByText(/Matérias disponíveis:.*Estatística.*História/).waitFor();
   await perguntar("Localize para mim e confirme se tem a matéria estatistica");
   await aluno.getByText(/Matéria encontrada: Estatística.*Turma piloto/).waitFor();
+  await perguntar("Localize a matéria História");
+  await aluno.getByText(/Matéria encontrada: História/).waitFor();
+  const anteriores = await aluno.locator("#chat-log .message:not(.user)").count();
+  await perguntar("E na prova final?");
+  assert.match(await aluno.locator("#chat-log .message:not(.user)").nth(anteriores).innerText(), /História[\s\S]*Permitido/);
   await perguntar("Localize a matéria música");
   await aluno.getByText(/Nenhuma matéria correspondente/).waitFor();
   await aluno.locator("#assistant-close").click();

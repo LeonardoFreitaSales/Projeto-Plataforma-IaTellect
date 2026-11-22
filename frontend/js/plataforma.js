@@ -291,7 +291,7 @@ $("#chat-form").onsubmit = async (event) => {
   escolhasAtuais = null;
   const consulta = ++consultaAtual;
   try {
-    const { policies, total, podeReformular, message: orientacao, view, label } = await request("/api/lia/consulta", {
+    const { policies, total, podeReformular, message: orientacao, view, label, disciplineId } = await request("/api/lia/consulta", {
       method: "POST",
       body: JSON.stringify({ query, disciplineContext: disciplinaDaConversa }),
     });
@@ -306,6 +306,7 @@ $("#chat-form").onsubmit = async (event) => {
     }
     if (total === 0) {
       if (orientacao) {
+        if (disciplineId) disciplinaDaConversa = disciplineId;
         const aviso = message(orientacao);
         if (view && available(view) && document.querySelector(`[data-view="${CSS.escape(view)}"]`)) {
           const abrir = document.createElement("button");

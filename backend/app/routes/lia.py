@@ -106,7 +106,7 @@ def consultar_materias(ctx, user, frase):
     materia = materias[0]
     turmas = [t["name"] for t in turmas_list(ctx.conn, user) if any(d["id"] == materia["id"] for d in t["disciplines"])]
     detalhe = " Turmas: " + ", ".join(turmas) + "." if turmas else " Nenhuma turma vinculada está visível para o seu perfil."
-    return {**destino, "message": "Matéria encontrada: " + materia["name"] + "." + detalhe}
+    return {**destino, "disciplineId": materia["id"], "message": "Matéria encontrada: " + materia["name"] + "." + detalhe}
 
 
 def consulta(ctx, user):

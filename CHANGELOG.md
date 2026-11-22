@@ -171,3 +171,4 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 - Branch de teste com servidor temporário, turma de demonstração, dois perfis e roteiro de avaliação.
 
 - `Treinamento da Lia` — Adiciona consultas autorizadas de matérias, perguntas predefinidas e testes.
+- fix: atualizar contexto ao localizar uma matéria.
