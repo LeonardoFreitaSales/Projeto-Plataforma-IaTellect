@@ -31,3 +31,19 @@ jobs:
       - run: python backend/tests/executar_navegador.py
         env:
           BROWSER_CHANNEL: chrome
+
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Conferir atualização do changelog
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD_PR: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ ! -s CHANGELOG.md ] || git diff --quiet "$BASE...$HEAD_PR" -- CHANGELOG.md; then
+            echo "::error::Atualize o CHANGELOG.md da raiz com uma descrição por commit deste PR."
+            exit 1
+          fi
