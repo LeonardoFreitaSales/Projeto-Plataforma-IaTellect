@@ -169,3 +169,5 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 ## Piloto da Lia com dados fictícios
 
 - Branch de teste com servidor temporário, turma de demonstração, dois perfis e roteiro de avaliação.
+
+- `Treinamento da Lia` — Adiciona consultas autorizadas de matérias, perguntas predefinidas e testes.

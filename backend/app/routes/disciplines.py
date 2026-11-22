@@ -29,14 +29,18 @@ def discipline_dict(row):
     return {k: row[k] for k in ("id", "name", "code", "instructor", "createdAt", "updatedAt", "ownerId")}
 
 
+def disciplinas_visiveis(conn, user):
+    visible = visible_ids(conn, user)
+    rows = conn.execute(
+        "SELECT d.*, o.name AS ownerName FROM disciplines d LEFT JOIN users o ON o.id = d.ownerId ORDER BY d.rowid")
+    return [dict(r) for r in rows if visible is None or r["id"] in visible]
+
+
 def disciplines(ctx, user, ident):
     conn, method, data = ctx.conn, ctx.method, None
     if ident is None:
         if method == "GET":
-            visible = visible_ids(conn, user)
-            rows = conn.execute(
-                "SELECT d.*, o.name AS ownerName FROM disciplines d LEFT JOIN users o ON o.id = d.ownerId ORDER BY d.rowid")
-            return 200, [dict(r) for r in rows if visible is None or r["id"] in visible]
+            return 200, disciplinas_visiveis(conn, user)
         if method == "POST":
             require_role(user, "admin")
             data = ctx.body

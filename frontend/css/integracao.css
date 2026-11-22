@@ -204,3 +204,6 @@ html[data-contrast="alto"] :is(button, input, select, textarea, .card) {
     width: calc(100% - 16px);
   }
 }
+
+.lia-sugestoes { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .6rem; }
+.lia-sugestoes button { background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 1rem; padding: .35em .7em; }

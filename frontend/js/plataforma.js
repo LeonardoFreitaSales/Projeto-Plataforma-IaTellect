@@ -259,6 +259,13 @@ $("#assistant-clear").onclick = () => {
   escolhasAtuais = null;
   $("#chat-log").replaceChildren();
 };
+$(".lia-sugestoes").onclick = (event) => {
+  const sugestao = event.target.closest("button");
+  if (sugestao) {
+    $("#chat-input").value = sugestao.textContent;
+    $("#chat-form").requestSubmit();
+  }
+};
 $("#chat-form").onsubmit = async (event) => {
   event.preventDefault();
   const input = $("#chat-input"),
