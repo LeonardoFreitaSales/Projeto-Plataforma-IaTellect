@@ -169,3 +169,7 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 ## Piloto da Lia com dados fictícios
 
 - Branch de teste com servidor temporário, turma de demonstração, dois perfis e roteiro de avaliação.
+
+- `Patch de correções visuais de acessibilidade, fontes, botões e bugs da plataforma` — Reorganiza a prévia, controles e cores e permite consultar as turmas do perfil.
+
+- `Patch de correções visuais de acessibilidade, fontes, botões e bugs da plataforma` — A consulta também aceita o nome da turma visível.

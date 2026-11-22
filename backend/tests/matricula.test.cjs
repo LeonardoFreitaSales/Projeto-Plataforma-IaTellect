@@ -126,6 +126,23 @@ test("matrícula pendente, aprovação pelo professor e consulta à política", 
   await perguntar("Onde vejo minhas disciplinas?");
   await aluno.getByRole("button", { name: "Abrir Disciplinas e políticas" }).click();
   await aluno.locator("#discipline-list").waitFor();
+  await aluno.locator("#assistant-toggle").click();
+  await perguntar("Qual é a minha turma?");
+  await aluno.getByText("Turmas do seu perfil: Turma piloto").waitFor();
+  await perguntar("Localize a turma piloto");
+  await aluno.getByText("Turmas do seu perfil: Turma piloto").nth(1).waitFor();
+  await aluno.locator("#assistant-close").click();
+  await aluno.locator('[data-view="responsible"]').click();
+  for (const largura of [390, 1280]) {
+    await aluno.setViewportSize({ width: largura, height: 900 });
+    for (const tema of ["claro", "escuro"]) {
+      await aluno.evaluate(t => { document.documentElement.dataset.theme = t; }, tema);
+      await aluno.locator("#purpose").fill("Reflexão ".repeat(35));
+      const previa = await aluno.locator("#preview").boundingBox();
+      const baixar = await aluno.locator('[data-action="download"]').boundingBox();
+      assert.ok(previa.y + previa.height <= baixar.y, "Prévia acima do botão");
+    }
+  }
   const consultas = [];
   aluno.on("request", requisicao => {
     const rota = new URL(requisicao.url()).pathname;

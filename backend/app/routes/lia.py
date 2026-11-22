@@ -85,6 +85,16 @@ def consulta(ctx, user):
     destino = navegacao(frase, user["role"])
     if destino:
         return {"policies": [], "total": 0, **destino}
+    turma_nome = re.fullmatch(r"(?:localize |encontre |existe |tem )?(?:a )?(turma .+)", frase)
+    if turma_nome or re.fullmatch(r"(?:qual (?:e )?a minha turma|quais (?:sao )?as minhas turmas|minhas? turmas?)", frase):
+        from .turmas import turmas_list
+        turmas = turmas_list(ctx.conn, user)
+        if turma_nome:
+            nome = turma_nome.group(1)
+            turmas = [t for t in turmas if normalizar(t["name"]) in {nome, nome.removeprefix("turma ")}]
+        nomes = ", ".join(t["name"] for t in turmas)
+        return {"policies": [], "total": 0, "view": "classes", "label": "Turmas e matrículas",
+                "message": "Turmas do seu perfil: " + nomes if nomes else "Nenhuma turma disponível para o seu perfil."}
     contexto = ctx.body.get("disciplineContext")
     politicas = visible_policies(ctx.conn, user)
     # Remova a fórmula da pergunta sem apagar nomes como "Inteligência Artificial".
