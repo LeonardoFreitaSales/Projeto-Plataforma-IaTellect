@@ -23,6 +23,10 @@ for origin in ALLOWED_ORIGINS:
             or origin != f"{parsed.scheme}://{parsed.netloc}"):
         raise ValueError("ALLOWED_ORIGINS exige origens completas, por exemplo https://painel.exemplo.br")
 
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
+LIA_GROQ_ENABLED = bool(GROQ_API_KEY) and os.environ.get("LIA_GROQ_ENABLED") == "1"
+GROQ_MODEL = os.environ.get("GROQ_MODEL") or "openai/gpt-oss-20b"
+
 COOKIE_NAME = "iatellect_sessao"
 SESSION_DAYS = 7
 PBKDF2_ITERATIONS = 310_000

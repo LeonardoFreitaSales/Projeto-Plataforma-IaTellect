@@ -58,7 +58,7 @@
         <ul class="auth-benefits">
           <li><span class="auth-check" aria-hidden="true">✓</span><span>Políticas organizadas por disciplina e atividade.</span></li>
           <li><span class="auth-check" aria-hidden="true">✓</span><span>Acesso separado para estudantes, professores e administradores.</span></li>
-          <li><span class="auth-check" aria-hidden="true">✓</span><span>Assistente guiada sem envio de respostas a serviços externos.</span></li>
+          <li><span class="auth-check" aria-hidden="true">✓</span><span>Consulta local às políticas de cada disciplina.</span></li>
         </ul>
       </div>
     </div>
@@ -171,13 +171,13 @@
       </div>
     </header>
     <div class="chat-log" id="chat-log" aria-live="polite" aria-relevant="additions">
-      <p class="assistant-limit"><strong>Assistente local:</strong> consulta as políticas disponíveis para o seu perfil. Não envia mensagens para serviços externos.</p>
+      <p class="assistant-limit"><strong>Assistente local:</strong> consulta as políticas disponíveis para o seu perfil. Se disponível, você pode escolher enviar uma pergunta à Groq para reformulá-la.</p>
       <div class="message">Olá! Digite o nome de uma disciplina ou atividade para consultar suas políticas.<small>agora</small></div>
     </div>
     <footer class="chat-footer">
       <form class="chat-form" id="chat-form">
         <label class="sr-only" for="chat-input">Mensagem para Lia</label>
-        <input id="chat-input" autocomplete="off" placeholder="Ex.: filtre as políticas proibidas">
+        <input id="chat-input" maxlength="500" autocomplete="off" placeholder="Ex.: filtre as políticas proibidas">
         <button class="send-button" type="submit" aria-label="Enviar mensagem">➤</button>
       </form>
       <p class="assistant-disclaimer">Consulta por palavras-chave às políticas cadastradas.</p>

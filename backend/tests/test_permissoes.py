@@ -25,6 +25,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from app.context import Ctx
+from app.groq import reformular
+from app.routes.lia import FORA
 from app.config import FRONTEND_DIR, SCHEMA_FILE
 from server import HTTPError, require_role
 
@@ -69,7 +71,7 @@ def checa(descricao, obtido, esperado):
 
 @contextmanager
 def servidor_de_teste(tmp):
-    env = dict(os.environ, PORT="0", HOST="127.0.0.1", TEST_MODE="1", TEST_DATA_DIR=tmp,
+    env = dict(os.environ, PORT="0", HOST="127.0.0.1", TEST_MODE="1", TEST_DATA_DIR=tmp, LIA_GROQ_ENABLED="0", GROQ_API_KEY="",
                PYTHONIOENCODING="utf-8", ADMIN_PASSWORD="admin-teste-123")
     log = Path(tmp) / "servidor.log"
     with log.open("wb") as output:
@@ -93,7 +95,42 @@ def servidor_de_teste(tmp):
             proc.wait()
 
 
+def testar_reformulacao():
+    from concurrent.futures import ThreadPoolExecutor
+    from app.ratelimit import RateLimiter
+
+    cota = RateLimiter(10, 60)
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        aceitas = list(pool.map(cota.try_add, ["mesmo-usuario"] * 32))
+    checa("Groq respeita a cota entre chamadas simultâneas", sum(aceitas), 10)
+    pergunta = "Qual regra vale para a prova final?"
+    ctx = SimpleNamespace(conn=None, body={"query": pergunta, "historico": "texto privado"})
+    with patch("app.groq.visible_policies", return_value=[]), patch("app.groq.LIA_GROQ_ENABLED", True), patch("app.groq.GROQ_API_KEY", "teste"), patch("app.groq.HTTPSConnection") as conectar:
+        conn = conectar.return_value
+        resposta = conn.getresponse.return_value
+        resposta.status = 200
+        resposta.read.return_value = b'{"choices":[{"message":{"content":"prova final"}}]}'
+        checa("Groq sugere busca", reformular(ctx, {"id": "teste"}), {"query": "prova final"})
+        mensagens = json.loads(conn.request.call_args.args[2])["messages"]
+        checa("Groq recebe apenas a pergunta e instruções", mensagens[1:], [{"role": "user", "content": pergunta}])
+        ctx.body["query"] = "Qual a capital da França para minha prova?"
+        try:
+            reformular(ctx, {"id": "teste"})
+            checa("Groq fora de escopo", 200, 400)
+        except HTTPError as erro:
+            checa("Groq fora de escopo", erro.status, 400)
+        checa("pergunta externa não chega ao provedor", conn.request.call_count, 1)
+        ctx.body["query"] = pergunta
+        resposta.status = 429
+        try:
+            reformular(ctx, {"id": "teste"})
+            checa("Groq informa indisponibilidade", 200, 503)
+        except HTTPError as erro:
+            checa("Groq informa indisponibilidade", erro.status, 503)
+
+
 def main():
+    testar_reformulacao()
     headers = Message()
     headers["X-Forwarded-For"] = "192.0.2.1, 192.0.2.2"
     handler = SimpleNamespace(client_address=("127.0.0.1", 1234), headers=headers)
@@ -154,6 +191,38 @@ def main():
         checa("painel do dono inclui a politica proibida", (status, painel.get("distribution", {}).get("proibido")), (200, 1))
         status, painel = pb.req("GET", "/api/dashboard")
         checa("painel do outro professor exclui a politica", (status, painel.get("policies")), (200, 0))
+
+        rota_lia = "/api/lia/consulta"
+        pergunta = {"query": "Posso usar IA na prova 1 de matemática?"}
+        checa("reformulação exige sessão", anon.req("POST", "/api/lia/reformular", pergunta)[0], 401)
+        checa("Groq desligada preserva modo local", pa.req("POST", "/api/lia/reformular", pergunta)[0], 503)
+        checa("Lia exige login", anon.req("POST", rota_lia, pergunta)[0], 401)
+        status, resposta = pa.req("POST", rota_lia, pergunta)
+        checa("Lia encontra regra específica", (status, resposta["total"], resposta["policies"][0]["status"]), (200, 1, "proibido"))
+        vazio = {"policies": [], "total": 0}
+        checa("Lia oculta regras de outra disciplina", pb.req("POST", rota_lia, pergunta), (200, vazio))
+        checa("Lia sem correspondência", pa.req("POST", rota_lia, {"query": "geografia"}), (200, {**vazio, "message": FORA}))
+        for q in ["Quem ganhou a Copa?", "Faça uma receita para minha prova", "Quem descobriu o Brasil?"]:
+            checa("Lia mantém escopo", pa.req("POST", rota_lia, {"query": q}), (200, {**vazio, "message": FORA}))
+        for cliente, destino in [(adm, "users"), (pa, None)]:
+            _, orientacao = cliente.req("POST", rota_lia, {"query": "Onde vejo os usuários?"})
+            checa("navegação por perfil", orientacao.get("view"), destino)
+        for q, tela in [("Onde vejo os comunicados?", "announcements"), ("Abrir reflexão", "responsible"),
+                        ("Como acesso o histórico?", "history"), ("Abrir relatórios", "reports"),
+                        ("Abra o painel", "home"), ("Como cadastrar uma política?", "disciplines")]:
+            _, orientacao = pa.req("POST", rota_lia, {"query": q})
+            checa(q, orientacao.get("view"), tela)
+        _, orientacao = pa.req("POST", rota_lia, {"query": "Como aprovo uma matrícula?"})
+        checa("orientação para professor", orientacao.get("view"), "classes")
+        segunda = {**pol, "activityName": "Prova 2", "status": "permitido", "conditions": "Revisão ortográfica", "source": "Plano de ensino"}
+        _, nova = pa.req("POST", "/api/policies", segunda)
+        _, resposta = pa.req("POST", rota_lia, {"query": "prova"})
+        checa("Lia distingue provas parecidas", {p["activityName"] for p in resposta["policies"]}, {"Prova 1", "Prova 2"})
+        _, resposta = pa.req("POST", rota_lia, {"query": "revisao ortografica"})
+        checa("Lia procura condições e preserva fonte", [p["source"] for p in resposta["policies"]], ["Plano de ensino"])
+        _, resposta = pa.req("POST", rota_lia, {"query": "Filtre as políticas proibidas"})
+        checa("Lia filtra pela situação", [p["activityName"] for p in resposta["policies"]], ["Prova 1"])
+        pa.req("DELETE", "/api/policies/" + nova["id"])
 
         consulta = {"disciplineId": da["id"], "activityType": "prova"}
         status, resultado = pa.req("POST", "/api/ai-check", consulta)

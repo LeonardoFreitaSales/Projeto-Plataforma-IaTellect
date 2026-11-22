@@ -60,7 +60,7 @@ Protótipo de uma plataforma para organizar e consultar políticas acadêmicas s
 
 - Apresenta ao estudante as disciplinas associadas às matrículas aprovadas e permite consultar as políticas cadastradas.
 
-- Inclui um **assistente guiado** de consulta e autorreflexão. Nesta versão, o fluxo segue regras e textos cadastrados; **não utiliza modelo generativo**, não envia respostas a serviços externos e não detecta nem comprova autoria ou uso de IA.
+- Inclui um **assistente guiado** de consulta e autorreflexão. A Lia consulta regras cadastradas, lembra a disciplina na conversa e orienta a navegação conforme o perfil. Experimente “Onde vejo minhas disciplinas?” ou “Como aprovo uma matrícula?”. Assuntos externos recebem uma orientação sobre o escopo da plataforma. Para habilitar a reformulação opcional com a Groq, configure `LIA_GROQ_ENABLED=1` e `GROQ_API_KEY` no ambiente do servidor antes de iniciá-lo. Quando a busca local não encontra resultados, um botão permite enviar apenas a pergunta selecionada. A pessoa revisa a sugestão antes de pesquisar novamente. A autorreflexão permanece local.
 
 - Oferece gestão de comunicados e histórico de operações.
 

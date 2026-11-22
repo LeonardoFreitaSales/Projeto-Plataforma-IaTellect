@@ -152,3 +152,12 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 - `67952ed` — Passou a renderizar os avisos de sucesso e erro como texto, preservando a apresentação de caracteres especiais.
 - `dd7c5aa` — Documentou a configuração por variáveis de ambiente, a geração do ZIP, o relato de problemas de segurança e as decisões pendentes sobre retenção de dados.
 - `docs: exigir changelog em todos os pull requests` — Registrou as mudanças por commit e adicionou um lembrete no formulário de PR e uma verificação automática de atualização do changelog.
+
+## Lia — Consulta local de políticas
+
+- `feat: integrar a Lia à consulta de políticas` — O chat pesquisa no backend as políticas visíveis ao usuário, incluindo condições e detalhes. Exibe a fonte e oferece escolhas quando há várias correspondências. A suíte cobre busca, autenticação e isolamento entre perfis.
+- A Lia numera os resultados da busca e aceita a escolha pelo teclado. Limpar a conversa descarta as opções anteriores. O teste de navegador cobre a seleção e a recuperação após um número inválido.
+- `docs: registrar avaliação da busca da Lia` — Documentou cinco perguntas testadas no navegador e os limites observados em continuações e reformulações.
+- `feat: manter contexto da Lia e oferecer reformulação com Groq` — Continua uma busca na disciplina escolhida, descarta o contexto ao limpar o chat e permite solicitar termos de busca à Groq quando a consulta local não encontra políticas.
+- `feat: orientar a navegação da Lia e limitar o escopo` — Reconhece referências à mesma matéria, oferece atalhos conforme o perfil e delimita perguntas enviadas para reformulação.
+- O limite de reformulações por usuário também é aplicado entre requisições simultâneas.
