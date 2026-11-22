@@ -126,6 +126,16 @@ test("matrícula pendente, aprovação pelo professor e consulta à política", 
   await perguntar("Onde vejo minhas disciplinas?");
   await aluno.getByRole("button", { name: "Abrir Disciplinas e políticas" }).click();
   await aluno.locator("#discipline-list").waitFor();
+  const menu = aluno.locator("#mobile-menu");
+  await menu.click();
+  assert.equal(await menu.getAttribute("aria-expanded"), "false");
+  await menu.press("Enter");
+  assert.equal(await menu.getAttribute("aria-expanded"), "true");
+  await aluno.setViewportSize({width:390,height:850});
+  await menu.press("Enter");
+  await aluno.locator("#dismiss-menu").press("Enter");
+  assert.equal(await menu.getAttribute("aria-expanded"), "false");
+  await aluno.setViewportSize({width:1280,height:850});
   const consultas = [];
   aluno.on("request", requisicao => {
     const rota = new URL(requisicao.url()).pathname;
