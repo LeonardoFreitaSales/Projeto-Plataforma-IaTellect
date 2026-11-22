@@ -110,6 +110,8 @@ O servidor usa módulos da biblioteca padrão do Python, incluindo `sqlite3`; n�
 
 ## Como executar localmente
 
+[Guia para abrir a main e o piloto de testes no Windows (TXT)](docs/tecnica/como-acessar-piloto-e-main.txt)
+
 No Windows, a partir da raiz do repositório:
 
 ```powershell

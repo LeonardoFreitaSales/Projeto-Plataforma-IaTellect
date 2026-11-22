@@ -1,0 +1,79 @@
+IaTellect — Abrir a main e o piloto de testes no Windows
+
+Pré-requisitos: Git Bash e Python 3. Execute um comando por vez. Se algum
+comando falhar, confira a mensagem antes de continuar.
+
+1. Preparar as duas pastas (primeira vez)
+
+Abra o Git Bash na pasta onde deseja guardar os projetos. Se ainda não
+tem o repositório, execute:
+
+git clone https://github.com/LeonardoFreitaSales/Projeto-Plataforma-IaTellect.git
+cd Projeto-Plataforma-IaTellect
+
+Se já tem o repositório, abra o Git Bash dentro da sua cópia existente.
+A partir dela, execute:
+
+git fetch origin
+git worktree add --detach ../IaTellect-main-visualizacao origin/main
+git worktree add --detach ../IaTellect-piloto-visualizacao origin/teste/piloto-lia-dados-ficticios
+
+Esses comandos criam duas pastas vizinhas à do repositório. Cada pasta
+mostra a versão que estava no GitHub no momento do fetch. O aviso
+“detached HEAD” é esperado para essas cópias de visualização.
+Se as pastas já foram criadas, siga para o passo 2.
+
+2. Abrir a main
+
+Abra um terminal Git Bash na pasta IaTellect-main-visualizacao e execute:
+
+python backend/server.py
+
+Abra o endereço exibido no terminal. A porta padrão é 3002.
+Na primeira execução, o usuário padrão é admin. Se a senha foi gerada
+automaticamente, consulte data/senha_admin_inicial.txt dentro dessa pasta.
+Após trocar a senha, use a nova. Os dados ficam salvos nessa instalação.
+
+3. Abrir o piloto com dados fictícios
+
+Abra outro terminal Git Bash na pasta IaTellect-piloto-visualizacao.
+Quem já usa a pasta IaTellect-teste-dados-ficticios na branch de teste
+também pode iniciar o piloto diretamente dela:
+
+python backend/tests/piloto_lia.py
+
+Abra o endereço exibido depois de “Abra”. A porta pode mudar a cada execução.
+O comando do piloto está disponível na branch teste/piloto-lia-dados-ficticios.
+
+Perfil de aluno: Aluno Fictício
+Senha fictícia: piloto-aluno-123
+Perfil de professor: Professor Fictício
+Senha fictícia: piloto-docente-123
+
+Para conferir a Lia, pergunte “Posso usar IA na prova de Estatística?”.
+No piloto, a resposta esperada é “Proibido”. Para a prova de História,
+a resposta esperada é “Permitido”.
+
+4. Comparar e encerrar
+
+Para usar os dois logins ao mesmo tempo, abra a main em uma janela normal
+do navegador e o piloto em uma janela anônima. Portas diferentes no mesmo
+endereço podem compartilhar cookies. Mantenha os dois terminais abertos.
+Para encerrar, pressione Ctrl+C em cada terminal. O banco do piloto é
+temporário e é descartado ao encerrar. O banco da main permanece salvo.
+
+5. Atualizar as cópias de visualização
+
+Encerre o servidor e execute git status --short na pasta que deseja
+atualizar. Se aparecerem arquivos alterados, revise-os antes de continuar.
+Nas pastas de visualização criadas no passo 1, use:
+
+Na pasta IaTellect-main-visualizacao:
+git fetch origin
+git switch --detach origin/main
+
+Na pasta IaTellect-piloto-visualizacao:
+git fetch origin
+git switch --detach origin/teste/piloto-lia-dados-ficticios
+
+Reinicie o servidor correspondente para ver as alterações.
