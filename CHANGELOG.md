@@ -171,3 +171,4 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 - Branch de teste com servidor temporário, turma de demonstração, dois perfis e roteiro de avaliação.
 
 - `Implementação de novas funcionalidades de animação` — Identifica remetentes, mostra processamento e permite ajustar o menu por arraste ou teclado.
+- fix: desativar sugestões de reformulação antigas.

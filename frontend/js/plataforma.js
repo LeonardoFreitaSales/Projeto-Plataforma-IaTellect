@@ -318,6 +318,7 @@ $("#chat-form").onsubmit = async (event) => {
     return;
   }
   escolhasAtuais = null;
+  for (const anterior of document.querySelectorAll("#chat-log [data-reformular]")) anterior.disabled = true;
   const consulta = ++consultaAtual;
   digitando(true);
   try {
@@ -353,6 +354,7 @@ $("#chat-form").onsubmit = async (event) => {
       if (podeReformular) {
         const botao = document.createElement("button");
         botao.type = "button";
+        botao.dataset.reformular = "";
         botao.textContent = "Enviar esta pergunta à Groq para sugerir termos de busca";
         aviso.append(document.createElement("br"), botao);
         botao.onclick = async () => {
@@ -372,7 +374,7 @@ $("#chat-form").onsubmit = async (event) => {
             if (consulta === consultaAtual) message(erro.message);
           } finally {
             if (consulta === consultaAtual) digitando(false);
-            botao.disabled = false;
+            botao.disabled = consulta !== consultaAtual;
           }
         };
       }

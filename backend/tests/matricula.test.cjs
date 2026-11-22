@@ -163,6 +163,16 @@ test("matrícula pendente, aprovação pelo professor e consulta à política", 
   }
   assert.ok(await aluno.locator(".message.user .chat-sender").count());
   await aluno.locator("#assistant-close").click();
+  await aluno.locator("#assistant-toggle").click();
+  await aluno.route("**/api/lia/consulta", rota => rota.fulfill({json:{policies:[],total:0,podeReformular:true}}));
+  await perguntar("primeira consulta");
+  const anterioresGroq = aluno.locator("[data-reformular]");
+  await anterioresGroq.first().waitFor();
+  await perguntar("segunda consulta");
+  await anterioresGroq.nth(1).waitFor();
+  assert.ok(await anterioresGroq.first().isDisabled());
+  await aluno.unroute("**/api/lia/consulta");
+  await aluno.locator("#assistant-close").click();
   const consultas = [];
   aluno.on("request", requisicao => {
     const rota = new URL(requisicao.url()).pathname;
