@@ -165,3 +165,7 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 ## Revisão da documentação
 
 - `docs: corrigir link do guia e identificar referência visual` — Corrige o acesso ao README pelo guia do banco e dá um nome descritivo à ilustração da lâmpada sobre o livro.
+
+## Piloto da Lia com dados fictícios
+
+- Branch de teste com servidor temporário, turma de demonstração, dois perfis e roteiro de avaliação.
