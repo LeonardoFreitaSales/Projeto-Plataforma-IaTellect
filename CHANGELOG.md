@@ -175,3 +175,7 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 - Documenta como abrir e atualizar cópias da main e do piloto fictício no Git Bash.
 
 - Documentação: atualiza o README com as consultas da Lia, a duração do rascunho de autorreflexão, os controles do menu e a cobertura dos testes.
+
+## Consulta de políticas sobre faltas (PR #24)
+
+- 8d2a590 — A Lia passou a distinguir perguntas sobre regras de faltas e presença de pedidos de registros pessoais de frequência.
