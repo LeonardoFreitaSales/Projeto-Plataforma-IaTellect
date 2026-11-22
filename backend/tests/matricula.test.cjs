@@ -133,7 +133,8 @@ test("matrícula pendente, aprovação pelo professor e consulta à política", 
   assert.equal(await menu.getAttribute("aria-expanded"), "true");
   await aluno.setViewportSize({width:390,height:850});
   await menu.press("Enter");
-  await aluno.locator("#dismiss-menu").press("Enter");
+  await aluno.locator("#dismiss-menu").press("Escape");
+  assert.ok(await menu.evaluate(el => el === document.activeElement));
   assert.equal(await menu.getAttribute("aria-expanded"), "false");
   await aluno.setViewportSize({width:1280,height:850});
   const consultas = [];

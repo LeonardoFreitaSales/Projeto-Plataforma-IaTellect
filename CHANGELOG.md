@@ -171,3 +171,4 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 - Branch de teste com servidor temporário, turma de demonstração, dois perfis e roteiro de avaliação.
 
 - `Bug de animações e funcionalidades de alguns botões` — Alterna o menu por largura e informa envio, limpeza e foco no chat.
+- fix: devolver foco ao fechar menu com Escape.

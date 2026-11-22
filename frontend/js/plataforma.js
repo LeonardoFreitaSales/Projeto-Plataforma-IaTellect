@@ -388,7 +388,8 @@ $("#chat-form").onsubmit = async (event) => {
 };
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
-  if (!$("#assistant-panel").hidden) chat(false);
+  if (!$("#assistant-panel").hidden) { chat(false); return; }
+  if (compacto.matches && document.body.classList.contains("menu-open")) $("#mobile-menu").focus();
   document.body.classList.remove("menu-open");
   atualizarMenu();
 });
