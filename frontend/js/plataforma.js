@@ -250,7 +250,15 @@ function chat(open) {
 }
 $("#assistant-toggle").onclick = () => chat($("#assistant-panel").hidden);
 $("#assistant-close").onclick = () => chat(false);
-$("#assistant-clear").onclick = () => $("#chat-log").replaceChildren();
+let escolhasAtuais = null;
+let disciplinaDaConversa = null;
+let consultaAtual = 0;
+$("#assistant-clear").onclick = () => {
+  consultaAtual++;
+  disciplinaDaConversa = null;
+  escolhasAtuais = null;
+  $("#chat-log").replaceChildren();
+};
 $("#chat-form").onsubmit = async (event) => {
   event.preventDefault();
   const input = $("#chat-input"),
@@ -262,52 +270,88 @@ $("#chat-form").onsubmit = async (event) => {
     el.textContent = value;
     $("#chat-log").append(el);
     el.scrollIntoView({ block: "nearest" });
+    return el;
   }
   message(query, true);
   input.value = "";
+  if (escolhasAtuais && /^\d+$/.test(query)) {
+    const botoes = escolhasAtuais.querySelectorAll("button");
+    const escolhido = botoes[Number(query) - 1];
+    if (escolhido) escolhido.click();
+    else message("Digite um número de 1 a " + botoes.length + " ou faça uma nova busca.");
+    return;
+  }
+  escolhasAtuais = null;
+  const consulta = ++consultaAtual;
   try {
-    const policies = await request("/api/policies");
-    const words = query.toLocaleLowerCase("pt-BR").match(/[\p{L}\d]+/gu) || [];
-    const matches = policies.filter((p) =>
-      words.some(
-        (w) =>
-          w.length > 2 &&
-          ![
-            "posso",
-            "usar",
-            "para",
-            "uma",
-            "com",
-            "qual",
-            "sobre",
-            "disciplina",
-            "atividade",
-          ].includes(w) &&
-          [p.disciplineName, p.activityName].some((s) =>
-            s?.toLocaleLowerCase("pt-BR").includes(w),
-          ),
-      ),
-    );
-    if (!matches.length)
-      message(
-        "Nenhuma política correspondente. Digite o nome da disciplina ou da atividade.",
-      );
-    matches
-      .slice(0, 8)
-      .forEach((p) =>
-        message(
-          [
-            p.disciplineName + " · " + p.activityName,
-            levels[p.status][0],
-            p.conditions,
-            p.source && "Fonte: " + p.source,
-          ]
-            .filter(Boolean)
-            .join("\n"),
-        ),
-      );
+    const { policies, total, podeReformular, message: orientacao, view, label } = await request("/api/lia/consulta", {
+      method: "POST",
+      body: JSON.stringify({ query, disciplineContext: disciplinaDaConversa }),
+    });
+    if (consulta !== consultaAtual) return;
+    function mostrarPolitica(p) {
+      disciplinaDaConversa = p.disciplineId;
+      message([
+        p.disciplineName + " · " + p.activityName,
+        levels[p.status][0], p.conditions, p.details,
+        "Fonte: " + (p.source || "Política cadastrada na plataforma"),
+      ].filter(Boolean).join("\n"));
+    }
+    if (total === 0) {
+      if (orientacao) {
+        const aviso = message(orientacao);
+        if (view && available(view) && document.querySelector(`[data-view="${CSS.escape(view)}"]`)) {
+          const abrir = document.createElement("button");
+          abrir.type = "button";
+          abrir.textContent = "Abrir " + label;
+          abrir.onclick = () => {
+            chat(false);
+            navigate(view);
+          };
+          aviso.append(document.createElement("br"), abrir);
+        }
+        return;
+      }
+      const aviso = message("Não encontrei uma política correspondente. Tente o nome da disciplina ou da atividade.");
+      if (podeReformular) {
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.textContent = "Enviar esta pergunta à Groq para sugerir termos de busca";
+        aviso.append(document.createElement("br"), botao);
+        botao.onclick = async () => {
+          botao.disabled = true;
+          try {
+            const sugestao = await request("/api/lia/reformular", {
+              method: "POST", body: JSON.stringify({ query }),
+            });
+            if (consulta === consultaAtual) {
+              message("Sugestão de busca da Groq: " + sugestao.query);
+              if (!input.value) input.value = sugestao.query;
+              input.focus();
+            }
+          } catch (erro) {
+            if (consulta === consultaAtual) message(erro.message);
+          } finally {
+            botao.disabled = false;
+          }
+        };
+      }
+    } else if (total === 1) {
+      mostrarPolitica(policies[0]);
+    } else {
+      const escolhas = message("Encontrei " + total + " políticas. Clique em uma opção ou digite o número." +
+        (total > policies.length ? " Para ver outras, refine a busca." : ""));
+      escolhasAtuais = escolhas;
+      for (const [indice, p] of policies.entries()) {
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.textContent = (indice + 1) + ". " + p.disciplineName + " · " + p.activityName;
+        botao.onclick = () => mostrarPolitica(p);
+        escolhas.append(document.createElement("br"), botao);
+      }
+    }
   } catch (error) {
-    message(error.message);
+    if (consulta === consultaAtual) message(error.message);
   }
 };
 document.addEventListener("keydown", (event) => {

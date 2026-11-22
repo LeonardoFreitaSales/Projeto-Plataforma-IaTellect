@@ -28,6 +28,14 @@ class RateLimiter:
             self._recent(key)
             self.hits.setdefault(key, []).append(time.monotonic())
 
+    def try_add(self, key):
+        """Reserva uma tentativa sob o mesmo lock que verifica a cota."""
+        with self.lock:
+            if len(self._recent(key)) >= self.limit:
+                return False
+            self.hits.setdefault(key, []).append(time.monotonic())
+            return True
+
     def clear(self, key):
         with self.lock:
             self.hits.pop(key, None)

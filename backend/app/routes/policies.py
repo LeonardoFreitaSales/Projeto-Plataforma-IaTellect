@@ -39,12 +39,16 @@ def policy_data(data, current):
             "source": text(get("source"), "source", 500, False), "updatedAt": now_iso()}
 
 
+def visible_policies(conn, user):
+    visible = visible_ids(conn, user)
+    return [p for p in policy_rows(conn) if visible is None or p["disciplineId"] in visible]
+
+
 def policies(ctx, user, ident):
     conn, method = ctx.conn, ctx.method
     if ident is None:
         if method == "GET":
-            visible = visible_ids(conn, user)
-            items = [p for p in policy_rows(conn) if visible is None or p["disciplineId"] in visible]
+            items = visible_policies(conn, user)
             discipline_id, status, term = ctx.q("disciplineId"), ctx.q("status"), (ctx.q("q") or "").casefold()
             if discipline_id:
                 items = [p for p in items if p["disciplineId"] == discipline_id]

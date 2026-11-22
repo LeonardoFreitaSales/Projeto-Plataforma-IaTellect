@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 import json
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -60,7 +61,9 @@ class PanelHandler(BaseHTTPRequestHandler):
         self._check_origin()
         rest = parsed.path[5:].strip("/")
         parts = [unquote(p) for p in rest.split("/")] if rest else []
-        with DB_LOCK:
+        # A reformulação só lê a sessão; aguardar a API externa não deve bloquear o painel.
+        somente_reformular = parts == ["lia", "reformular"] and self.command == "POST"
+        with (nullcontext() if somente_reformular else DB_LOCK):
             conn = connect()
             try:
                 ctx = Ctx(conn, self, self.command, parts, parsed.query, raw)

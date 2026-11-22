@@ -1,7 +1,7 @@
 from app.context import public_user
 from app.permissions import require_role
 from app.utils import HTTPError, NOT_FOUND, now_iso
-from . import announcements, auth, dashboard, disciplines, history, policies, turmas, users
+from . import announcements, auth, dashboard, disciplines, history, lia, policies, turmas, users
 
 
 def api(ctx):
@@ -43,6 +43,11 @@ def api(ctx):
     if resource == "history" and method == "GET":
         require_role(user, "professor", "admin")
         return 200, history.history(ctx)
+    if parts == ["lia", "reformular"] and method == "POST":
+        from app.groq import reformular
+        return 200, reformular(ctx, user)
+    if parts == ["lia", "consulta"] and method == "POST":
+        return 200, lia.consulta(ctx, user)
     if resource == "ai-check" and method == "POST":
         return 200, policies.ai_check(ctx, user)
     if resource == "users":
