@@ -142,13 +142,15 @@ def consulta(ctx, user):
         r"(?:(?:localize|procure|busque|encontre|existe|tem) )?"
         r"(?:a |uma )?turma (.+)",
         frase,
-    ) or re.fullmatch(
+    )
+    pergunta_matricula = re.fullmatch(
         r"(?:eu )?(?:estou|faco parte|sou aluno|sou aluna|estou matriculado|estou matriculada)"
         r" (?:na|no|da|do|em uma) turma (.+)",
         frase,
     )
 
-    if turma_nome or listar_turmas:
+    busca = turma_nome or pergunta_matricula
+    if busca or listar_turmas:
         from .turmas import turmas_list
 
         turmas = turmas_list(ctx.conn, user)
@@ -159,20 +161,14 @@ def consulta(ctx, user):
             "label": "Turmas e matrículas",
         }
 
-        if turma_nome:
-            nome = turma_nome.group(1)
-
-            def nome_normalizado(turma):
-                return normalizar(turma["name"]).removeprefix("turma ")
-
-            exatas = [
-                t for t in turmas
-                if nome_normalizado(t) == nome
-            ]
-            turmas = exatas or [
-                t for t in turmas
-                if nome in nome_normalizado(t)
-            ]
+        if busca:
+            nome = busca.group(1)
+            candidatas = [(t, normalizar(t["name"])) for t in turmas]
+            turmas = (
+                [t for t, completo in candidatas if completo == nome]
+                or [t for t, completo in candidatas if completo.removeprefix("turma ") == nome]
+                or [t for t, completo in candidatas if nome in completo]
+            )
 
             if not turmas:
                 return {
@@ -186,6 +182,13 @@ def consulta(ctx, user):
                     **destino,
                     "message": "Encontrei mais de uma turma: " + nomes
                     + ". Consulte novamente usando o nome completo.",
+                }
+
+            if pergunta_matricula and user["role"] == "aluno":
+                turma = turmas[0]
+                return {
+                    **destino,
+                    "message": f"Sua matrícula em {turma['name']} está {turma['status']}.",
                 }
 
         nomes = ", ".join(t["name"] for t in turmas)

@@ -206,6 +206,8 @@ def main():
         for cliente, nome in (
             (pa, "Turma Piloto Alpha"),
             (pa, "Turma Piloto Beta"),
+            (pa, "Alpha"),
+            (pa, "Turma Alpha"),
             (pb, "Turma Reservada"),
         ):
             status, turma_lia = cliente.req(
@@ -214,12 +216,17 @@ def main():
             checa("Preparacao da turma " + nome, status, 201)
             turmas_lia.append((cliente, turma_lia["id"]))
 
-        def consultar_turma(query):
-            status, resposta = pa.req(
+        def consultar_turma(query, cliente=pa):
+            status, resposta = cliente.req(
                 "POST", rota_lia, {"query": query}
             )
             checa("Consulta de turma retorna 200", status, 200)
             return resposta
+
+        for nome in ("Alpha", "Turma Alpha"):
+            checa("Lia prioriza o nome completo " + nome,
+                  consultar_turma("Localize a turma " + nome)["message"],
+                  "Turmas do seu perfil: " + nome)
 
         encontrada = consultar_turma("Estou na turma piloto alpha?")
         checa(
@@ -353,6 +360,9 @@ def main():
         checa("aluno entra apos solicitar cadastro", al.req("POST", "/api/auth/login", {"name": "Maria Souza", "password": "senha-aluna-1"})[0], 200)
         s, ds = al.req("GET", "/api/disciplines")
         checa("aluno pendente nao ve materias", ds, [])
+        pergunta_matricula = "Estou matriculada na turma 9o ano?"
+        checa("Lia informa matrícula pendente", consultar_turma(pergunta_matricula, al)["message"],
+              "Sua matrícula em 9o ano está pendente.")
         checa("aluno nao ve historico -> 403", al.req("GET", "/api/history")[0], 403)
         checa("aluno nao cria politica -> 403", al.req("POST", "/api/policies", pol)[0], 403)
 
@@ -360,7 +370,12 @@ def main():
         checa("professor da turma lista alunos", [e["studentName"] for e in en], ["Maria Souza"])
         checa("professor B nao lista alunos -> 403", pb.req("GET", f"/api/turmas/{t['id']}/enrollments")[0], 403)
         checa("professor B nao aprova -> 403", pb.req("PUT", f"/api/matriculas/{en[0]['id']}", {"status": "aprovada"})[0], 403)
+        checa("professor A recusa", pa.req("PUT", f"/api/matriculas/{en[0]['id']}", {"status": "recusada"})[0], 200)
+        checa("Lia informa matrícula recusada", consultar_turma(pergunta_matricula, al)["message"],
+              "Sua matrícula em 9o ano está recusada.")
         checa("professor A aprova", pa.req("PUT", f"/api/matriculas/{en[0]['id']}", {"status": "aprovada"})[0], 200)
+        checa("Lia informa matrícula aprovada", consultar_turma(pergunta_matricula, al)["message"],
+              "Sua matrícula em 9o ano está aprovada.")
         checa("status invalido -> 400", pa.req("PUT", f"/api/matriculas/{en[0]['id']}", {"status": "x"})[0], 400)
 
         s, ds = al.req("GET", "/api/disciplines")
