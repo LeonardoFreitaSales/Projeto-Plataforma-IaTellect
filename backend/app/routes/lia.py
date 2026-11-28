@@ -134,19 +134,66 @@ def consulta(ctx, user):
         destino = {"message": "A plataforma não disponibiliza registros de frequência para esta consulta. Confirme a informação com o professor."}
     if destino:
         return {"policies": [], "total": 0, **destino}
-    turma_nome = re.fullmatch(r"(?:localize |encontre |existe |tem )?(?:a )?(turma .+)", frase)
-    if turma_nome or re.fullmatch(r"(?:qual (?:e )?a minha turma|quais (?:sao )?as minhas turmas|minhas? turmas?)", frase):
+    listar_turmas = re.fullmatch(
+        r"(?:qual (?:e )?a minha turma|quais (?:sao )?as minhas turmas|minhas? turmas?)",
+        frase,
+    )
+    turma_nome = re.fullmatch(
+        r"(?:(?:localize|procure|busque|encontre|existe|tem) )?"
+        r"(?:a |uma )?turma (.+)",
+        frase,
+    ) or re.fullmatch(
+        r"(?:eu )?(?:estou|faco parte|sou aluno|sou aluna|estou matriculado|estou matriculada)"
+        r" (?:na|no|da|do|em uma) turma (.+)",
+        frase,
+    )
+
+    if turma_nome or listar_turmas:
         from .turmas import turmas_list
+
         turmas = turmas_list(ctx.conn, user)
-        sem_resultado = "Nenhuma turma disponível para o seu perfil."
-        if turma_nome and turmas:
-            sem_resultado = "Não encontrei essa turma entre as que você pode consultar."
+        destino = {
+            "policies": [],
+            "total": 0,
+            "view": "classes",
+            "label": "Turmas e matrículas",
+        }
+
         if turma_nome:
             nome = turma_nome.group(1)
-            turmas = [t for t in turmas if normalizar(t["name"]) in {nome, nome.removeprefix("turma ")}]
+
+            def nome_normalizado(turma):
+                return normalizar(turma["name"]).removeprefix("turma ")
+
+            exatas = [
+                t for t in turmas
+                if nome_normalizado(t) == nome
+            ]
+            turmas = exatas or [
+                t for t in turmas
+                if nome in nome_normalizado(t)
+            ]
+
+            if not turmas:
+                return {
+                    **destino,
+                    "message": "Não encontrei essa turma entre as que você pode consultar.",
+                }
+
+            if len(turmas) > 1:
+                nomes = ", ".join(t["name"] for t in turmas)
+                return {
+                    **destino,
+                    "message": "Encontrei mais de uma turma: " + nomes
+                    + ". Consulte novamente usando o nome completo.",
+                }
+
         nomes = ", ".join(t["name"] for t in turmas)
-        return {"policies": [], "total": 0, "view": "classes", "label": "Turmas e matrículas",
-                "message": "Turmas do seu perfil: " + nomes if nomes else sem_resultado}
+        return {
+            **destino,
+            "message": "Turmas do seu perfil: " + nomes
+            if nomes else "Nenhuma turma disponível para o seu perfil.",
+        }
     contexto = ctx.body.get("disciplineContext")
     politicas = visible_policies(ctx.conn, user)
     # Remova a fórmula da pergunta sem apagar nomes como "Inteligência Artificial".
