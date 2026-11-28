@@ -179,3 +179,17 @@ As mudanças entraram na `main` pelo [PR #11](https://github.com/LeonardoFreitaS
 ## Consulta de políticas sobre faltas (PR #24)
 
 - 8d2a590 — A Lia passou a distinguir perguntas sobre regras de faltas e presença de pedidos de registros pessoais de frequência.
+
+## Etapa 3 - Consulta de turmas pela Lia (28/11/2026)
+
+- `3299279` - Aprimora a consulta nominal de turmas, permitindo buscas por nomes completos e parciais, perguntas naturais, normalização de caracteres e tratamento de ambiguidades.
+- `docs(changelog)` - Registra as alterações da etapa 3 e os resultados dos testes automatizados.
+
+### Validação
+
+- Consulta de turma encontrada.
+- Consulta de turmas com nomes semelhantes.
+- Consulta de turma inexistente.
+- Consulta de turma fora do perfil.
+- Preservação das permissões de acesso.
+- Testes locais e testes de permissões e navegador no GitHub Actions aprovados.

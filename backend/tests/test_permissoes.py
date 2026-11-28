@@ -199,6 +199,100 @@ def main():
         checa("painel do outro professor exclui a politica", (status, painel.get("policies")), (200, 0))
 
         rota_lia = "/api/lia/consulta"
+
+        # Consulta nominal de turmas pela Lia.
+        turmas_lia = []
+
+        for cliente, nome in (
+            (pa, "Turma Piloto Alpha"),
+            (pa, "Turma Piloto Beta"),
+            (pa, "Alpha"),
+            (pa, "Turma Alpha"),
+            (pb, "Turma Reservada"),
+        ):
+            status, turma_lia = cliente.req(
+                "POST", "/api/turmas", {"name": nome}
+            )
+            checa("Preparacao da turma " + nome, status, 201)
+            turmas_lia.append((cliente, turma_lia["id"]))
+
+        def consultar_turma(query, cliente=pa):
+            status, resposta = cliente.req(
+                "POST", rota_lia, {"query": query}
+            )
+            checa("Consulta de turma retorna 200", status, 200)
+            return resposta
+
+        for nome in ("Alpha", "Turma Alpha"):
+            checa("Lia prioriza o nome completo " + nome,
+                  consultar_turma("Localize a turma " + nome)["message"],
+                  "Turmas do seu perfil: " + nome)
+
+        encontrada = consultar_turma("Estou na turma piloto alpha?")
+        checa(
+            "Lia encontra turma pelo nome",
+            encontrada["message"],
+            "Turmas do seu perfil: Turma Piloto Alpha",
+        )
+
+        parcial = consultar_turma("Localize a turma piloto al")
+        checa(
+            "Lia encontra turma pelo nome parcial",
+            parcial,
+            encontrada,
+        )
+
+        normalizada = consultar_turma("LOCALIZE A TURMA PILÓTO ALPHA")
+        checa(
+            "Lia normaliza acentos e maiusculas",
+            normalizada,
+            encontrada,
+        )
+
+        ambigua = consultar_turma("Estou na turma piloto?")
+        checa(
+            "Lia solicita esclarecimento de turmas ambiguas",
+            "mais de uma turma" in ambigua["message"],
+            True,
+        )
+        checa(
+            "Lia apresenta as duas turmas autorizadas",
+            all(nome in ambigua["message"] for nome in (
+                "Turma Piloto Alpha", "Turma Piloto Beta"
+            )),
+            True,
+        )
+
+        inexistente = consultar_turma("Existe a turma inexistente?")
+        restrita = consultar_turma("Existe a turma reservada?")
+
+        checa(
+            "Lia informa turma inexistente",
+            inexistente["message"],
+            "Não encontrei essa turma entre as que você pode consultar.",
+        )
+
+        checa(
+            "Lia preserva privacidade de turma fora do perfil",
+            restrita,
+            inexistente,
+        )
+
+        listagem = consultar_turma("Qual é a minha turma?")
+        checa(
+            "Lia nao inclui turma restrita na listagem",
+            "Turma Reservada" not in listagem["message"],
+            True,
+        )
+
+        # Remove os dados ficticios antes dos demais testes.
+        for cliente, turma_id in turmas_lia:
+            checa(
+                "Remove turma criada para teste da Lia",
+                cliente.req("DELETE", "/api/turmas/" + turma_id)[0],
+                200,
+            )
+
         _, extra = adm.req("POST", "/api/disciplines", {"name": "Matemática aplicada", "ownerId": a["id"]})
         procura = {"query": "Localize a matéria matem"}
         checa("Lia distingue nomes ambíguos sem exigir políticas", "mais de uma" in pa.req("POST", rota_lia, procura)[1]["message"], True)
@@ -266,6 +360,9 @@ def main():
         checa("aluno entra apos solicitar cadastro", al.req("POST", "/api/auth/login", {"name": "Maria Souza", "password": "senha-aluna-1"})[0], 200)
         s, ds = al.req("GET", "/api/disciplines")
         checa("aluno pendente nao ve materias", ds, [])
+        pergunta_matricula = "Estou matriculada na turma 9o ano?"
+        checa("Lia informa matrícula pendente", consultar_turma(pergunta_matricula, al)["message"],
+              "Sua matrícula em 9o ano está pendente.")
         checa("aluno nao ve historico -> 403", al.req("GET", "/api/history")[0], 403)
         checa("aluno nao cria politica -> 403", al.req("POST", "/api/policies", pol)[0], 403)
 
@@ -273,7 +370,12 @@ def main():
         checa("professor da turma lista alunos", [e["studentName"] for e in en], ["Maria Souza"])
         checa("professor B nao lista alunos -> 403", pb.req("GET", f"/api/turmas/{t['id']}/enrollments")[0], 403)
         checa("professor B nao aprova -> 403", pb.req("PUT", f"/api/matriculas/{en[0]['id']}", {"status": "aprovada"})[0], 403)
+        checa("professor A recusa", pa.req("PUT", f"/api/matriculas/{en[0]['id']}", {"status": "recusada"})[0], 200)
+        checa("Lia informa matrícula recusada", consultar_turma(pergunta_matricula, al)["message"],
+              "Sua matrícula em 9o ano está recusada.")
         checa("professor A aprova", pa.req("PUT", f"/api/matriculas/{en[0]['id']}", {"status": "aprovada"})[0], 200)
+        checa("Lia informa matrícula aprovada", consultar_turma(pergunta_matricula, al)["message"],
+              "Sua matrícula em 9o ano está aprovada.")
         checa("status invalido -> 400", pa.req("PUT", f"/api/matriculas/{en[0]['id']}", {"status": "x"})[0], 400)
 
         s, ds = al.req("GET", "/api/disciplines")
